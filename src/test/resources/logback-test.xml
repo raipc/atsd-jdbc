@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <Pattern>%d[%4.4t]%-5p %-21.21logger{20}: %m%n</Pattern>
+        </encoder>
+    </appender>
+ 
+    <logger name="com.axibase.tsd.driver.jdbc">
+        <level value="DEBUG" />
+    </logger>
+    
+    <logger name="org.apache.calcite.avatica">
+        <level value="INFO" />
+    </logger>
+ 
+    <root>
+        <level value="INFO" />
+        <appender-ref ref="CONSOLE" />
+    </root>
+</configuration>

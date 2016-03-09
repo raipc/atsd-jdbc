@@ -1,0 +1,70 @@
+{
+   "@context":[
+      "http://www.w3.org/ns/csvw",
+      {
+         "atsd":"http://www.axibase.com/schemas/2015/11/atsd.jsonld#"
+      }
+   ],
+   "dc:created":{
+      "@value":"2016-01-13T15:13:37Z",
+      "@type":"xsd:date"
+   },
+   "dc:publisher":{
+      "schema:name":"Axibase Time-Series Database",
+      "schema:url":{
+         "@id":"https://$schema:url"
+      }
+   },
+   "dc:title":"SQL Query",
+   "rdfs:comment":"SELECT datetime, value, entity \r\nFROM mpstat.cpu_busy \r\nWHERE entity = 'nurswgvml212'",
+   "@type":"Table",
+   "url":"sql.csv",
+   "tableSchema":{
+      "columns":[
+         {
+         	"columnIndex":2,
+            "name":"value",
+            "titles":"value",
+            "datatype":"double",
+            "table":"mpstat.cpu_busy",
+            "propertyUrl":"atsd:value"
+         },
+         {
+         	"columnIndex":3,
+            "name":"entity",
+            "titles":"entity",
+            "datatype":"string",
+            "table":"mpstat.cpu_busy",
+            "propertyUrl":"atsd:entity"
+         },
+         {
+         	"columnIndex":1,
+            "name":"datetime",
+            "titles":"datetime",
+            "datatype":"xsd:dateTimeStamp",
+            "table":"mpstat.cpu_busy",
+            "propertyUrl":"atsd:datetime",
+            "dc:description":"Sample time in ISO8601 format"
+         }
+      ]
+   },
+   "dialect":{
+      "commentPrefix":"#",
+      "delimiter":",",
+      "doubleQuote":true,
+      "quoteChar":"\"",
+      "headerRowCount":1,
+      "encoding":"utf-8",
+      "header":true,
+      "lineTerminators":[
+         "\r\n",
+         "\n"
+      ],
+      "skipBlankRows":false,
+      "skipColumns":0,
+      "skipRows":0,
+      "skipInitialSpace":false,
+      "trim":false,
+      "@type":"Dialect"
+   }
+}

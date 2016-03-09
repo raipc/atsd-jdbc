@@ -1,0 +1,625 @@
+#{
+#  "errors" : [ {
+#    "state" : "07",
+#    "exception" : [ {
+#      "methodName" : "getMetricByName",
+#      "fileName" : "DictionaryServiceImpl.java",
+#      "lineNumber" : 199,
+#      "className" : "com.axibase.tsd.service.DictionaryServiceImpl",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "invoke",
+#      "fileName" : null,
+#      "lineNumber" : -1,
+#      "className" : "sun.reflect.GeneratedMethodAccessor172",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "invoke",
+#      "fileName" : "DelegatingMethodAccessorImpl.java",
+#      "lineNumber" : 43,
+#      "className" : "sun.reflect.DelegatingMethodAccessorImpl",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "invoke",
+#      "fileName" : "Method.java",
+#      "lineNumber" : 606,
+#      "className" : "java.lang.reflect.Method",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "invokeJoinpointUsingReflection",
+#      "fileName" : "AopUtils.java",
+#      "lineNumber" : 317,
+#      "className" : "org.springframework.aop.support.AopUtils",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "invokeJoinpoint",
+#      "fileName" : "ReflectiveMethodInvocation.java",
+#      "lineNumber" : 183,
+#      "className" : "org.springframework.aop.framework.ReflectiveMethodInvocation",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "proceed",
+#      "fileName" : "ReflectiveMethodInvocation.java",
+#      "lineNumber" : 150,
+#      "className" : "org.springframework.aop.framework.ReflectiveMethodInvocation",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "invoke",
+#      "fileName" : "CacheInterceptor.java",
+#      "lineNumber" : 58,
+#      "className" : "org.springframework.cache.interceptor.CacheInterceptor$1",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "execute",
+#      "fileName" : "CacheAspectSupport.java",
+#      "lineNumber" : 211,
+#      "className" : "org.springframework.cache.interceptor.CacheAspectSupport",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "invoke",
+#      "fileName" : "CacheInterceptor.java",
+#      "lineNumber" : 66,
+#      "className" : "org.springframework.cache.interceptor.CacheInterceptor",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "proceed",
+#      "fileName" : "ReflectiveMethodInvocation.java",
+#      "lineNumber" : 172,
+#      "className" : "org.springframework.aop.framework.ReflectiveMethodInvocation",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "invoke",
+#      "fileName" : "JdkDynamicAopProxy.java",
+#      "lineNumber" : 204,
+#      "className" : "org.springframework.aop.framework.JdkDynamicAopProxy",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "getMetricByName",
+#      "fileName" : null,
+#      "lineNumber" : -1,
+#      "className" : "com.sun.proxy.$Proxy53",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "composeRegistry",
+#      "fileName" : "SqlMetaServiceImpl.java",
+#      "lineNumber" : 34,
+#      "className" : "com.axibase.tsd.service.sql.SqlMetaServiceImpl",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "analyze",
+#      "fileName" : "SqlQueryAnalyzerImpl.java",
+#      "lineNumber" : 72,
+#      "className" : "com.axibase.tsd.service.sql.SqlQueryAnalyzerImpl",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "executeQueryInternal",
+#      "fileName" : "SqlQueryServiceImpl.java",
+#      "lineNumber" : 126,
+#      "className" : "com.axibase.tsd.service.sql.SqlQueryServiceImpl",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "executeQuery",
+#      "fileName" : "SqlQueryServiceImpl.java",
+#      "lineNumber" : 98,
+#      "className" : "com.axibase.tsd.service.sql.SqlQueryServiceImpl",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "execute",
+#      "fileName" : "ApiSqlController.java",
+#      "lineNumber" : 80,
+#      "className" : "com.axibase.tsd.web.api.ApiSqlController",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "process",
+#      "fileName" : "ApiSqlController.java",
+#      "lineNumber" : 58,
+#      "className" : "com.axibase.tsd.web.api.ApiSqlController",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "queryCsv",
+#      "fileName" : "ApiSqlController.java",
+#      "lineNumber" : 42,
+#      "className" : "com.axibase.tsd.web.api.ApiSqlController",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "invoke0",
+#      "fileName" : "NativeMethodAccessorImpl.java",
+#      "lineNumber" : -2,
+#      "className" : "sun.reflect.NativeMethodAccessorImpl",
+#      "nativeMethod" : true
+#    }, {
+#      "methodName" : "invoke",
+#      "fileName" : "NativeMethodAccessorImpl.java",
+#      "lineNumber" : 57,
+#      "className" : "sun.reflect.NativeMethodAccessorImpl",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "invoke",
+#      "fileName" : "DelegatingMethodAccessorImpl.java",
+#      "lineNumber" : 43,
+#      "className" : "sun.reflect.DelegatingMethodAccessorImpl",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "invoke",
+#      "fileName" : "Method.java",
+#      "lineNumber" : 606,
+#      "className" : "java.lang.reflect.Method",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "invoke",
+#      "fileName" : "InvocableHandlerMethod.java",
+#      "lineNumber" : 215,
+#      "className" : "org.springframework.web.method.support.InvocableHandlerMethod",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "invokeForRequest",
+#      "fileName" : "InvocableHandlerMethod.java",
+#      "lineNumber" : 132,
+#      "className" : "org.springframework.web.method.support.InvocableHandlerMethod",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "invokeAndHandle",
+#      "fileName" : "ServletInvocableHandlerMethod.java",
+#      "lineNumber" : 104,
+#      "className" : "org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "invokeHandleMethod",
+#      "fileName" : "RequestMappingHandlerAdapter.java",
+#      "lineNumber" : 743,
+#      "className" : "org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "handleInternal",
+#      "fileName" : "RequestMappingHandlerAdapter.java",
+#      "lineNumber" : 672,
+#      "className" : "org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "handle",
+#      "fileName" : "AbstractHandlerMethodAdapter.java",
+#      "lineNumber" : 82,
+#      "className" : "org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "doDispatch",
+#      "fileName" : "DispatcherServlet.java",
+#      "lineNumber" : 933,
+#      "className" : "org.springframework.web.servlet.DispatcherServlet",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "doService",
+#      "fileName" : "DispatcherServlet.java",
+#      "lineNumber" : 867,
+#      "className" : "org.springframework.web.servlet.DispatcherServlet",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "processRequest",
+#      "fileName" : "FrameworkServlet.java",
+#      "lineNumber" : 953,
+#      "className" : "org.springframework.web.servlet.FrameworkServlet",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "doGet",
+#      "fileName" : "FrameworkServlet.java",
+#      "lineNumber" : 844,
+#      "className" : "org.springframework.web.servlet.FrameworkServlet",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "service",
+#      "fileName" : "HttpServlet.java",
+#      "lineNumber" : 735,
+#      "className" : "javax.servlet.http.HttpServlet",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "service",
+#      "fileName" : "FrameworkServlet.java",
+#      "lineNumber" : 829,
+#      "className" : "org.springframework.web.servlet.FrameworkServlet",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "service",
+#      "fileName" : "HttpServlet.java",
+#      "lineNumber" : 848,
+#      "className" : "javax.servlet.http.HttpServlet",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "handle",
+#      "fileName" : "ServletHolder.java",
+#      "lineNumber" : 684,
+#      "className" : "org.eclipse.jetty.servlet.ServletHolder",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "doFilter",
+#      "fileName" : "ServletHandler.java",
+#      "lineNumber" : 1496,
+#      "className" : "org.eclipse.jetty.servlet.ServletHandler$CachedChain",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "doFilterWithMonitoring",
+#      "fileName" : "SimonServletFilterFixed.java",
+#      "lineNumber" : 229,
+#      "className" : "com.axibase.tsd.service.monitoring.SimonServletFilterFixed",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "doFilter",
+#      "fileName" : "SimonServletFilterFixed.java",
+#      "lineNumber" : 214,
+#      "className" : "com.axibase.tsd.service.monitoring.SimonServletFilterFixed",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "doFilter",
+#      "fileName" : "ServletHandler.java",
+#      "lineNumber" : 1467,
+#      "className" : "org.eclipse.jetty.servlet.ServletHandler$CachedChain",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "doFilter",
+#      "fileName" : "FilterChainProxy.java",
+#      "lineNumber" : 330,
+#      "className" : "org.springframework.security.web.FilterChainProxy$VirtualFilterChain",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "invoke",
+#      "fileName" : "FilterSecurityInterceptor.java",
+#      "lineNumber" : 118,
+#      "className" : "org.springframework.security.web.access.intercept.FilterSecurityInterceptor",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "doFilter",
+#      "fileName" : "FilterSecurityInterceptor.java",
+#      "lineNumber" : 84,
+#      "className" : "org.springframework.security.web.access.intercept.FilterSecurityInterceptor",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "doFilter",
+#      "fileName" : "FilterChainProxy.java",
+#      "lineNumber" : 342,
+#      "className" : "org.springframework.security.web.FilterChainProxy$VirtualFilterChain",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "doFilter",
+#      "fileName" : "ExceptionTranslationFilter.java",
+#      "lineNumber" : 113,
+#      "className" : "org.springframework.security.web.access.ExceptionTranslationFilter",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "doFilter",
+#      "fileName" : "FilterChainProxy.java",
+#      "lineNumber" : 342,
+#      "className" : "org.springframework.security.web.FilterChainProxy$VirtualFilterChain",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "doFilter",
+#      "fileName" : "SessionManagementFilter.java",
+#      "lineNumber" : 103,
+#      "className" : "org.springframework.security.web.session.SessionManagementFilter",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "doFilter",
+#      "fileName" : "FilterChainProxy.java",
+#      "lineNumber" : 342,
+#      "className" : "org.springframework.security.web.FilterChainProxy$VirtualFilterChain",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "doFilter",
+#      "fileName" : "AnonymousAuthenticationFilter.java",
+#      "lineNumber" : 113,
+#      "className" : "org.springframework.security.web.authentication.AnonymousAuthenticationFilter",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "doFilter",
+#      "fileName" : "FilterChainProxy.java",
+#      "lineNumber" : 342,
+#      "className" : "org.springframework.security.web.FilterChainProxy$VirtualFilterChain",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "doFilter",
+#      "fileName" : "RememberMeAuthenticationFilter.java",
+#      "lineNumber" : 146,
+#      "className" : "org.springframework.security.web.authentication.rememberme.RememberMeAuthenticationFilter",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "doFilter",
+#      "fileName" : "FilterChainProxy.java",
+#      "lineNumber" : 342,
+#      "className" : "org.springframework.security.web.FilterChainProxy$VirtualFilterChain",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "doFilter",
+#      "fileName" : "SecurityContextHolderAwareRequestFilter.java",
+#      "lineNumber" : 154,
+#      "className" : "org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "doFilter",
+#      "fileName" : "FilterChainProxy.java",
+#      "lineNumber" : 342,
+#      "className" : "org.springframework.security.web.FilterChainProxy$VirtualFilterChain",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "doFilter",
+#      "fileName" : "RequestCacheAwareFilter.java",
+#      "lineNumber" : 45,
+#      "className" : "org.springframework.security.web.savedrequest.RequestCacheAwareFilter",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "doFilter",
+#      "fileName" : "FilterChainProxy.java",
+#      "lineNumber" : 342,
+#      "className" : "org.springframework.security.web.FilterChainProxy$VirtualFilterChain",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "doFilter",
+#      "fileName" : "BasicAuthenticationFilter.java",
+#      "lineNumber" : 201,
+#      "className" : "org.springframework.security.web.authentication.www.BasicAuthenticationFilter",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "doFilter",
+#      "fileName" : "FilterChainProxy.java",
+#      "lineNumber" : 342,
+#      "className" : "org.springframework.security.web.FilterChainProxy$VirtualFilterChain",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "doFilter",
+#      "fileName" : "AbstractAuthenticationProcessingFilter.java",
+#      "lineNumber" : 199,
+#      "className" : "org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "doFilter",
+#      "fileName" : "FilterChainProxy.java",
+#      "lineNumber" : 342,
+#      "className" : "org.springframework.security.web.FilterChainProxy$VirtualFilterChain",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "doFilter",
+#      "fileName" : "LogoutFilter.java",
+#      "lineNumber" : 110,
+#      "className" : "org.springframework.security.web.authentication.logout.LogoutFilter",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "doFilter",
+#      "fileName" : "FilterChainProxy.java",
+#      "lineNumber" : 342,
+#      "className" : "org.springframework.security.web.FilterChainProxy$VirtualFilterChain",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "doFilterInternal",
+#      "fileName" : "WebAsyncManagerIntegrationFilter.java",
+#      "lineNumber" : 50,
+#      "className" : "org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "doFilter",
+#      "fileName" : "OncePerRequestFilter.java",
+#      "lineNumber" : 106,
+#      "className" : "org.springframework.web.filter.OncePerRequestFilter",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "doFilter",
+#      "fileName" : "FilterChainProxy.java",
+#      "lineNumber" : 342,
+#      "className" : "org.springframework.security.web.FilterChainProxy$VirtualFilterChain",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "doFilter",
+#      "fileName" : "SecurityContextPersistenceFilter.java",
+#      "lineNumber" : 87,
+#      "className" : "org.springframework.security.web.context.SecurityContextPersistenceFilter",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "doFilter",
+#      "fileName" : "FilterChainProxy.java",
+#      "lineNumber" : 342,
+#      "className" : "org.springframework.security.web.FilterChainProxy$VirtualFilterChain",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "doFilterInternal",
+#      "fileName" : "FilterChainProxy.java",
+#      "lineNumber" : 192,
+#      "className" : "org.springframework.security.web.FilterChainProxy",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "doFilter",
+#      "fileName" : "FilterChainProxy.java",
+#      "lineNumber" : 160,
+#      "className" : "org.springframework.security.web.FilterChainProxy",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "invokeDelegate",
+#      "fileName" : "DelegatingFilterProxy.java",
+#      "lineNumber" : 343,
+#      "className" : "org.springframework.web.filter.DelegatingFilterProxy",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "doFilter",
+#      "fileName" : "DelegatingFilterProxy.java",
+#      "lineNumber" : 260,
+#      "className" : "org.springframework.web.filter.DelegatingFilterProxy",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "doFilter",
+#      "fileName" : "ServletHandler.java",
+#      "lineNumber" : 1467,
+#      "className" : "org.eclipse.jetty.servlet.ServletHandler$CachedChain",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "doFilterInternal",
+#      "fileName" : "CharacterEncodingFilter.java",
+#      "lineNumber" : 88,
+#      "className" : "org.springframework.web.filter.CharacterEncodingFilter",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "doFilter",
+#      "fileName" : "OncePerRequestFilter.java",
+#      "lineNumber" : 106,
+#      "className" : "org.springframework.web.filter.OncePerRequestFilter",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "doFilter",
+#      "fileName" : "ServletHandler.java",
+#      "lineNumber" : 1467,
+#      "className" : "org.eclipse.jetty.servlet.ServletHandler$CachedChain",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "doFilter",
+#      "fileName" : "UserAgentFilter.java",
+#      "lineNumber" : 82,
+#      "className" : "org.eclipse.jetty.servlets.UserAgentFilter",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "doFilter",
+#      "fileName" : "GzipFilter.java",
+#      "lineNumber" : 294,
+#      "className" : "org.eclipse.jetty.servlets.GzipFilter",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "doFilter",
+#      "fileName" : "ServletHandler.java",
+#      "lineNumber" : 1467,
+#      "className" : "org.eclipse.jetty.servlet.ServletHandler$CachedChain",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "doHandle",
+#      "fileName" : "ServletHandler.java",
+#      "lineNumber" : 501,
+#      "className" : "org.eclipse.jetty.servlet.ServletHandler",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "doHandle",
+#      "fileName" : "SessionHandler.java",
+#      "lineNumber" : 229,
+#      "className" : "org.eclipse.jetty.server.session.SessionHandler",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "doHandle",
+#      "fileName" : "ContextHandler.java",
+#      "lineNumber" : 1086,
+#      "className" : "org.eclipse.jetty.server.handler.ContextHandler",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "doScope",
+#      "fileName" : "ServletHandler.java",
+#      "lineNumber" : 429,
+#      "className" : "org.eclipse.jetty.servlet.ServletHandler",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "doScope",
+#      "fileName" : "SessionHandler.java",
+#      "lineNumber" : 193,
+#      "className" : "org.eclipse.jetty.server.session.SessionHandler",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "doScope",
+#      "fileName" : "ContextHandler.java",
+#      "lineNumber" : 1020,
+#      "className" : "org.eclipse.jetty.server.handler.ContextHandler",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "handle",
+#      "fileName" : "ScopedHandler.java",
+#      "lineNumber" : 135,
+#      "className" : "org.eclipse.jetty.server.handler.ScopedHandler",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "handle",
+#      "fileName" : "ContextHandlerCollection.java",
+#      "lineNumber" : 255,
+#      "className" : "org.eclipse.jetty.server.handler.ContextHandlerCollection",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "handle",
+#      "fileName" : "HandlerCollection.java",
+#      "lineNumber" : 154,
+#      "className" : "org.eclipse.jetty.server.handler.HandlerCollection",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "handle",
+#      "fileName" : "HandlerWrapper.java",
+#      "lineNumber" : 116,
+#      "className" : "org.eclipse.jetty.server.handler.HandlerWrapper",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "handle",
+#      "fileName" : "Server.java",
+#      "lineNumber" : 370,
+#      "className" : "org.eclipse.jetty.server.Server",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "handleRequest",
+#      "fileName" : "AbstractHttpConnection.java",
+#      "lineNumber" : 494,
+#      "className" : "org.eclipse.jetty.server.AbstractHttpConnection",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "headerComplete",
+#      "fileName" : "AbstractHttpConnection.java",
+#      "lineNumber" : 971,
+#      "className" : "org.eclipse.jetty.server.AbstractHttpConnection",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "headerComplete",
+#      "fileName" : "AbstractHttpConnection.java",
+#      "lineNumber" : 1033,
+#      "className" : "org.eclipse.jetty.server.AbstractHttpConnection$RequestHandler",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "parseNext",
+#      "fileName" : "HttpParser.java",
+#      "lineNumber" : 644,
+#      "className" : "org.eclipse.jetty.http.HttpParser",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "parseAvailable",
+#      "fileName" : "HttpParser.java",
+#      "lineNumber" : 235,
+#      "className" : "org.eclipse.jetty.http.HttpParser",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "handle",
+#      "fileName" : "AsyncHttpConnection.java",
+#      "lineNumber" : 82,
+#      "className" : "org.eclipse.jetty.server.AsyncHttpConnection",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "handle",
+#      "fileName" : "SslConnection.java",
+#      "lineNumber" : 196,
+#      "className" : "org.eclipse.jetty.io.nio.SslConnection",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "handle",
+#      "fileName" : "SelectChannelEndPoint.java",
+#      "lineNumber" : 696,
+#      "className" : "org.eclipse.jetty.io.nio.SelectChannelEndPoint",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "run",
+#      "fileName" : "SelectChannelEndPoint.java",
+#      "lineNumber" : 53,
+#      "className" : "org.eclipse.jetty.io.nio.SelectChannelEndPoint$1",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "runJob",
+#      "fileName" : "QueuedThreadPool.java",
+#      "lineNumber" : 608,
+#      "className" : "org.eclipse.jetty.util.thread.QueuedThreadPool",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "run",
+#      "fileName" : "QueuedThreadPool.java",
+#      "lineNumber" : 543,
+#      "className" : "org.eclipse.jetty.util.thread.QueuedThreadPool$3",
+#      "nativeMethod" : false
+#    }, {
+#      "methodName" : "run",
+#      "fileName" : "Thread.java",
+#      "lineNumber" : 745,
+#      "className" : "java.lang.Thread",
+#      "nativeMethod" : false
+#    } ],
+#    "message" : "Metric 'docker.network.eth0.rxerrors' not found"
+#  } ]
+#}
