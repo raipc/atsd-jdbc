@@ -69,6 +69,7 @@ public class KeepAliveStrategyTest implements Constants {
 	public void tearDown() throws Exception {
 	}
 
+	@Ignore
 	@Test
 	public final void testFullPassOnSmall() throws Exception {
 		String[] last = fullPassOnTable(SMALL_TABLE);
@@ -77,6 +78,7 @@ public class KeepAliveStrategyTest implements Constants {
 		assertArrayEquals(last, actuals);
 	}
 
+	@Ignore
 	@Test
 	public final void testFullPassOnMedium() throws Exception {
 		String[] last = fullPassOnTable(MEDIUM_TABLE);

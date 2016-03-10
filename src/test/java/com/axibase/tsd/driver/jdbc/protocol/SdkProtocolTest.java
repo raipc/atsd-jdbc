@@ -27,6 +27,7 @@ import java.util.Arrays;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.axibase.tsd.driver.jdbc.Constants;
@@ -62,6 +63,7 @@ public class SdkProtocolTest implements Constants {
 	public void tearDown() throws Exception {
 	}
 
+	@Ignore
 	@Test
 	public final void testCheckContentSecure() throws IOException, AtsdException, GeneralSecurityException {
 		final ContentDescription cd = new ContentDescription(HTTP_ATDS_URL,
@@ -72,6 +74,7 @@ public class SdkProtocolTest implements Constants {
 		assertNotNull(cd.getJsonScheme());
 	}
 
+	@Ignore
 	@Test
 	public final void testReadContentSecure() throws IOException, AtsdException, GeneralSecurityException {
 		final ContentDescription cd = new ContentDescription(HTTP_ATDS_URL,

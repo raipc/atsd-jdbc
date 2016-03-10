@@ -67,11 +67,13 @@ public class FileStoreStrategyTest implements Constants {
 	public void tearDown() throws Exception {
 	}
 
+	@Ignore
 	@Test
 	public final void testFullPassOnSmall() throws Exception {
 		fullPassOnTable(SMALL_TABLE);
 	}
 
+	@Ignore
 	@Test
 	public final void testFullPassOnMedium() throws Exception {
 		fullPassOnTable(MEDIUM_TABLE);

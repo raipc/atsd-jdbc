@@ -18,6 +18,7 @@ import static org.junit.Assert.*;
 
 import java.sql.SQLException;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.axibase.tsd.driver.jdbc.ConnectionTest;
@@ -26,6 +27,7 @@ import com.axibase.tsd.driver.jdbc.metrics.MetricsEnum;
 import com.axibase.tsd.driver.jdbc.metrics.MetricsEnumLarge;
 import com.axibase.tsd.driver.jdbc.metrics.MetricsEnumWithWarnings;
 
+@Ignore
 public class RemoteConnectionTest extends ConnectionTest {
 
 	private static final LoggingFacade logger = LoggingFacade.getLogger(RemoteConnectionTest.class);

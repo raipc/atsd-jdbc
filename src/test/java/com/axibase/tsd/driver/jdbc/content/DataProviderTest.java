@@ -22,6 +22,7 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -60,7 +61,8 @@ public class DataProviderTest implements Constants {
 	public void tearDown() throws Exception {
 	}
 
-	@Test()
+	@Ignore
+	@Test
 	public final void testSecureByDefault() throws Exception {
 		try (DataProvider provider = new DataProvider(HTTP_ATDS_URL, SELECT_ALL_CLAUSE + SMALL_TABLE + SELECT_LIMIT,
 				LOGIN_NAME, LOGIN_PASSWORD, new StatementContext());) {
@@ -68,6 +70,7 @@ public class DataProviderTest implements Constants {
 		}
 	}
 
+	@Ignore
 	@Test
 	public final void testSecureTrusted() throws Exception {
 		try (DataProvider provider = new DataProvider(HTTP_ATDS_URL + TRUST_PARAMETER_IN_QUERY,
@@ -76,7 +79,8 @@ public class DataProviderTest implements Constants {
 		}
 	}
 
-	@Test()
+	@Ignore
+	@Test
 	public final void testSecureUntrusted() throws Exception {
 		try (DataProvider provider = new DataProvider(HTTP_ATDS_URL + UNTRUST_PARAMETER_IN_QUERY,
 				SELECT_ALL_CLAUSE + SMALL_TABLE + SELECT_LIMIT, LOGIN_NAME, LOGIN_PASSWORD, new StatementContext());) {
@@ -84,6 +88,16 @@ public class DataProviderTest implements Constants {
 		}
 	}
 
+	@Ignore
+	@Test
+	public final void testCheckScheme() throws Exception {
+		try (DataProvider provider = new DataProvider(HTTP_ATDS_URL, SELECT_ALL_CLAUSE + SMALL_TABLE + SELECT_LIMIT,
+				LOGIN_NAME, LOGIN_PASSWORD, new StatementContext());) {
+			final ContentDescription contentDescription = provider.getContentDescription();
+			provider.checkScheme(contentDescription.getQuery());
+		}
+	}
+	
 	@Test
 	public final void testGetContentDescription() throws Exception {
 		try (DataProvider provider = new DataProvider(HTTP_ATDS_URL + UNTRUST_PARAMETER_IN_QUERY,
@@ -94,15 +108,6 @@ public class DataProviderTest implements Constants {
 				logger.debug(contentDescription.getHost());
 				logger.debug(Arrays.toString(contentDescription.getParams()));
 			}
-		}
-	}
-
-	@Test
-	public final void testCheckScheme() throws Exception {
-		try (DataProvider provider = new DataProvider(HTTP_ATDS_URL, SELECT_ALL_CLAUSE + SMALL_TABLE + SELECT_LIMIT,
-				LOGIN_NAME, LOGIN_PASSWORD, new StatementContext());) {
-			final ContentDescription contentDescription = provider.getContentDescription();
-			provider.checkScheme(contentDescription.getQuery());
 		}
 	}
 

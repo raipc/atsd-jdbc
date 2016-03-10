@@ -26,8 +26,8 @@ $ mvn clean install
 ```
 
 ## Requirements
-Java 1.7 and later
-Maven 3
+* Java 1.7 and later
+* Maven 3 and later
 
 
 ## License
