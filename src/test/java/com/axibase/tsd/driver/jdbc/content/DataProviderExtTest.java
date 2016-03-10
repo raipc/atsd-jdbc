@@ -25,6 +25,7 @@ import java.util.zip.ZipInputStream;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.powermock.api.mockito.PowerMockito;
@@ -71,6 +72,7 @@ public class DataProviderExtTest {
 		}
 	}
 
+	@Ignore
 	@Test
 	public void testStrategyOn5m() throws Exception {
 		try (IStoreStrategy storeStrategy = PowerMockito.spy(new FileStoreStrategy(new StatementContext()));) {
