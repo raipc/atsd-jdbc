@@ -22,15 +22,12 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.axibase.tsd.driver.jdbc.Constants;
+import com.axibase.tsd.driver.jdbc.AtsdProperties;
 import com.axibase.tsd.driver.jdbc.content.ContentDescription;
 import com.axibase.tsd.driver.jdbc.content.StatementContext;
 import com.axibase.tsd.driver.jdbc.intf.IContentProtocol;
@@ -38,26 +35,8 @@ import com.axibase.tsd.driver.jdbc.intf.IStoreStrategy;
 import com.axibase.tsd.driver.jdbc.protocol.ProtocolFactory;
 import com.axibase.tsd.driver.jdbc.protocol.SdkProtocolImpl;
 
-public class FileStoreStrategyTest implements Constants {
+public class FileStoreStrategyTest extends AtsdProperties {
 	private static final Logger logger = LoggerFactory.getLogger(FileStoreStrategyTest.class);
-
-	protected static String HTTP_ATDS_URL;
-	protected static String LOGIN_NAME;
-	protected static String LOGIN_PASSWORD;
-	protected static Boolean TRUST_URL;
-
-	@BeforeClass
-	public static void setUpBeforeClass() throws Exception {
-		LOGIN_NAME = System.getProperty("test.username");
-		LOGIN_PASSWORD = System.getProperty("test.password");
-		String trustProp = System.getProperty("test.trust");
-		TRUST_URL = trustProp != null ? Boolean.valueOf(trustProp) : null;
-		HTTP_ATDS_URL = System.getProperty("test.url");
-	}
-
-	@AfterClass
-	public static void tearDownAfterClass() throws Exception {
-	}
 
 	@Before
 	public void setUp() throws Exception {
@@ -67,19 +46,31 @@ public class FileStoreStrategyTest implements Constants {
 	public void tearDown() throws Exception {
 	}
 
-	@Ignore
+	@Test
+	public final void testFullPassOnTiny() throws Exception {
+		String[] last = fullPassOnTable(TINY_TABLE);
+		assertNotNull(last);
+	}
+
 	@Test
 	public final void testFullPassOnSmall() throws Exception {
-		fullPassOnTable(SMALL_TABLE);
+		String[] last = fullPassOnTable(SMALL_TABLE);
+		assertNotNull(last);
 	}
 
-	@Ignore
 	@Test
 	public final void testFullPassOnMedium() throws Exception {
-		fullPassOnTable(MEDIUM_TABLE);
+		String[] last = fullPassOnTable(MEDIUM_TABLE);
+		assertNotNull(last);
 	}
 
-	private void fullPassOnTable(String table) throws Exception {
+	@Test
+	public final void testFullPassOnLarge() throws Exception {
+		String[] last = fullPassOnTable(LARGE_TABLE);
+		assertNotNull(last);
+	}
+
+	private String[] fullPassOnTable(String table) throws Exception {
 		final List<String> params = new ArrayList<String>();
 		if (TRUST_URL != null)
 			params.add(TRUST_URL.booleanValue() ? ContentDescription.TRUST_PARAM_TRUE
@@ -96,15 +87,21 @@ public class FileStoreStrategyTest implements Constants {
 			final String[] header = strategy.openToRead();
 			assertNotNull(header);
 			int pos = 0;
+			String[] last = null;
 			while (true) {
 				final List<String[]> fetched = strategy.fetch(pos, 100);
 				assertNotNull(fetched);
-				for (String[] sa : fetched) {
-					if (logger.isTraceEnabled())
-						logger.trace(Arrays.toString(sa));
+				int size = fetched.size();
+				if (size != 100) {
+					if (size != 0) {
+						last = fetched.get(size - 1);
+					}
+					if (logger.isDebugEnabled())
+						logger.debug(Arrays.toString(last));
+					return last;
+				} else {
+					last = fetched.get(99);
 				}
-				if (fetched.size() != 100)
-					break;
 				pos += fetched.size();
 				if (pos % 100000 == 0) {
 					if (logger.isDebugEnabled())

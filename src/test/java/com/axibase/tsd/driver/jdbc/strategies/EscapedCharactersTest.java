@@ -34,7 +34,6 @@ import com.axibase.tsd.driver.jdbc.content.StatementContext;
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(IteratorData.class)
 public class EscapedCharactersTest {
-	@SuppressWarnings("unused")
 	private static final Logger logger = LoggerFactory.getLogger(EscapedCharactersTest.class);
 	private IteratorData data;
 	private StatementContext context;

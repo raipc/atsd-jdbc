@@ -429,6 +429,13 @@ public class AtsdMeta extends MetaImpl {
 						} catch (final ParseException e) {
 							if (logger.isDebugEnabled())
 								logger.debug("[getFrame] " + e.getMessage());
+							try {
+								Date dt = TIMESTAMP_SHORT_FORMATTER.get().parse(sarray[i]);
+								ts = new Timestamp(dt.getTime());
+							} catch (ParseException e1) {
+								if (logger.isDebugEnabled())
+									logger.debug("[getFrame] " + e1.getMessage());
+							}
 						}
 						row.add(ts);
 						break;
@@ -462,6 +469,13 @@ public class AtsdMeta extends MetaImpl {
 		@Override
 		protected SimpleDateFormat initialValue() {
 			return new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+		}
+	};
+	
+	public static final ThreadLocal<SimpleDateFormat> TIMESTAMP_SHORT_FORMATTER = new ThreadLocal<SimpleDateFormat>() {
+		@Override
+		protected SimpleDateFormat initialValue() {
+			return new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
 		}
 	};
 

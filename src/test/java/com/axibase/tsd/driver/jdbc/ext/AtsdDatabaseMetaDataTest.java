@@ -1,45 +1,22 @@
 package com.axibase.tsd.driver.jdbc.ext;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
 
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
 import org.apache.calcite.avatica.AvaticaConnection;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.axibase.tsd.driver.jdbc.AtsdDriver;
-import com.axibase.tsd.driver.jdbc.Constants;
+import com.axibase.tsd.driver.jdbc.AtsdProperties;
 import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
 
-public class AtsdDatabaseMetaDataTest implements Constants {
+public class AtsdDatabaseMetaDataTest extends AtsdProperties {
 	private static final LoggingFacade log = LoggingFacade.getLogger(AtsdDatabaseMetaDataTest.class);
-	private static AtsdDriver driver;
-	protected static String JDBC_ATDS_URL;
-	protected static String LOGIN_NAME;
-	protected static String LOGIN_PASSWORD;
-	protected static boolean TRUST_URL;
 	private AvaticaConnection connection;
 	private AtsdDatabaseMetaData meta;
-
-	@BeforeClass
-	public static void setUpBeforeClass() throws Exception {
-		JDBC_ATDS_URL = JDBC_ATDS_URL_PREFIX + System.getProperty("test.url");
-		LOGIN_NAME = System.getProperty("test.username");
-		LOGIN_PASSWORD = System.getProperty("test.password");
-		TRUST_URL = Boolean.valueOf(System.getProperty("test.trust"));
-		driver = new AtsdDriver();
-		Class.forName("com.axibase.tsd.driver.jdbc.AtsdDriver");
-	}
-
-	@AfterClass
-	public static void tearDownAfterClass() throws Exception {
-		DriverManager.deregisterDriver(driver);
-	}
 
 	@Before
 	public void setUp() throws Exception {
@@ -164,7 +141,8 @@ public class AtsdDatabaseMetaDataTest implements Constants {
 		log.debug("[Max Connections] " + meta.getMaxConnections());
 		log.debug("[Max Cursor Name Length] " + meta.getMaxCursorNameLength());
 		log.debug("[Max Index Length] " + meta.getMaxIndexLength());
-		// logger.debug("[Max Logical Lob Size] " + meta.getMaxLogicalLobSize());
+		// logger.debug("[Max Logical Lob Size] " +
+		// meta.getMaxLogicalLobSize());
 		log.debug("[Max Procedure Name Length] " + meta.getMaxProcedureNameLength());
 		log.debug("[Max Row Size] " + meta.getMaxRowSize());
 		log.debug("[Max Schema Name Length] " + meta.getMaxSchemaNameLength());
@@ -204,7 +182,8 @@ public class AtsdDatabaseMetaDataTest implements Constants {
 		log.debug("[Supports Convert] " + meta.supportsConvert());
 		log.debug("[Supports Core SQLGrammar] " + meta.supportsCoreSQLGrammar());
 		log.debug("[Supports Correlated Subqueries] " + meta.supportsCorrelatedSubqueries());
-		log.debug("[Supports Data Definition And Data Manipulation Transactions] " + meta.supportsDataDefinitionAndDataManipulationTransactions());
+		log.debug("[Supports Data Definition And Data Manipulation Transactions] "
+				+ meta.supportsDataDefinitionAndDataManipulationTransactions());
 		log.debug("[Supports Data Manipulation Transactions Only] " + meta.supportsDataManipulationTransactionsOnly());
 		log.debug("[Supports Different Table Correlation Names] " + meta.supportsDifferentTableCorrelationNames());
 		log.debug("[Supports Expressions In Order By] " + meta.supportsExpressionsInOrderBy());

@@ -22,26 +22,12 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
 
-public class DbVizTest implements Constants {
+public class DbVizTest extends AtsdProperties {
 	private static final LoggingFacade logger = LoggingFacade.getLogger(DbVizTest.class);
-
-	protected static String JDBC_ATDS_URL;
-	protected static String LOGIN_NAME;
-	protected static String LOGIN_PASSWORD;
-	protected static boolean TRUST_URL;
-
-	@BeforeClass
-	public static void setUpBeforeClass() throws Exception {
-		JDBC_ATDS_URL = JDBC_ATDS_URL_PREFIX + System.getProperty("test.url");
-		LOGIN_NAME = System.getProperty("test.username");
-		LOGIN_PASSWORD = System.getProperty("test.password");
-		TRUST_URL = Boolean.valueOf(System.getProperty("test.trust"));
-	}
 
 	@Test
 	public void checkDatabaseMetadata() throws ClassNotFoundException, SQLException {

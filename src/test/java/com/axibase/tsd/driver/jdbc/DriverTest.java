@@ -25,36 +25,25 @@ import java.sql.SQLException;
 
 import org.apache.calcite.avatica.AvaticaConnection;
 import org.apache.calcite.avatica.Meta;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 import com.axibase.tsd.driver.jdbc.ext.AtsdConnection;
 import com.axibase.tsd.driver.jdbc.ext.AtsdMeta;
 import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
 
-public class DriverTest implements Constants {
+public class DriverTest extends AtsdProperties {
 	@SuppressWarnings("unused")
 	private static final LoggingFacade logger = LoggingFacade.getLogger(AtsdDriver.class);
-	private static AtsdDriver driver;
-	protected static String JDBC_ATDS_URL;
-	protected static String LOGIN_NAME;
-	protected static String LOGIN_PASSWORD;
-	protected static boolean TRUST_URL;
 
-	@BeforeClass
-	public static void setUpBeforeClass() throws Exception {
-		JDBC_ATDS_URL = JDBC_ATDS_URL_PREFIX + System.getProperty("test.url");
-		LOGIN_NAME = System.getProperty("test.username");
-		LOGIN_PASSWORD = System.getProperty("test.password");
-		TRUST_URL = Boolean.valueOf(System.getProperty("test.trust"));
-		driver = new AtsdDriver();
-		Class.forName("com.axibase.tsd.driver.jdbc.AtsdDriver");
+
+	@Before
+	public void setUp() throws Exception {
 	}
 
-	@AfterClass
-	public static void tearDownAfterClass() throws Exception {
-		DriverManager.deregisterDriver(driver);
+	@After
+	public void tearDown() throws Exception {
 	}
 
 	@Test

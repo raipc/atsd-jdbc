@@ -14,7 +14,7 @@
 */
 package com.axibase.tsd.driver.jdbc.protocol;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -26,11 +26,9 @@ import java.util.Arrays;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
-import com.axibase.tsd.driver.jdbc.Constants;
+import com.axibase.tsd.driver.jdbc.AtsdProperties;
 import com.axibase.tsd.driver.jdbc.content.ContentDescription;
 import com.axibase.tsd.driver.jdbc.ext.AtsdException;
 import com.axibase.tsd.driver.jdbc.intf.IContentProtocol;
@@ -38,22 +36,8 @@ import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
 
 import au.com.bytecode.opencsv.CSVReader;
 
-public class SdkProtocolTest implements Constants {
+public class SdkProtocolTest extends AtsdProperties {
 	private static final LoggingFacade logger = LoggingFacade.getLogger(SdkProtocolTest.class);
-
-	protected static String HTTP_ATDS_URL;
-	protected static String LOGIN_NAME;
-	protected static String LOGIN_PASSWORD;
-	protected static Boolean TRUST_URL;
-
-	@BeforeClass
-	public static void setUpBeforeClass() throws Exception {
-		HTTP_ATDS_URL = System.getProperty("test.url");
-		LOGIN_NAME = System.getProperty("test.username");
-		LOGIN_PASSWORD = System.getProperty("test.password");
-		String trustProp = System.getProperty("test.trust");
-		TRUST_URL = trustProp != null ? Boolean.valueOf(trustProp) : null;
-	}
 
 	@Before
 	public void setUp() throws Exception {
@@ -63,23 +47,25 @@ public class SdkProtocolTest implements Constants {
 	public void tearDown() throws Exception {
 	}
 
-	@Ignore
 	@Test
 	public final void testCheckContentSecure() throws IOException, AtsdException, GeneralSecurityException {
+		String[] params = TRUST_URL != null ? new String[] {
+				TRUST_URL.booleanValue() ? ContentDescription.TRUST_PARAM_TRUE : ContentDescription.TRUST_PARAM_FALSE }
+				: new String[0];
 		final ContentDescription cd = new ContentDescription(HTTP_ATDS_URL,
-				SELECT_TVE_CLAUSE + SMALL_TABLE + SELECT_LIMIT, LOGIN_NAME, LOGIN_PASSWORD,
-				TRUST_URL != null ? new String[] { ContentDescription.TRUST_PARAM_FALSE } : new String[0]);
+				SELECT_TVE_CLAUSE + SMALL_TABLE + SELECT_LIMIT_1000, LOGIN_NAME, LOGIN_PASSWORD, params);
 		IContentProtocol impl = ProtocolFactory.create(SdkProtocolImpl.class, cd);
 		impl.getContentSchema();
 		assertNotNull(cd.getJsonScheme());
 	}
 
-	@Ignore
 	@Test
 	public final void testReadContentSecure() throws IOException, AtsdException, GeneralSecurityException {
+		String[] params = TRUST_URL != null ? new String[] {
+				TRUST_URL.booleanValue() ? ContentDescription.TRUST_PARAM_TRUE : ContentDescription.TRUST_PARAM_FALSE }
+				: new String[0];
 		final ContentDescription cd = new ContentDescription(HTTP_ATDS_URL,
-				SELECT_TVE_CLAUSE + SMALL_TABLE + SELECT_LIMIT, LOGIN_NAME, LOGIN_PASSWORD,
-				TRUST_URL != null ? new String[] { ContentDescription.TRUST_PARAM_FALSE } : new String[0]);
+				SELECT_TVE_CLAUSE + SMALL_TABLE + SELECT_LIMIT_1000, LOGIN_NAME, LOGIN_PASSWORD, params);
 		IContentProtocol impl = ProtocolFactory.create(SdkProtocolImpl.class, cd);
 		try (final InputStream is = impl.readContent();) {
 			final Reader reader = new BufferedReader(new InputStreamReader(is));

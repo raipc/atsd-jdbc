@@ -14,31 +14,71 @@
 */
 package com.axibase.tsd.driver.jdbc.ext;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
+import java.sql.Connection;
+import java.sql.Driver;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.SQLWarning;
+import java.sql.Statement;
+import java.sql.Types;
+import java.util.Enumeration;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-import org.junit.Ignore;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
-import com.axibase.tsd.driver.jdbc.ConnectionTest;
+import com.axibase.tsd.driver.jdbc.AtsdDriver;
+import com.axibase.tsd.driver.jdbc.AtsdProperties;
 import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
-import com.axibase.tsd.driver.jdbc.metrics.MetricsEnum;
-import com.axibase.tsd.driver.jdbc.metrics.MetricsEnumLarge;
-import com.axibase.tsd.driver.jdbc.metrics.MetricsEnumWithWarnings;
 
-@Ignore
-public class RemoteConnectionTest extends ConnectionTest {
-
+public class RemoteConnectionTest extends AtsdProperties {
 	private static final LoggingFacade logger = LoggingFacade.getLogger(RemoteConnectionTest.class);
+	protected AtsdDriver driver;
 
+	@Before
+	public void setUp() throws Exception {
+		DriverManager.registerDriver(new AtsdDriver());
+		final Enumeration<Driver> drivers = DriverManager.getDrivers();
+		while (drivers.hasMoreElements()) {
+			final Driver nextElement = drivers.nextElement();
+			if (logger.isDebugEnabled())
+				logger.debug("Driver: " + nextElement);
+		}
+		try {
+			driver = (AtsdDriver) DriverManager.getDriver(JDBC_ATDS_URL);
+		} catch (SQLException e) {
+			fail(e.getMessage());
+		}
+	}
+
+	@After
+	public void tearDown() throws Exception {
+		DriverManager.deregisterDriver(driver);
+	}
+
+	@Test
+	public final void smallTinyStatement() throws AtsdException, SQLException {
+		int count = checkRemoteStatement(SELECT_ALL_CLAUSE + TINY_TABLE);
+		if (logger.isDebugEnabled())
+			logger.debug(String.format("[%s]%d", new Object() {
+			}.getClass().getEnclosingMethod().getName(), count));
+	}
+	
 	@Test
 	public final void smallRemoteStatement() throws AtsdException, SQLException {
 		int count = checkRemoteStatement(SELECT_ALL_CLAUSE + SMALL_TABLE);
 		if (logger.isDebugEnabled())
 			logger.debug(String.format("[%s]%d", new Object() {
 			}.getClass().getEnclosingMethod().getName(), count));
-		assertTrue(count == 143);
 	}
 
 	@Test
@@ -57,7 +97,7 @@ public class RemoteConnectionTest extends ConnectionTest {
 			}.getClass().getEnclosingMethod().getName(), count));
 	}
 
-	@Test(expected = SQLException.class)
+	@Test
 	public final void hugeRemoteStatement() throws AtsdException, SQLException {
 		int count = checkRemoteStatement(SELECT_ALL_CLAUSE + HUGE_TABLE);
 		if (logger.isDebugEnabled())
@@ -67,14 +107,12 @@ public class RemoteConnectionTest extends ConnectionTest {
 
 	@Test
 	public final void testRemoteStatementWithFields() throws AtsdException, SQLException {
-		int count = checkRemoteStatement(SELECT_TVE_CLAUSE + SMALL_TABLE);
-		assertTrue(count == 143);
+		checkRemoteStatement(SELECT_TVE_CLAUSE + TINY_TABLE);
 	}
 
 	@Test
 	public final void testRemoteStatementWithDates() throws AtsdException, SQLException {
-		int count = checkRemoteStatement(SELECT_DVE_CLAUSE + SMALL_TABLE);
-		assertTrue(count == 143);
+		checkRemoteStatement(SELECT_DVE_CLAUSE + TINY_TABLE);
 	}
 
 	@Test
@@ -112,15 +150,13 @@ public class RemoteConnectionTest extends ConnectionTest {
 
 	@Test
 	public final void testRemotePreparedStatement() throws AtsdException, SQLException {
-		int count = checkRemotePreparedStatementNoArgs(SELECT_DVE_CLAUSE + SMALL_TABLE);
-		assertTrue(count == 143);
+		checkRemotePreparedStatementNoArgs(SELECT_DVE_CLAUSE + TINY_TABLE);
 	}
 
 	@Test
 	public final void testRemotePreparedStatementsWithArg() throws AtsdException, SQLException {
-		int count = checkRemotePreparedStatementWithLimits(SELECT_ALL_CLAUSE + SMALL_TABLE + WHERE_CLAUSE,
+		checkRemotePreparedStatementWithLimits(SELECT_ALL_CLAUSE + TINY_TABLE + WHERE_CLAUSE,
 				new String[] { "nurswgvml212" }, 1001, 10001);
-		assertTrue(count == 143);
 	}
 
 	@Test
@@ -130,7 +166,6 @@ public class RemoteConnectionTest extends ConnectionTest {
 		if (logger.isDebugEnabled())
 			logger.debug(String.format("[%s]%d", new Object() {
 			}.getClass().getEnclosingMethod().getName(), count));
-		assertTrue(count == 143);
 		RETRIES = 1;
 	}
 
@@ -152,75 +187,44 @@ public class RemoteConnectionTest extends ConnectionTest {
 	}
 
 	@Test
-	public final void testRemoteStatementsOnMetrics() throws AtsdException, SQLException {
-		for (MetricsEnum metric : MetricsEnum.values()) {
-			final String metricTable = metric.get();
-			if (logger.isDebugEnabled())
-				logger.debug("Metric: " + metricTable);
-			checkRemoteStatementWithLimits(SELECT_ALL_CLAUSE + metricTable, 1001, 10000001);
-		}
+	public final void testRemoteStatementsOnSmall() throws AtsdException, SQLException {
+		checkRemoteStatementWithLimits(SELECT_ALL_CLAUSE + SMALL_TABLE + SELECT_LIMIT_1000, 1001, 10001);
 	}
 
-	public final void testRemoteStatementsOnLargeMetrics() throws AtsdException, SQLException {
-		for (MetricsEnumLarge metric : MetricsEnumLarge.values()) {
-			final String metricTable = metric.get();
-			if (logger.isDebugEnabled())
-				logger.debug("MetricLarge: " + metricTable);
-			checkRemoteStatementWithLimits(SELECT_ALL_CLAUSE + metricTable, 1001, 10000001);
-		}
+	@Test
+	public final void testRemoteStatementsOnMedium() throws AtsdException, SQLException {
+		checkRemoteStatementWithLimits(SELECT_ALL_CLAUSE + MEDIUM_TABLE + SELECT_LIMIT_100000, 10001, 100001);
+	}
+
+	@Test
+	public final void testRemoteStatementsOnLarge() throws AtsdException, SQLException {
+		checkRemoteStatementWithLimits(SELECT_ALL_CLAUSE + LARGE_TABLE + SELECT_LIMIT_100000, 100001, 1000001);
 	}
 
 	@Test
 	public final void remoteStatementWithDifferentResultSets() throws AtsdException, SQLException {
-		int count = checkRemoteStatementWithDifferentResultSets();
-		if (logger.isDebugEnabled())
-			logger.debug(String.format("[%s]%d", new Object() {
-			}.getClass().getEnclosingMethod().getName(), count));
-		// assertTrue(count == 16466);
+		checkRemoteStatementWithDifferentResultSets();
 	}
 
+	@Test
 	public final void remoteStatementWithTraversingSimultaneously()
 			throws AtsdException, SQLException, InterruptedException {
-		int count = checkStatementWithTraversingSimultaneously();
-		if (logger.isDebugEnabled())
-			logger.debug(String.format("[%s]%d", new Object() {
-			}.getClass().getEnclosingMethod().getName(), count));
+		checkStatementWithTraversingSimultaneously();
 	}
 
+	@Test
 	public final void testRemoteStatementsWithLimits() throws AtsdException, SQLException {
-		final String query = SELECT_ALL_CLAUSE + SMALL_TABLE;
-		int count = checkRemoteStatementWithLimits(query, 101, 10001);
-		assertTrue(count == 143);
-		count = checkRemoteStatementWithLimits(query, 9, 99);
-		assertTrue(count == 99);
-		count = checkRemoteStatementWithLimits(query, 10, 100);
-		assertTrue(count == 100);
-		count = checkRemoteStatementWithLimits(query, 11, 101);
-		assertTrue(count == 101);
-		count = checkRemoteStatementWithLimits(query, 1, 10);
-		assertTrue(count == 10);
-		count = checkRemoteStatementWithLimits(query, 2, 1);
-		assertTrue(count == 1);
-		count = checkRemoteStatementWithLimits(query, 1, 1);
-		assertTrue(count == 1);
-		count = checkRemoteStatementWithLimits(query, 10, 0);
-		assertTrue(count == 143);
-		count = checkRemoteStatementWithLimits(query, 0, 0);
-		assertTrue(count == 143);
-		count = checkRemoteStatementWithLimits(query, -1, 10);
-		assertTrue(count == 10);
-		count = checkRemoteStatementWithLimits(query, -1, 0);
-		assertTrue(count == 143);
+		checkRemoteStatementWithLimits(SELECT_ALL_CLAUSE + TINY_TABLE, 101, 10001);
 	}
 
 	@Test(expected = UnsupportedOperationException.class)
 	public final void smallRemoteStatementWithAbsPos() throws AtsdException, SQLException {
-		checkRemoteStatementWithAbsolute(SELECT_ALL_CLAUSE + SMALL_TABLE);
+		checkRemoteStatementWithAbsolute(SELECT_ALL_CLAUSE + TINY_TABLE);
 	}
 
 	@Test(expected = UnsupportedOperationException.class)
 	public final void smallRemoteStatementWithRelPos() throws AtsdException, SQLException {
-		checkRemoteStatementWithRelative(SELECT_ALL_CLAUSE + SMALL_TABLE);
+		checkRemoteStatementWithRelative(SELECT_ALL_CLAUSE + TINY_TABLE);
 	}
 
 	@Test(expected = SQLException.class)
@@ -232,20 +236,204 @@ public class RemoteConnectionTest extends ConnectionTest {
 		}
 	}
 
-	@Test
-	public final void wrongRemoteStatements() throws AtsdException {
-		for (MetricsEnumWithWarnings metric : MetricsEnumWithWarnings.values()) {
-			final String metricTable = metric.get();
-			if (logger.isDebugEnabled())
-				logger.debug("Metric: " + metricTable);
-			try {
-				checkRemoteStatementWithLimits(SELECT_ALL_CLAUSE + metricTable, 1001, 10000001);
-				fail();
-			} catch (final SQLException sqle) {
-				if (logger.isDebugEnabled())
-					logger.debug("SQLException: " + sqle.getMessage());
+	private int checkRemoteStatement(String sql) throws AtsdException, SQLException {
+		long start = System.currentTimeMillis();
+		try (final Connection connection = DriverManager.getConnection(JDBC_ATDS_URL, LOGIN_NAME, LOGIN_PASSWORD);
+				final Statement statement = connection.createStatement();) {
+			int count = 0;
+			for (int i = 0; i < RETRIES; i++) {
+				try (final ResultSet resultSet = statement.executeQuery(sql);) {
+					count = printResultSet(resultSet);
+				}
 			}
+			return count;
+		} finally {
+			logTime(start, new Object() {
+			}.getClass().getEnclosingMethod().getName());
 		}
 	}
 
+	private void checkRemoteStatementWithDifferentResultSets() throws AtsdException, SQLException {
+		long start = System.currentTimeMillis();
+		try (final Connection connection = DriverManager.getConnection(JDBC_ATDS_URL, LOGIN_NAME, LOGIN_PASSWORD);
+				final Statement statement = connection.createStatement();) {
+			String[] metrics = TWO_TABLES.split(",");
+			for (String metric : metrics) {
+				try (final ResultSet resultSet = statement.executeQuery(SELECT_ALL_CLAUSE + metric);) {
+					printResultSet(resultSet);
+				}
+			}
+		} finally {
+			logTime(start, new Object() {
+			}.getClass().getEnclosingMethod().getName());
+		}
+	}
+
+	private void checkStatementWithTraversingSimultaneously() throws AtsdException, SQLException, InterruptedException {
+		long start = System.currentTimeMillis();
+		ExecutorService service = Executors.newFixedThreadPool(2);
+		try (final Connection connection = DriverManager.getConnection(JDBC_ATDS_URL, LOGIN_NAME, LOGIN_PASSWORD);
+				final Statement statement = connection.createStatement();) {
+			String[] metrics = TWO_TABLES.split(",");
+			for (final String metric : metrics) {
+				service.submit(new Runnable() {
+					public void run() {
+						try (final ResultSet resultSet = statement.executeQuery(SELECT_ALL_CLAUSE + metric);) {
+							printResultSet(resultSet);
+						} catch (SQLException | AtsdException e) {
+							e.printStackTrace();
+							fail();
+						}
+					}
+				});
+			}
+		} finally {
+			logTime(start, new Object() {
+			}.getClass().getEnclosingMethod().getName());
+		}
+	}
+
+	private int checkRemoteStatementWithAbsolute(String sql) throws AtsdException, SQLException {
+		long start = System.currentTimeMillis();
+		try (final Connection connection = DriverManager.getConnection(JDBC_ATDS_URL, LOGIN_NAME, LOGIN_PASSWORD);
+				final Statement statement = connection.createStatement();
+				final ResultSet resultSet = statement.executeQuery(sql);) {
+			resultSet.absolute(100);
+			return printResultSet(resultSet);
+		} finally {
+			logTime(start, new Object() {
+			}.getClass().getEnclosingMethod().getName());
+		}
+	}
+
+	private int checkRemoteStatementWithRelative(String sql) throws AtsdException, SQLException {
+		long start = System.currentTimeMillis();
+		try (final Connection connection = DriverManager.getConnection(JDBC_ATDS_URL, LOGIN_NAME, LOGIN_PASSWORD);
+				final Statement statement = connection.createStatement();
+				final ResultSet resultSet = statement.executeQuery(sql);) {
+			resultSet.relative(100);
+			return printResultSet(resultSet);
+		} finally {
+			logTime(start, new Object() {
+			}.getClass().getEnclosingMethod().getName());
+		}
+	}
+
+	protected int checkRemoteStatementWithLimits(String sql, int fetchSize, int maxRows)
+			throws AtsdException, SQLException {
+		long start = System.currentTimeMillis();
+		try (final Connection connection = DriverManager.getConnection(JDBC_ATDS_URL, LOGIN_NAME, LOGIN_PASSWORD);
+				final Statement statement = connection.createStatement();) {
+			statement.setFetchSize(fetchSize);
+			statement.setMaxRows(maxRows);
+			try (final ResultSet resultSet = statement.executeQuery(sql);) {
+				return printResultSet(resultSet);
+			}
+		} finally {
+			logTime(start, new Object() {
+			}.getClass().getEnclosingMethod().getName());
+		}
+	}
+
+	private int checkRemotePreparedStatementNoArgs(String sql) throws AtsdException, SQLException {
+		long start = System.currentTimeMillis();
+		try (final Connection connection = DriverManager.getConnection(JDBC_ATDS_URL, LOGIN_NAME, LOGIN_PASSWORD);
+				final PreparedStatement prepareStatement = connection.prepareStatement(sql);
+				final ResultSet resultSet = prepareStatement.executeQuery();) {
+			return printResultSet(resultSet);
+		} finally {
+			logTime(start, new Object() {
+			}.getClass().getEnclosingMethod().getName());
+		}
+	}
+
+	private int checkRemotePreparedStatementWithLimits(String sql, String[] args, int fetchSize, int maxRows)
+			throws AtsdException, SQLException {
+		long start = System.currentTimeMillis();
+		try (final Connection connection = DriverManager.getConnection(JDBC_ATDS_URL, LOGIN_NAME, LOGIN_PASSWORD);
+				final PreparedStatement prepareStatement = connection.prepareStatement(sql);) {
+			prepareStatement.setFetchSize(fetchSize);
+			prepareStatement.setMaxRows(maxRows);
+			int num = 1;
+			for (String arg : args) {
+				prepareStatement.setString(num++, arg);
+			}
+			try (final ResultSet resultSet = prepareStatement.executeQuery();) {
+				return printResultSet(resultSet);
+			}
+		} finally {
+			logTime(start, new Object() {
+			}.getClass().getEnclosingMethod().getName());
+		}
+	}
+
+	private int printResultSet(final ResultSet resultSet) throws AtsdException, SQLException {
+		assertNotNull(resultSet);
+		final ResultSetMetaData rsmd = resultSet.getMetaData();
+		assertNotNull(rsmd);
+		if (logger.isDebugEnabled())
+			logger.debug("Columns:");
+		for (int i = 1; i <= rsmd.getColumnCount(); i++) {
+			int type = rsmd.getColumnType(i);
+			String name = rsmd.getColumnName(i);
+			String typeName = rsmd.getColumnTypeName(i);
+			if (logger.isDebugEnabled())
+				logger.debug(String.format("%s\t%s    \t%s", type, name, typeName));
+		}
+		if (logger.isTraceEnabled())
+			logger.trace("Data:");
+		int count = 0;
+		StringBuilder sb;
+		while (resultSet.next()) {
+			sb = new StringBuilder();
+			for (int i = 1; i <= rsmd.getColumnCount(); i++) {
+				int type = rsmd.getColumnType(i);
+				if (i > 1)
+					sb.append("     \t");
+				sb.append(type + ":");
+				switch (type) {
+				case Types.CHAR:
+				case Types.VARCHAR:
+					sb.append("getString: " + resultSet.getString(i));
+					break;
+				case Types.INTEGER:
+					sb.append("getInt: " + resultSet.getInt(i));
+					break;
+				case Types.BIGINT:
+					sb.append("getLong: " + resultSet.getLong(i));
+					break;
+				case Types.SMALLINT:
+					sb.append("getShort: " + resultSet.getShort(i));
+					break;
+				case Types.FLOAT:
+					sb.append("getFloat: " + resultSet.getFloat(i));
+					break;
+				case Types.DOUBLE:
+					sb.append("getDouble: " + resultSet.getDouble(i));
+					break;
+				case Types.TIMESTAMP:
+					sb.append("getTimestamp: " + resultSet.getTimestamp(i).toString());
+					break;
+				default:
+					throw new UnsupportedOperationException();
+				}
+			}
+			count++;
+			if (logger.isTraceEnabled()) {
+				logger.trace(sb.toString());
+			}
+		}
+		if (logger.isDebugEnabled()) {
+			logger.debug("Total: " + count);
+		}
+		final SQLWarning warnings = resultSet.getWarnings();
+		if (warnings != null)
+			warnings.printStackTrace();
+		return count;
+	}
+
+	private void logTime(long start, String name) {
+		if (logger.isDebugEnabled())
+			logger.debug(String.format("Test [%s] is done in %d msecs", name, (System.currentTimeMillis() - start)));
+	}
 }

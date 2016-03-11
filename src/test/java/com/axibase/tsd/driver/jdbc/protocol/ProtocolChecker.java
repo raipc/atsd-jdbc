@@ -24,48 +24,33 @@ import java.io.InputStreamReader;
 import java.security.GeneralSecurityException;
 
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import com.axibase.tsd.driver.jdbc.Constants;
+import com.axibase.tsd.driver.jdbc.AtsdProperties;
 import com.axibase.tsd.driver.jdbc.content.ContentDescription;
 import com.axibase.tsd.driver.jdbc.ext.AtsdException;
 import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
 
+@PowerMockIgnore({ "javax.net.ssl.*" })
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(SdkProtocolImpl.class)
-public class ProtocolChecker implements Constants {
+public class ProtocolChecker extends AtsdProperties {
 	private static final LoggingFacade logger = LoggingFacade.getLogger(ProtocolChecker.class);
-	protected static String JDBC_ATDS_URL;
-	protected static String LOGIN_NAME;
-	protected static String LOGIN_PASSWORD;
-	protected static Boolean TRUST_URL;
 	private SdkProtocolImpl impl;
-
-	@BeforeClass
-	public static void setUpBeforeClass() throws Exception {
-		JDBC_ATDS_URL = JDBC_ATDS_URL_PREFIX + System.getProperty("test.url");
-		LOGIN_NAME = System.getProperty("test.username");
-		LOGIN_PASSWORD = System.getProperty("test.password");
-		String trustProp = System.getProperty("test.trust");
-		TRUST_URL = trustProp != null ? Boolean.valueOf(trustProp) : null;
-	}
-
-	@AfterClass
-	public static void tearDownAfterClass() throws Exception {
-	}
 
 	@Before
 	public void setUp() throws Exception {
-		ContentDescription cd = new ContentDescription(JDBC_ATDS_URL, SELECT_TVE_CLAUSE + SMALL_TABLE, LOGIN_NAME,
-				LOGIN_PASSWORD, TRUST_URL != null ? new String[] { TRUST_URL.booleanValue()
-						? ContentDescription.TRUST_PARAM_TRUE : ContentDescription.TRUST_PARAM_FALSE } : new String[0]);
+		String[] params = TRUST_URL != null ? new String[] {
+				TRUST_URL.booleanValue() ? ContentDescription.TRUST_PARAM_TRUE : ContentDescription.TRUST_PARAM_FALSE }
+				: new String[0];
+		ContentDescription cd = new ContentDescription(HTTP_ATDS_URL,
+				SELECT_TVE_CLAUSE + SMALL_TABLE + SELECT_LIMIT_1000, LOGIN_NAME, LOGIN_PASSWORD, params);
 		this.impl = PowerMockito.spy(new SdkProtocolImpl(cd));
 	}
 

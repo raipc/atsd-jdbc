@@ -18,13 +18,9 @@ public interface Constants {
 	static final String SELECT_TVE_CLAUSE = "SELECT time, value, entity FROM ";
 	static final String SELECT_DVE_CLAUSE = "SELECT datetime, value, entity FROM ";
 	static final String SELECT_ALL_CLAUSE = "SELECT * FROM ";
-	static final String SELECT_LIMIT = " LIMIT 150";
+	static final String SELECT_LIMIT_1000 = " LIMIT 1000";
+	static final String SELECT_LIMIT_100000 = " LIMIT 100000";
 	static final String WHERE_CLAUSE = " WHERE entity = ?";
-	static final String SMALL_TABLE = "mpstat.cpu_busy";
-	static final String MEDIUM_TABLE = "docker.network.tx";
-	static final String LARGE_TABLE = "bom.gov.au.rain_trace";
-	static final String HUGE_TABLE = "iostat.part.msec_weighted_total";
-	static final String WRONG_TABLE = "df.bytes.free";
 	static final String JDBC_ATDS_URL_PREFIX = "jdbc:axibase:atsd:";
 	static final String PARAM_SEPARATOR = ";";
 	static final String STRATEGY_FILE_PARAMETER = "strategy=file";

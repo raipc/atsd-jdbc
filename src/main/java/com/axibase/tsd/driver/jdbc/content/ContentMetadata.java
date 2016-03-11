@@ -43,7 +43,6 @@ import com.fasterxml.jackson.databind.MappingJsonFactory;
 
 @SuppressWarnings("unchecked")
 public class ContentMetadata {
-	@SuppressWarnings("unused")
 	private static final LoggingFacade logger = LoggingFacade.getLogger(ContentMetadata.class);
 
 	private final Signature sign;
@@ -72,29 +71,6 @@ public class ContentMetadata {
 		return metadataList;
 	}
 
-	// static List<ColumnMetaData> buildMetadataList(String json)
-	// throws JsonParseException, MalformedURLException, IOException,
-	// AtsdException {
-	// final MetadataSchema metadataSchema = mapper.readValue(json,
-	// MetadataSchema.class);
-	// final DcPublisher dcPublisher = metadataSchema.getDcPublisher();
-	// String schemaName = dcPublisher.getSchemaName();
-	// final TableSchema tableSchema = metadataSchema.getTableSchema();
-	// final List<Column> columns = tableSchema.getColumns();
-	// final List<ColumnMetaData> metadataList = new ArrayList<>();
-	// for (final Column col : columns) {
-	// final ColumnMetaData.AvaticaType atype =
-	// getAvaticaType(col.getDatatype());
-	// final ColumnMetaData cmd = new ColumnMetaData(col.getColumnIndex(),
-	// false, false, false, false, 0, false,
-	// 10, col.getName(), col.getTitles(), schemaName, 1, 1, col.getTable(),
-	// DEFAULT_CATALOG_NAME, atype,
-	// true, false, false, atype.rep.clazz.getCanonicalName());
-	// metadataList.add(cmd);
-	// }
-	// return Collections.unmodifiableList(metadataList);
-	// }
-
 	static List<ColumnMetaData> buildMetadataList(String json)
 			throws JsonParseException, MalformedURLException, IOException, AtsdException {
 		final Object jsonObject = getJsonScheme(json);
@@ -114,6 +90,7 @@ public class ContentMetadata {
 		if (columns == null)
 			throw new AtsdException("Wrong columns schema");
 		final List<ColumnMetaData> metadataList = new ArrayList<>();
+		int ind = 1;
 		for (final Object obj : columns) {
 			final Map<String, Object> property = (Map<String, Object>) obj;
 			String name = (String) property.get(NAME_PROPERTY);
@@ -122,11 +99,13 @@ public class ContentMetadata {
 			String datatype = (String) property.get(DATATYPE_PROPERTY);
 			Integer index = (Integer) property.get(INDEX_PROPERTY);
 			final ColumnMetaData.AvaticaType atype = getAvaticaType(datatype);
-			final ColumnMetaData cmd = new ColumnMetaData(index, false, false, false, false, 0, false, 10, name, title,
+			final ColumnMetaData cmd = new ColumnMetaData(index != null ? index.intValue() : ind++, false, false, false, false, 0, false, 10, name, title,
 					schema, 1, 1, table, DEFAULT_CATALOG_NAME, atype, true, false, false,
 					atype.rep.clazz.getCanonicalName());
 			metadataList.add(cmd);
 		}
+		if(logger.isDebugEnabled())
+			logger.debug("Shema is processed: " + metadataList.size());
 		return Collections.unmodifiableList(metadataList);
 	}
 
@@ -198,10 +177,9 @@ public class ContentMetadata {
 	private static final String DATATYPE_PROPERTY = "datatype";
 	private static final String INDEX_PROPERTY = "columnIndex";
 	private static final String TABLE_PROPERTY = "table";
-	private static final String TITLE_PROPERTY = "title";
+	private static final String TITLE_PROPERTY = "titles";
 	private static final String NAME_PROPERTY = "name";
 	private static final String SCHEMA_NAME_PROPERTY = "schema:name";
 	private static final String TABLE_SCHEMA_SECTION = "tableSchema";
 	private static final String PUBLISHER_SECTION = "dc:publisher";
-	// private static final ObjectMapper mapper = new ObjectMapper();
 }

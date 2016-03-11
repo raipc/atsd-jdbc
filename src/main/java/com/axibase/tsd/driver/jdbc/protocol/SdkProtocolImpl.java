@@ -28,7 +28,6 @@ import java.security.GeneralSecurityException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import java.security.Security;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.List;
@@ -89,9 +88,9 @@ public class SdkProtocolImpl implements IContentProtocol {
 		if (logger.isDebugEnabled()) {
 			logger.debug("[request] {} {}", method, url);
 		}
-		this.conn = (HttpURLConnection) new URL(url).openConnection();
-		if (conn instanceof HttpsURLConnection)
-			doTrustToCertificates((HttpsURLConnection) conn);
+		this.conn = getHttpURLConnection(url);
+		if (cd.isSsl())
+			doTrustToCertificates((HttpsURLConnection)this.conn);
 		final String basicCreds = new StringBuilder(cd.getLogin()).append(':').append(cd.getPassword()).toString();
 		final byte[] encoded = Base64.encodeBase64(basicCreds.getBytes());
 		final String authHeader = AUTHORIZATION_TYPE + new String(encoded);
@@ -122,15 +121,6 @@ public class SdkProtocolImpl implements IContentProtocol {
 			writer.close();
 			os.close();
 		}
-		if (cd.isSsl()) {
-			HttpsURLConnection sslConnection = (HttpsURLConnection) conn;
-			sslConnection.setHostnameVerifier(new HostnameVerifier() {
-				public boolean verify(String hostname, SSLSession session) {
-					return true;
-				}
-			});
-		}
-		conn.connect();
 		if (StringUtils.isEmpty(cd.getJsonScheme()))
 			processResponse(conn.getHeaderFields());
 		long cl = conn.getContentLengthLong();
@@ -151,9 +141,13 @@ public class SdkProtocolImpl implements IContentProtocol {
 		return (gzipped ? (InputStream) new GZIPInputStream(is) : is);
 	}
 
-	@SuppressWarnings("restriction")
+	
+	public HttpURLConnection getHttpURLConnection(String uri) throws IOException {
+		final URL url = new URL(uri);
+		return (HttpURLConnection) url.openConnection();
+	}
+	 
 	public void doTrustToCertificates(final HttpsURLConnection sslConnection) {
-		Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
 		final TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
 			public X509Certificate[] getAcceptedIssuers() {
 				return null;
@@ -176,6 +170,8 @@ public class SdkProtocolImpl implements IContentProtocol {
 			return;
 		}
 		final Boolean trusted = cd.isTrusted();
+		if (logger.isDebugEnabled())
+			logger.debug("[doTrustToCertificates] " + trusted);
 		try {
 			sc.init(null, trusted != null && trusted ? trustAllCerts : null, new SecureRandom());
 		} catch (KeyManagementException e) {
@@ -184,8 +180,8 @@ public class SdkProtocolImpl implements IContentProtocol {
 			return;
 		}
 		sslConnection.setSSLSocketFactory(sc.getSocketFactory());
+//		HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
 		final HostnameVerifier hostnameVerifier = new HostnameVerifier() {
-
 			public boolean verify(String urlHostName, SSLSession session) {
 				if (!urlHostName.equalsIgnoreCase(session.getPeerHost())) {
 					if (logger.isDebugEnabled())
@@ -198,6 +194,7 @@ public class SdkProtocolImpl implements IContentProtocol {
 		};
 		if (trusted != null && trusted)
 			sslConnection.setHostnameVerifier(hostnameVerifier);
+//		HttpsURLConnection.setDefaultHostnameVerifier(hostnameVerifier);
 	}
 
 	private void processResponse(Map<String, List<String>> map) throws UnsupportedEncodingException {

@@ -186,21 +186,57 @@
        				<reuseForks>false</reuseForks>
 					<systemProperties>
 						<property>
-							<name>test.url</name>
-							<value>${test.url}</value>
+							<name>axibase.tsd.driver.jdbc.url</name>
+							<value>${axibase.tsd.driver.jdbc.url}</value>
 						</property>
 						<property>
-							<name>test.trust</name>
-							<value>${test.trust}</value>
+							<name>axibase.tsd.driver.jdbc.trust</name>
+							<value>${axibase.tsd.driver.jdbc.trust}</value>
 						</property>						
 						<property>
-							<name>test.username</name>
-							<value>${test.username}</value>
+							<name>axibase.tsd.driver.jdbc.username</name>
+							<value>${axibase.tsd.driver.jdbc.username}</value>
 						</property>
 						<property>
-							<name>test.password</name>
-							<value>${test.password}</value>
+							<name>axibase.tsd.driver.jdbc.password</name>
+							<value>${axibase.tsd.driver.jdbc.password}</value>
 						</property>
+						<property>
+							<name>axibase.tsd.driver.jdbc.metric.tiny</name>
+							<value>${axibase.tsd.driver.jdbc.metric.tiny}</value>
+						</property>
+						<property>
+							<name>axibase.tsd.driver.jdbc.metric.small</name>
+							<value>${axibase.tsd.driver.jdbc.metric.small}</value>
+						</property>						
+						<property>
+							<name>axibase.tsd.driver.jdbc.metric.medium</name>
+							<value>${axibase.tsd.driver.jdbc.metric.medium}</value>
+						</property>
+						<property>
+							<name>axibase.tsd.driver.jdbc.metric.large</name>
+							<value>${axibase.tsd.driver.jdbc.metric.large}</value>
+						</property>
+						<property>
+							<name>axibase.tsd.driver.jdbc.metric.huge</name>
+							<value>${axibase.tsd.driver.jdbc.metric.huge}</value>
+						</property>
+						<property>
+							<name>axibase.tsd.driver.jdbc.metric.jumbo</name>
+							<value>${axibase.tsd.driver.jdbc.metric.jumbo}</value>
+						</property>						
+						<property>
+							<name>axibase.tsd.driver.jdbc.metric.wrong</name>
+							<value>${axibase.tsd.driver.jdbc.metric.wrong}</value>
+						</property>
+						<property>
+							<name>axibase.tsd.driver.jdbc.metric.concurrent</name>
+							<value>${axibase.tsd.driver.jdbc.metric.concurrent}</value>
+						</property>						
+						<property>
+							<name>axibase.tsd.driver.jdbc.strategy</name>
+							<value>${axibase.tsd.driver.jdbc.strategy}</value>
+						</property>						
 					</systemProperties>
 				</configuration>
 				<dependencies>
