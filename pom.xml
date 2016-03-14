@@ -1,8 +1,9 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.axibase</groupId>
 	<artifactId>atsd-jdbc</artifactId>
-	<version>1.0.0</version>
+	<version>1.0.0-SNAPSHOT</version>
 	<url>http://axibase.com</url>
 	<inceptionYear>2016</inceptionYear>
 	<organization>
@@ -23,8 +24,7 @@
 		<connection>scm:git:git@github.com:axibase/atsd-jdbc.git</connection>
 		<developerConnection>scm:git:git@github.com:axibase/atsd-jdbc.git</developerConnection>
 		<url>https://github.com/axibase/atsd-jdbc.git</url>
-	  <tag>RELEASE-1.0.0</tag>
-  </scm>
+	</scm>
 	<properties>
 		<java.source.version>1.7</java.source.version>
 		<java.target.version>1.7</java.target.version>
@@ -41,7 +41,7 @@
 		<maven-jar-plugin.version>2.6</maven-jar-plugin.version>
 		<locale>en_US</locale>
 		<build.timestamp>${maven.build.timestamp}</build.timestamp>
-   		<maven.build.timestamp.format>E dd-MM-yyyy HH:mm:ss z</maven.build.timestamp.format>
+		<maven.build.timestamp.format>E dd-MM-yyyy HH:mm:ss z</maven.build.timestamp.format>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<version.major>12400</version.major>
 		<version.minor>0</version.minor>
@@ -53,44 +53,44 @@
 			<plugins />
 		</pluginManagement>
 		<plugins>
-		    <plugin>
-		        <groupId>org.codehaus.mojo</groupId>
-		        <artifactId>build-helper-maven-plugin</artifactId>
-		        <version>1.10</version>
-		        <executions>
-		          <execution>
-		            <phase>initialize</phase>
-		            <id>parse-version</id>
-		            <goals>
-		              <goal>parse-version</goal>
-		            </goals>
-		          </execution>
-		        </executions>
-		    </plugin>
 			<plugin>
-			    <artifactId>maven-resources-plugin</artifactId>
-			    <version>2.7</version>
-			    <executions>
-			        <execution>
-			            <id>copy-resources</id>
-			            <phase>validate</phase>
-			            <goals>
-			                <goal>copy-resources</goal>
-			            </goals>
-			            <configuration>
-			                <outputDirectory>${basedir}</outputDirectory>
-			                <resources>
-			                    <resource>
-			                        <directory>${basedir}/META-INF/axibase-atsd-jdbc.properties</directory>
-			                        <includes>
-			                            <include>axibase-atsd-jdbc.properties</include>
-			                        </includes>
-			                        <filtering>true</filtering>
-			                    </resource>
-			                </resources>
-			            </configuration>
-			        </execution>
-			    </executions>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>build-helper-maven-plugin</artifactId>
+				<version>1.10</version>
+				<executions>
+					<execution>
+						<phase>initialize</phase>
+						<id>parse-version</id>
+						<goals>
+							<goal>parse-version</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>2.7</version>
+				<executions>
+					<execution>
+						<id>copy-resources</id>
+						<phase>validate</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${basedir}</outputDirectory>
+							<resources>
+								<resource>
+									<directory>${basedir}/META-INF/axibase-atsd-jdbc.properties</directory>
+									<includes>
+										<include>axibase-atsd-jdbc.properties</include>
+									</includes>
+									<filtering>true</filtering>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -183,7 +183,7 @@
 					<useSystemClassLoader>true</useSystemClassLoader>
 					<printSummary>true</printSummary>
 					<forkCount>1</forkCount>
-       				<reuseForks>false</reuseForks>
+					<reuseForks>false</reuseForks>
 					<systemProperties>
 						<property>
 							<name>axibase.tsd.driver.jdbc.url</name>
@@ -192,7 +192,7 @@
 						<property>
 							<name>axibase.tsd.driver.jdbc.trust</name>
 							<value>${axibase.tsd.driver.jdbc.trust}</value>
-						</property>						
+						</property>
 						<property>
 							<name>axibase.tsd.driver.jdbc.username</name>
 							<value>${axibase.tsd.driver.jdbc.username}</value>
@@ -208,7 +208,7 @@
 						<property>
 							<name>axibase.tsd.driver.jdbc.metric.small</name>
 							<value>${axibase.tsd.driver.jdbc.metric.small}</value>
-						</property>						
+						</property>
 						<property>
 							<name>axibase.tsd.driver.jdbc.metric.medium</name>
 							<value>${axibase.tsd.driver.jdbc.metric.medium}</value>
@@ -224,7 +224,7 @@
 						<property>
 							<name>axibase.tsd.driver.jdbc.metric.jumbo</name>
 							<value>${axibase.tsd.driver.jdbc.metric.jumbo}</value>
-						</property>						
+						</property>
 						<property>
 							<name>axibase.tsd.driver.jdbc.metric.wrong</name>
 							<value>${axibase.tsd.driver.jdbc.metric.wrong}</value>
@@ -232,11 +232,11 @@
 						<property>
 							<name>axibase.tsd.driver.jdbc.metric.concurrent</name>
 							<value>${axibase.tsd.driver.jdbc.metric.concurrent}</value>
-						</property>						
+						</property>
 						<property>
 							<name>axibase.tsd.driver.jdbc.strategy</name>
 							<value>${axibase.tsd.driver.jdbc.strategy}</value>
-						</property>						
+						</property>
 					</systemProperties>
 				</configuration>
 				<dependencies>
@@ -296,21 +296,21 @@
 			</plugin>
 		</plugins>
 		<resources>
-		    <resource>
-		      <directory>src/main/resources</directory>
-		      <filtering>true</filtering>
-		      <includes>
-		        <include>**/axibase-atsd-jdbc.properties</include>
-		      </includes>
-		    </resource>
-		    <resource>
-		      <directory>src/main/resources</directory>
-		      <filtering>false</filtering>
-		      <excludes>
-		        <exclude>**/axibase-atsd-jdbc.properties</exclude>
-		      </excludes>
-		      </resource>
-	      </resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>true</filtering>
+				<includes>
+					<include>**/axibase-atsd-jdbc.properties</include>
+				</includes>
+			</resource>
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>false</filtering>
+				<excludes>
+					<exclude>**/axibase-atsd-jdbc.properties</exclude>
+				</excludes>
+			</resource>
+		</resources>
 	</build>
 	<dependencies>
 		<dependency>
@@ -476,12 +476,12 @@
 			</build>
 		</profile>
 	</profiles>
-    <distributionManagement>
-        <repository>
-            <id>sonatype</id>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
-        </repository>
-    </distributionManagement>
+	<distributionManagement>
+		<repository>
+			<id>sonatype</id>
+			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
+		</repository>
+	</distributionManagement>
 	<developers>
 		<developer>
 			<id>dev</id>
