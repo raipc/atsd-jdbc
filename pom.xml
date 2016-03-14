@@ -23,7 +23,7 @@
 		<connection>scm:git:git@github.com:axibase/atsd-jdbc.git</connection>
 		<developerConnection>scm:git:git@github.com:axibase/atsd-jdbc.git</developerConnection>
 		<url>https://github.com/axibase/atsd-jdbc.git</url>
-	  <tag>HEAD</tag>
+	  <tag>jdbc-driver-1.1.x</tag>
   </scm>
 	<properties>
 		<java.source.version>1.7</java.source.version>
