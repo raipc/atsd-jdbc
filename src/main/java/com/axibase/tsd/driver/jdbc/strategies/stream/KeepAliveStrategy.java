@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 import com.axibase.tsd.driver.jdbc.content.StatementContext;
 import com.axibase.tsd.driver.jdbc.ext.AtsdException;
@@ -58,6 +59,16 @@ public class KeepAliveStrategy implements IStoreStrategy {
 
 	@Override
 	public String[] openToRead() throws IOException {
+		if (logger.isTraceEnabled())
+			logger.trace("[openToRead] " + status.getSyncLatch().getCount());
+		try {
+			status.getSyncLatch().await();
+		} catch (InterruptedException e) {
+			if (logger.isDebugEnabled())
+				logger.debug("[openToRead] " + e.getMessage());
+		}
+		if (logger.isDebugEnabled())
+			logger.debug("[openToRead] " + is.hashCode() + " -> " + is.available());
 		final ReadableByteChannel rbc = Channels.newChannel(is);
 		return consumer.open(rbc);
 	}
@@ -94,7 +105,12 @@ public class KeepAliveStrategy implements IStoreStrategy {
 
 	@Override
 	public void store(InputStream is) throws IOException {
+		if (logger.isDebugEnabled())
+			logger.debug("[store] " + is.hashCode() + " -> " + is.available());
 		this.is = is;
+		final CountDownLatch syncLatch = status.getSyncLatch();
+		if(syncLatch.getCount() != 0)
+			syncLatch.countDown();
 	}
 
 	@Override

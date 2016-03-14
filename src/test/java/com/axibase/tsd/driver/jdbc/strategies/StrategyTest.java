@@ -12,7 +12,7 @@
 * express or implied. See the License for the specific language governing
 * permissions and limitations under the License.
 */
-package com.axibase.tsd.driver.jdbc.strategies.stream;
+package com.axibase.tsd.driver.jdbc.strategies;
 
 import static org.junit.Assert.*;
 
@@ -34,9 +34,11 @@ import com.axibase.tsd.driver.jdbc.intf.IContentProtocol;
 import com.axibase.tsd.driver.jdbc.intf.IStoreStrategy;
 import com.axibase.tsd.driver.jdbc.protocol.ProtocolFactory;
 import com.axibase.tsd.driver.jdbc.protocol.SdkProtocolImpl;
+import com.axibase.tsd.driver.jdbc.strategies.storage.FileStoreStrategy;
+import com.axibase.tsd.driver.jdbc.strategies.stream.KeepAliveStrategy;
 
-public class KeepAliveStrategyTest extends AtsdProperties {
-	private static final Logger logger = LoggerFactory.getLogger(KeepAliveStrategyTest.class);
+public class StrategyTest extends AtsdProperties {
+	private static final Logger logger = LoggerFactory.getLogger(StrategyTest.class);
 
 	@Before
 	public void setUp() throws Exception {
@@ -75,12 +77,14 @@ public class KeepAliveStrategyTest extends AtsdProperties {
 		if (TRUST_URL != null)
 			params.add(TRUST_URL.booleanValue() ? ContentDescription.TRUST_PARAM_TRUE
 					: ContentDescription.TRUST_PARAM_FALSE);
-		params.add(STRATEGY_STREAM_PARAMETER);
+		boolean isDefault = READ_STRATEGY == null || READ_STRATEGY.equalsIgnoreCase("stream");
+		params.add(isDefault ? STRATEGY_STREAM_PARAMETER : STRATEGY_FILE_PARAMETER);
 		final ContentDescription cd = new ContentDescription(HTTP_ATDS_URL, SELECT_ALL_CLAUSE + table, LOGIN_NAME,
 				LOGIN_PASSWORD, params.toArray(new String[params.size()]));
 		final IContentProtocol tp = ProtocolFactory.create(SdkProtocolImpl.class, cd);
 		tp.getContentSchema();
-		try (final IStoreStrategy strategy = new KeepAliveStrategy(new StatementContext());
+		StatementContext context = new StatementContext();
+		try (final IStoreStrategy strategy = isDefault ? new KeepAliveStrategy(context) : new FileStoreStrategy(context);
 				final InputStream is = tp.readContent();) {
 			assertNotNull(is);
 			strategy.store(is);

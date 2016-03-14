@@ -31,6 +31,7 @@ import java.sql.Types;
 import java.util.Enumeration;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
 import org.junit.Before;
@@ -66,13 +67,13 @@ public class RemoteConnectionTest extends AtsdProperties {
 	}
 
 	@Test
-	public final void smallTinyStatement() throws AtsdException, SQLException {
+	public final void tinyRemoteStatement() throws AtsdException, SQLException {
 		int count = checkRemoteStatement(SELECT_ALL_CLAUSE + TINY_TABLE);
 		if (logger.isDebugEnabled())
 			logger.debug(String.format("[%s]%d", new Object() {
 			}.getClass().getEnclosingMethod().getName(), count));
 	}
-	
+
 	@Test
 	public final void smallRemoteStatement() throws AtsdException, SQLException {
 		int count = checkRemoteStatement(SELECT_ALL_CLAUSE + SMALL_TABLE);
@@ -260,7 +261,8 @@ public class RemoteConnectionTest extends AtsdProperties {
 			String[] metrics = TWO_TABLES.split(",");
 			for (String metric : metrics) {
 				try (final ResultSet resultSet = statement.executeQuery(SELECT_ALL_CLAUSE + metric);) {
-					printResultSet(resultSet);
+					int count = printResultSet(resultSet);
+					assertTrue(count != 0);
 				}
 			}
 		} finally {
@@ -279,7 +281,8 @@ public class RemoteConnectionTest extends AtsdProperties {
 				service.submit(new Runnable() {
 					public void run() {
 						try (final ResultSet resultSet = statement.executeQuery(SELECT_ALL_CLAUSE + metric);) {
-							printResultSet(resultSet);
+							int count = printResultSet(resultSet);
+							assertTrue(count != 0);
 						} catch (SQLException | AtsdException e) {
 							e.printStackTrace();
 							fail();
@@ -287,7 +290,11 @@ public class RemoteConnectionTest extends AtsdProperties {
 					}
 				});
 			}
+			boolean result = service.awaitTermination(5, TimeUnit.SECONDS);
+			if (logger.isDebugEnabled())
+				logger.debug("Service is terminated: {}", result);
 		} finally {
+			service.shutdown();
 			logTime(start, new Object() {
 			}.getClass().getEnclosingMethod().getName());
 		}
@@ -319,7 +326,7 @@ public class RemoteConnectionTest extends AtsdProperties {
 		}
 	}
 
-	protected int checkRemoteStatementWithLimits(String sql, int fetchSize, int maxRows)
+	private int checkRemoteStatementWithLimits(String sql, int fetchSize, int maxRows)
 			throws AtsdException, SQLException {
 		long start = System.currentTimeMillis();
 		try (final Connection connection = DriverManager.getConnection(JDBC_ATDS_URL, LOGIN_NAME, LOGIN_PASSWORD);

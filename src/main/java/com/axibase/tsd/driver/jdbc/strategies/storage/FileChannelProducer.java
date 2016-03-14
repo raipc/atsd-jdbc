@@ -41,15 +41,15 @@ public class FileChannelProducer implements IProducer {
 
 	@Override
 	public void close() throws IOException {
-		if (logger.isDebugEnabled()) {
-			logger.debug("[close]");
-		}
 		if (taskResult != null && (!taskResult.isDone() || !taskResult.isCancelled()))
 			taskResult.cancel(true);
 		if (execIn != null && !execIn.isShutdown())
 			execIn.shutdownNow();
 		if (writeChannel != null)
 			writeChannel.close();
+		if (logger.isDebugEnabled()) {
+			logger.debug("[closed]");
+		}
 	}
 
 	@Override

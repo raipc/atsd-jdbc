@@ -35,6 +35,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.calcite.avatica.AvaticaConnection;
 import org.apache.calcite.avatica.AvaticaUtils;
@@ -59,6 +60,7 @@ import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
 
 public class AtsdMeta extends MetaImpl {
 	private static final LoggingFacade logger = LoggingFacade.getLogger(AtsdMeta.class);
+	private final ReentrantLock lock = new ReentrantLock();
 
 	public AtsdMeta(final AvaticaConnection conn) {
 		super(conn);
@@ -76,8 +78,7 @@ public class AtsdMeta extends MetaImpl {
 	public StatementHandle prepare(ConnectionHandle ch, String query, long maxRowCount) {
 		final int id = idGenerator.getAndIncrement();
 		if (logger.isTraceEnabled()) {
-			logger.trace("[prepare] query: " + query);
-			logger.trace("[prepare] handle: " + id);
+			logger.trace("[prepare] locked: {} handle: {} query: {}", lock.getHoldCount(), id, query);
 		}
 		try {
 			final IDataProvider provider = initProvider(id, query);
@@ -85,7 +86,6 @@ public class AtsdMeta extends MetaImpl {
 			final ContentMetadata contentMetadata = findMetadata(query, ch.id, id);
 			return new StatementHandle(ch.id, id, contentMetadata.getSign());
 		} catch (final AtsdException | GeneralSecurityException | IOException e) {
-			// providerCache.remove(id);
 			if (logger.isDebugEnabled())
 				logger.debug("[prepare]" + e.getMessage());
 		}
@@ -96,9 +96,8 @@ public class AtsdMeta extends MetaImpl {
 	public ExecuteResult execute(StatementHandle h, List<TypedValue> parameterValues, long maxRowCount)
 			throws NoSuchStatementException {
 		if (logger.isTraceEnabled()) {
-			logger.trace("[execute] maxRowCount: " + maxRowCount);
-			logger.trace("[execute] parameters: " + parameterValues.size());
-			logger.trace("[execute] handle: " + h.toString());
+			logger.trace("[execute] maxRowCount: {} parameters: {} handle: {}", maxRowCount, parameterValues.size(),
+					h.toString());
 		}
 		final IDataProvider provider = providerCache.get(h.id);
 		assert provider != null;
@@ -149,24 +148,23 @@ public class AtsdMeta extends MetaImpl {
 	@Override
 	public ExecuteResult prepareAndExecute(final StatementHandle h, String query, long maxRowCount,
 			final PrepareCallback callback) throws NoSuchStatementException {
+		lock.lock();
 		if (logger.isTraceEnabled()) {
-			logger.trace("[prepareAndExecute] maxRowCount:" + maxRowCount);
-			logger.trace("[prepareAndExecute] handle: " + h.toString());
-			logger.trace("[prepareAndExecute] " + query);
+			logger.trace("[prepareAndExecute] locked: {} maxRowCount: {} handle: {} query: {}", lock.getHoldCount(),
+					maxRowCount, h.toString(), query);
 		}
 		try {
 			final IDataProvider provider = initProvider(h.id, query);
 			provider.fetchData(maxRowCount);
 			final ContentMetadata contentMetadata = findMetadata(query, h.connectionId, h.id);
 			synchronized (callback.getMonitor()) {
-				callback.clear();
+				// callback.clear();
 				callback.assign(contentMetadata.getSign(), null, -1);
 			}
 			final ExecuteResult result = new ExecuteResult(contentMetadata.getList());
 			callback.execute();
 			return result;
 		} catch (final AtsdException | IOException | SQLException | GeneralSecurityException e) {
-			// providerCache.remove(h.id);
 			if (logger.isDebugEnabled())
 				logger.debug("[prepareAndExecute] " + e.getMessage());
 			throw new NoSuchStatementException(h);
@@ -178,8 +176,7 @@ public class AtsdMeta extends MetaImpl {
 			throws NoSuchStatementException, MissingResultsException {
 		final int offset = (int) loffset;
 		if (logger.isTraceEnabled()) {
-			logger.trace("[fetch] fetchMaxRowCount: " + fetchMaxRowCount);
-			logger.trace("[fetch] offset: " + offset);
+			logger.trace("[fetch] fetchMaxRowCount: {} offset: {}", fetchMaxRowCount, offset);
 		}
 		IDataProvider provider = providerCache.get(h.id);
 		assert provider != null;
@@ -221,17 +218,29 @@ public class AtsdMeta extends MetaImpl {
 				if (logger.isDebugEnabled())
 					logger.debug("[closeStatement] " + e.getMessage());
 			}
+		if (lock.isLocked()) {
+			lock.unlock();
+			if (logger.isTraceEnabled())
+				logger.trace("[unlocked]");
+		}
+		if (logger.isTraceEnabled())
+			logger.trace("[closedStatement]");
 	}
 
 	public void close() {
-		if (logger.isTraceEnabled())
-			logger.trace("[close]");
 		if (metaCache != null && metaCache.size() != 0)
 			metaCache.clear();
 		if (providerCache != null && providerCache.size() != 0)
 			providerCache.clear();
 		if (contextMap != null && contextMap.size() != 0)
 			contextMap.clear();
+		if (lock.isLocked()) {
+			lock.unlock();
+			if (logger.isTraceEnabled())
+				logger.trace("[unlocked]");
+		}
+		if (logger.isTraceEnabled())
+			logger.trace("[closed]");
 	}
 
 	@Override
@@ -471,7 +480,7 @@ public class AtsdMeta extends MetaImpl {
 			return new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 		}
 	};
-	
+
 	public static final ThreadLocal<SimpleDateFormat> TIMESTAMP_SHORT_FORMATTER = new ThreadLocal<SimpleDateFormat>() {
 		@Override
 		protected SimpleDateFormat initialValue() {

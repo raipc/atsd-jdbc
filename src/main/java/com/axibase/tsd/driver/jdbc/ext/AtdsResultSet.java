@@ -24,11 +24,10 @@ import org.apache.calcite.avatica.AvaticaStatement;
 import org.apache.calcite.avatica.Meta;
 import org.apache.calcite.avatica.Meta.Frame;
 import org.apache.calcite.avatica.Meta.Signature;
+import org.apache.calcite.avatica.QueryState;
 
 import com.axibase.tsd.driver.jdbc.content.StatementContext;
 import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
-
-import org.apache.calcite.avatica.QueryState;
 
 public class AtdsResultSet extends AvaticaResultSet {
 	private static final LoggingFacade logger = LoggingFacade.getLogger(AtdsResultSet.class);
@@ -44,7 +43,7 @@ public class AtdsResultSet extends AvaticaResultSet {
 		this.handle = statement.handle;
 		this.context = meta.getContextFromMap(statement.handle);
 		if (logger.isTraceEnabled())
-			logger.trace("[new] " + this.handle.id);
+			logger.trace("[ctor] " + this.handle.id);
 	}
 
 	@Override
@@ -75,7 +74,7 @@ public class AtdsResultSet extends AvaticaResultSet {
 	@Override
 	public boolean next() throws SQLException {
 		final boolean next = super.next();
-		if(!next)
+		if (!next)
 			meta.closeStatement(handle);
 		if (!next && context != null && context.getException() != null) {
 			throw context.getException();
@@ -85,11 +84,12 @@ public class AtdsResultSet extends AvaticaResultSet {
 
 	@Override
 	public void close() {
-		if (logger.isTraceEnabled())
-			logger.trace("[close]");
+		super.close();
 		context.setWarning(null);
 		context.setException(null);
-		super.close();
+		if (logger.isTraceEnabled())
+			logger.trace("[closed]");
+
 	}
 
 }

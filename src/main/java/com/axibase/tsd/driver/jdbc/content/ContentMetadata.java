@@ -105,7 +105,7 @@ public class ContentMetadata {
 			metadataList.add(cmd);
 		}
 		if(logger.isDebugEnabled())
-			logger.debug("Shema is processed: " + metadataList.size());
+			logger.debug("Schema is processed: " + metadataList.size());
 		return Collections.unmodifiableList(metadataList);
 	}
 

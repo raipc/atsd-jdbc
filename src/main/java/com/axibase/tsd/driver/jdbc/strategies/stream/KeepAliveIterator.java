@@ -58,7 +58,8 @@ public class KeepAliveIterator<T> implements Iterator<String[]>, AutoCloseable {
 		try {
 			data.processComments();
 		} catch (IOException e) {
-			e.printStackTrace();
+			if (logger.isDebugEnabled())
+				logger.debug("[processComments] " + e.getMessage());
 		}
 		status.setInProgress(true);
 		found = data.getNext(true);
@@ -77,7 +78,7 @@ public class KeepAliveIterator<T> implements Iterator<String[]>, AutoCloseable {
 				logger.trace("[readNextBuffer] " + size);
 		} catch (IOException e) {
 			if (logger.isDebugEnabled())
-				logger.debug(e.getMessage());
+				logger.debug("[readNextBuffer] " + e.getMessage());
 		}
 		return size;
 	}
@@ -87,7 +88,7 @@ public class KeepAliveIterator<T> implements Iterator<String[]>, AutoCloseable {
 		if (readChannel != null)
 			readChannel.close();
 		if (logger.isTraceEnabled())
-			logger.trace("[close]");
+			logger.trace("[closed]");
 	}
 
 	@Override

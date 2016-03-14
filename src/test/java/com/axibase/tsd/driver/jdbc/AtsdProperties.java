@@ -20,6 +20,7 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
 import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
+import com.axibase.tsd.driver.jdbc.strategies.StrategyFactory;
 
 public class AtsdProperties implements Constants {
 	private static final LoggingFacade logger = LoggingFacade.getLogger(AtsdProperties.class);
@@ -47,9 +48,17 @@ public class AtsdProperties implements Constants {
 		LOGIN_NAME = System.getProperty("axibase.tsd.driver.jdbc.username");
 		LOGIN_PASSWORD = System.getProperty("axibase.tsd.driver.jdbc.password");
 		HTTP_ATDS_URL = System.getProperty("axibase.tsd.driver.jdbc.url");
-		JDBC_ATDS_URL = JDBC_ATDS_URL_PREFIX + HTTP_ATDS_URL;
-		if (TRUST_URL)
-			JDBC_ATDS_URL += TRUST_PARAMETER_IN_QUERY;
+		final StringBuilder sb = new StringBuilder(JDBC_ATDS_URL_PREFIX).append(HTTP_ATDS_URL);
+		if (TRUST_URL != null)
+			sb.append(TRUST_URL.booleanValue() ? TRUST_PARAMETER_IN_QUERY : UNTRUST_PARAMETER_IN_QUERY);
+		READ_STRATEGY = System.getProperty("axibase.tsd.driver.jdbc.strategy");
+		if (READ_STRATEGY != null) {
+			if (TRUST_URL == null)
+				sb.append(PARAM_SEPARATOR);
+			sb.append(READ_STRATEGY.equalsIgnoreCase(StrategyFactory.FILE_STRATEGY) ? STRATEGY_FILE_PARAMETER
+					: STRATEGY_STREAM_PARAMETER);
+		}
+		JDBC_ATDS_URL = sb.toString();
 		TINY_TABLE = System.getProperty("axibase.tsd.driver.jdbc.metric.tiny");
 		SMALL_TABLE = System.getProperty("axibase.tsd.driver.jdbc.metric.small");
 		MEDIUM_TABLE = System.getProperty("axibase.tsd.driver.jdbc.metric.medium");
@@ -58,8 +67,6 @@ public class AtsdProperties implements Constants {
 		JUMBO_TABLE = System.getProperty("axibase.tsd.driver.jdbc.metric.jumbo");
 		TWO_TABLES = System.getProperty("axibase.tsd.driver.jdbc.metric.concurrent");
 		WRONG_TABLE = System.getProperty("axibase.tsd.driver.jdbc.metric.wrong");
-		READ_STRATEGY = System.getProperty("axibase.tsd.driver.jdbc.strategy");
-
 		driver = new AtsdDriver();
 		Class.forName("com.axibase.tsd.driver.jdbc.AtsdDriver");
 		if (logger.isDebugEnabled())

@@ -80,7 +80,7 @@ public class SdkProtocolImpl implements IContentProtocol {
 			this.conn.disconnect();
 	}
 
-	InputStream executeRequest(String method) throws AtsdException, IOException, GeneralSecurityException {
+	synchronized InputStream executeRequest(String method) throws AtsdException, IOException, GeneralSecurityException {
 		boolean isHead = method.equals(HEAD_METHOD);
 		boolean isPost = method.equals(POST_METHOD);
 		String postParams = cd.getPostParams();
