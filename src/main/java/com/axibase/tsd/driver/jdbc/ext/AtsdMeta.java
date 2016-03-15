@@ -77,6 +77,12 @@ public class AtsdMeta extends MetaImpl {
 
 	@Override
 	public StatementHandle prepare(ConnectionHandle ch, String query, long maxRowCount) {
+		try {
+			lock.lockInterruptibly();
+		} catch (InterruptedException e) {
+			if (logger.isDebugEnabled())
+				logger.debug("[prepare] " + e.getMessage());
+		}
 		final int id = idGenerator.getAndIncrement();
 		if (logger.isTraceEnabled()) {
 			logger.trace("[prepare] locked: {} handle: {} query: {}", lock.getHoldCount(), id, query);
@@ -149,7 +155,12 @@ public class AtsdMeta extends MetaImpl {
 	@Override
 	public ExecuteResult prepareAndExecute(final StatementHandle h, String query, long maxRowCount,
 			final PrepareCallback callback) throws NoSuchStatementException {
-		lock.lock();
+		try {
+			lock.lockInterruptibly();
+		} catch (InterruptedException e) {
+			if (logger.isDebugEnabled())
+				logger.debug("[prepareAndExecute] " + e.getMessage());
+		}
 		if (logger.isTraceEnabled()) {
 			logger.trace("[prepareAndExecute] locked: {} maxRowCount: {} handle: {} query: {}", lock.getHoldCount(),
 					maxRowCount, h.toString(), query);
@@ -219,7 +230,7 @@ public class AtsdMeta extends MetaImpl {
 				if (logger.isDebugEnabled())
 					logger.debug("[closeStatement] " + e.getMessage());
 			}
-		if (lock.isLocked()) {
+		if (lock.isHeldByCurrentThread()) {
 			lock.unlock();
 			if (logger.isTraceEnabled())
 				logger.trace("[unlocked]");
@@ -235,7 +246,7 @@ public class AtsdMeta extends MetaImpl {
 			providerCache.clear();
 		if (contextMap != null && contextMap.size() != 0)
 			contextMap.clear();
-		if (lock.isLocked()) {
+		if (lock.isHeldByCurrentThread()) {
 			lock.unlock();
 			if (logger.isTraceEnabled())
 				logger.trace("[unlocked]");
