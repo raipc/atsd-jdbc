@@ -3,6 +3,8 @@
 	<groupId>com.axibase</groupId>
 	<artifactId>atsd-jdbc</artifactId>
 	<version>1.2.2-SNAPSHOT</version>
+	<name>ATSD JDBC driver</name>
+	<description>JDBC driver for SQL API using</description>
 	<url>http://axibase.com</url>
 	<inceptionYear>2016</inceptionYear>
 	<organization>
