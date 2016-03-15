@@ -34,6 +34,7 @@ import org.apache.calcite.avatica.Meta.Signature;
 import org.apache.calcite.avatica.Meta.StatementType;
 import org.apache.commons.lang3.StringUtils;
 
+import com.axibase.tsd.driver.jdbc.DriverConstants;
 import com.axibase.tsd.driver.jdbc.ext.AtsdException;
 import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
 import com.fasterxml.jackson.core.JsonParseException;
@@ -42,7 +43,7 @@ import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.MappingJsonFactory;
 
 @SuppressWarnings("unchecked")
-public class ContentMetadata {
+public class ContentMetadata implements DriverConstants {
 	private static final LoggingFacade logger = LoggingFacade.getLogger(ContentMetadata.class);
 
 	private final Signature sign;
@@ -51,7 +52,7 @@ public class ContentMetadata {
 
 	public ContentMetadata(String scheme, String sql, String connectionId, int statementId)
 			throws AtsdException, IOException {
-		metadataList = !StringUtils.isEmpty(scheme) ? buildMetadataList(scheme)
+		metadataList = StringUtils.isNoneEmpty(scheme) ? buildMetadataList(scheme)
 				: Collections.<ColumnMetaData> emptyList();
 		sign = new Signature(metadataList, sql, Collections.<AvaticaParameter> emptyList(), null, CursorFactory.LIST,
 				StatementType.SELECT);
@@ -165,21 +166,4 @@ public class ContentMetadata {
 		return new ColumnMetaData.AvaticaType(metaType, datatype, rep);
 	}
 
-	private static final String TIME_STAMP_DATA_TYPE = "xsd:dateTimeStamp";
-	private static final String DOUBLE_DATA_TYPE = "double";
-	private static final String FLOAT_DATA_TYPE = "float";
-	private static final String LONG_DATA_TYPE = "long";
-	private static final String INTEGER_DATA_TYPE = "integer";
-	private static final String SHORT_DATA_TYPE = "short";
-	private static final String STRING_DATA_TYPE = "string";
-	private static final String COLUMNS_SCHEME = "columns";
-	private static final String DEFAULT_CATALOG_NAME = "axiCatalog";
-	private static final String DATATYPE_PROPERTY = "datatype";
-	private static final String INDEX_PROPERTY = "columnIndex";
-	private static final String TABLE_PROPERTY = "table";
-	private static final String TITLE_PROPERTY = "titles";
-	private static final String NAME_PROPERTY = "name";
-	private static final String SCHEMA_NAME_PROPERTY = "schema:name";
-	private static final String TABLE_SCHEMA_SECTION = "tableSchema";
-	private static final String PUBLISHER_SECTION = "dc:publisher";
 }

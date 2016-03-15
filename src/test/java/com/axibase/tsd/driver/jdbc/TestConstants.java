@@ -14,7 +14,7 @@
 */
 package com.axibase.tsd.driver.jdbc;
 
-public interface Constants {
+public interface TestConstants {
 	static final String SELECT_TVE_CLAUSE = "SELECT time, value, entity FROM ";
 	static final String SELECT_DVE_CLAUSE = "SELECT datetime, value, entity FROM ";
 	static final String SELECT_ALL_CLAUSE = "SELECT * FROM ";

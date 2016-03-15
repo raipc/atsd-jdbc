@@ -1,6 +1,6 @@
 package com.axibase.tsd.driver.jdbc.ext;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -11,6 +11,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.axibase.tsd.driver.jdbc.AtsdProperties;
+import com.axibase.tsd.driver.jdbc.DriverConstants;
 import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
 
 public class AtsdDatabaseMetaDataTest extends AtsdProperties {
@@ -101,13 +102,27 @@ public class AtsdDatabaseMetaDataTest extends AtsdProperties {
 	}
 
 	@Test
+	public void getDriverVersionProperties() throws SQLException {
+		String driverVersion = meta.getDriverVersion();
+		assertFalse(DriverConstants.JDBC_DRIVER_VERSION_DEFAULT.equals(driverVersion));
+		int driverMajorVersion = meta.getDriverMajorVersion();
+		int driverMinorVersion = meta.getDriverMinorVersion();
+		assertFalse(driverMajorVersion == 1 && driverMinorVersion == 0);
+		if (log.isDebugEnabled()) {
+			log.debug("[Driver Version] " + driverVersion);
+			log.debug("[Driver Major Version] " + driverMajorVersion);
+			log.debug("[Driver Minor Version] " + driverMinorVersion);
+		}
+	}
+
+	@Test
 	public void getAllProperties() throws SQLException {
 		if (!log.isDebugEnabled())
 			return;
 		log.debug("[Database Product Name] " + meta.getDatabaseProductName());
 		log.debug("[Database Product Version] " + meta.getDatabaseProductVersion());
 		log.debug("[Driver Name] " + meta.getDriverName());
-		log.debug("[Driver Version] " + meta.getDriverVersion());
+
 		log.debug("[All Procedures Are Callable] " + meta.allProceduresAreCallable());
 		log.debug("[All Tables Are Selectable] " + meta.allTablesAreSelectable());
 		log.debug("[Auto Commit Failure Closes All Result Sets] " + meta.autoCommitFailureClosesAllResultSets());
@@ -119,8 +134,6 @@ public class AtsdDatabaseMetaDataTest extends AtsdProperties {
 		log.debug("[Data Definition Ignored In Transactions] " + meta.dataDefinitionIgnoredInTransactions());
 		log.debug("[Default Transaction Isolation] " + meta.getDefaultTransactionIsolation());
 		log.debug("[Does Max Row Size Include Blobs] " + meta.doesMaxRowSizeIncludeBlobs());
-		log.debug("[Driver Major Version] " + meta.getDriverMajorVersion());
-		log.debug("[Driver Minor Version] " + meta.getDriverMinorVersion());
 		log.debug("[Extra Name Characters] " + meta.getExtraNameCharacters());
 		log.debug("[Generated Key Always Returned] " + meta.generatedKeyAlwaysReturned());
 		log.debug("[Identifier Quote String] " + meta.getIdentifierQuoteString());

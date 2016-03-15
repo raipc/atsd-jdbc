@@ -24,9 +24,10 @@ import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.axibase.tsd.driver.jdbc.DriverConstants;
 import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
 
-public class ContentDescription {
+public class ContentDescription implements DriverConstants {
 	private static final LoggingFacade logger = LoggingFacade.getLogger(ContentDescription.class);
 
 	private String host;
@@ -158,7 +159,7 @@ public class ContentDescription {
 			if (!param.toLowerCase().startsWith(STRATEGY_PARAM_NAME))
 				continue;
 			final String value = param.substring(STRATEGY_PARAM_NAME.length());
-			return !StringUtils.isEmpty(value) ? value : null;
+			return StringUtils.isNoneEmpty(value) ? value : null;
 		}
 		return null;
 	}
@@ -213,11 +214,4 @@ public class ContentDescription {
 				+ contentLength + "]";
 	}
 
-	public static final String QUERY_PARAM_NAME = "%s=%s&%s=%s";
-	public static final String Q_PARAM_NAME = "q";
-	public static final String FORMAT_PARAM_NAME = "outputFormat";
-	public static final String FORMAT_PARAM_VALUE = "csv";
-	public static final String STRATEGY_PARAM_NAME = "strategy=";
-	public static final String TRUST_PARAM_TRUE = "trustServerCertificate=true";
-	public static final String TRUST_PARAM_FALSE = "trustServerCertificate=false";
 }

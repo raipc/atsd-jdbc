@@ -29,6 +29,7 @@ import org.apache.calcite.avatica.AvaticaDatabaseMetaData;
 import org.apache.calcite.avatica.ConnectionConfig;
 import org.apache.commons.lang3.StringUtils;
 
+import com.axibase.tsd.driver.jdbc.DriverConstants;
 import com.axibase.tsd.driver.jdbc.content.ContentDescription;
 import com.axibase.tsd.driver.jdbc.content.json.Version;
 import com.axibase.tsd.driver.jdbc.enums.LexerTokens;
@@ -41,7 +42,7 @@ import com.axibase.tsd.driver.jdbc.protocol.ProtocolFactory;
 import com.axibase.tsd.driver.jdbc.protocol.SdkProtocolImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class AtsdDatabaseMetaData extends AvaticaDatabaseMetaData {
+public class AtsdDatabaseMetaData extends AvaticaDatabaseMetaData implements DriverConstants {
 	private static final LoggingFacade logger = LoggingFacade.getLogger(AtsdDatabaseMetaData.class);
 	private String revision = "Unknown Revision";
 	private String edition = "Unknown Edition";
@@ -152,6 +153,26 @@ public class AtsdDatabaseMetaData extends AvaticaDatabaseMetaData {
 				logger.debug(e.getMessage());
 		}
 		return 1;
+	}
+
+	@Override
+	public String getDriverName() throws SQLException {
+		return super.getDriverName();
+	}
+
+	@Override
+	public String getDriverVersion() throws SQLException {
+		return super.getDriverVersion();
+	}
+
+	@Override
+	public int getDriverMajorVersion() {
+		return super.getDriverMajorVersion();
+	}
+
+	@Override
+	public int getDriverMinorVersion() {
+		return super.getDriverMinorVersion();
 	}
 
 	@Override
@@ -426,10 +447,6 @@ public class AtsdDatabaseMetaData extends AvaticaDatabaseMetaData {
 		this.edition = edition;
 	}
 
-	private static final String REVISION_LINE = "Revision";
-	private static final String PARAM_SEPARATOR = ";";
-	private static final String PROTOCOL_SEPARATOR = "://";
-	private static final String VERSION_ENDPOINT = "/version";
 	private static final ObjectMapper mapper = new ObjectMapper();
 	private static final ReservedWordsSQL2003[] FILTERED_KEYWORDS = ReservedWordsSQL2003.values();
 

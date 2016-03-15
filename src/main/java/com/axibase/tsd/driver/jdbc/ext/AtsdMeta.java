@@ -50,6 +50,7 @@ import org.apache.calcite.avatica.remote.TypedValue;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.text.WordUtils;
 
+import com.axibase.tsd.driver.jdbc.DriverConstants;
 import com.axibase.tsd.driver.jdbc.content.ContentDescription;
 import com.axibase.tsd.driver.jdbc.content.ContentMetadata;
 import com.axibase.tsd.driver.jdbc.content.DataProvider;
@@ -267,14 +268,14 @@ public class AtsdMeta extends MetaImpl {
 		final Properties info = ((AtsdConnection) connection).getInfo();
 		String username = info != null ? (String) info.get("user") : "";
 		final Iterable<Object> iterable = (Iterable<Object>) new ArrayList<Object>(
-				Arrays.asList(new MetaSchema(CATALOG_NAME, WordUtils.capitalize(username))));
+				Arrays.asList(new MetaSchema(DriverConstants.CATALOG_NAME, WordUtils.capitalize(username))));
 		return getResultSet(iterable, MetaSchema.class, "TABLE_SCHEM", "TABLE_CATALOG");
 	}
 
 	@Override
 	public MetaResultSet getCatalogs(ConnectionHandle ch) {
 		final Iterable<Object> iterable = (Iterable<Object>) new ArrayList<Object>(
-				Arrays.asList(new MetaCatalog(CATALOG_NAME)));
+				Arrays.asList(new MetaCatalog(DriverConstants.CATALOG_NAME)));
 		return getResultSet(iterable, MetaCatalog.class, "TABLE_CAT");
 	}
 
@@ -540,7 +541,6 @@ public class AtsdMeta extends MetaImpl {
 			logger.debug("[rollback] " + ch.id + "->" + ch.toString());
 	}
 
-	private static final String CATALOG_NAME = "ATSD";
 	private static final int TIMESTAMP_LENGTH = "2016-01-01T00:00:00.000".length();
 	private final AtomicInteger idGenerator = new AtomicInteger(1);
 	private final Map<Integer, ContentMetadata> metaCache = new ConcurrentHashMap<>();

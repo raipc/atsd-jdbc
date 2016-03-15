@@ -22,7 +22,7 @@ import org.junit.BeforeClass;
 import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
 import com.axibase.tsd.driver.jdbc.strategies.StrategyFactory;
 
-public class AtsdProperties implements Constants {
+public class AtsdProperties implements TestConstants {
 	private static final LoggingFacade logger = LoggingFacade.getLogger(AtsdProperties.class);
 	protected static int RETRIES = 1;
 	protected static Boolean TRUST_URL;
