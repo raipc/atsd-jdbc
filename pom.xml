@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.axibase</groupId>
 	<artifactId>atsd-jdbc</artifactId>
-	<version>1.2.1</version>
+	<version>1.2.2-SNAPSHOT</version>
 	<url>http://axibase.com</url>
 	<inceptionYear>2016</inceptionYear>
 	<organization>
@@ -23,7 +23,7 @@
 		<connection>scm:git:git@github.com:axibase/atsd-jdbc.git</connection>
 		<developerConnection>scm:git:git@github.com:axibase/atsd-jdbc.git</developerConnection>
 		<url>https://github.com/axibase/atsd-jdbc.git</url>
-		<tag>RELEASE-1.2.1</tag>
+		<tag>jdbc-driver-1.2.1</tag>
 	</scm>
 	<properties>
 		<java.source.version>1.7</java.source.version>
