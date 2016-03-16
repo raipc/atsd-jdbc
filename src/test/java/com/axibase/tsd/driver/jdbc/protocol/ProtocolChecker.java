@@ -23,6 +23,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.security.GeneralSecurityException;
 
+import org.apache.commons.lang3.StringUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -61,6 +62,8 @@ public class ProtocolChecker extends AtsdProperties {
 
 	@Test
 	public final void testPost() throws IOException, AtsdException, GeneralSecurityException {
+		if (StringUtils.isEmpty(SMALL_TABLE))
+			return;
 		InputStream is = this.impl.executeRequest(SdkProtocolImpl.POST_METHOD);
 		assertNotNull(is);
 		if (logger.isTraceEnabled()) {
@@ -70,6 +73,8 @@ public class ProtocolChecker extends AtsdProperties {
 
 	@Test
 	public final void testGet() throws IOException, AtsdException, GeneralSecurityException {
+		if (StringUtils.isEmpty(SMALL_TABLE))
+			return;
 		InputStream is = this.impl.executeRequest(SdkProtocolImpl.GET_METHOD);
 		assertNotNull(is);
 		if (logger.isTraceEnabled()) {
@@ -79,6 +84,8 @@ public class ProtocolChecker extends AtsdProperties {
 
 	@Test
 	public final void testHead() throws IOException, AtsdException, GeneralSecurityException {
+		if (StringUtils.isEmpty(SMALL_TABLE))
+			return;
 		InputStream is = this.impl.executeRequest(SdkProtocolImpl.HEAD_METHOD);
 		assertNull(is);
 	}

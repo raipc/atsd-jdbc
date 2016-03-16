@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -50,24 +51,32 @@ public class StrategyTest extends AtsdProperties {
 
 	@Test
 	public final void testFullPassOnTiny() throws Exception {
+		if (StringUtils.isEmpty(TINY_TABLE))
+			return;
 		String[] last = fullPassOnTable(TINY_TABLE);
 		assertNotNull(last);
 	}
 
 	@Test
 	public final void testFullPassOnSmall() throws Exception {
+		if (StringUtils.isEmpty(SMALL_TABLE))
+			return;
 		String[] last = fullPassOnTable(SMALL_TABLE);
 		assertNotNull(last);
 	}
 
 	@Test
 	public final void testFullPassOnMedium() throws Exception {
+		if (StringUtils.isEmpty(MEDIUM_TABLE))
+			return;
 		String[] last = fullPassOnTable(MEDIUM_TABLE);
 		assertNotNull(last);
 	}
 
 	@Test
 	public final void testFullPassOnLarge() throws Exception {
+		if (StringUtils.isEmpty(LARGE_TABLE))
+			return;
 		String[] last = fullPassOnTable(LARGE_TABLE);
 		assertNotNull(last);
 	}
@@ -84,8 +93,8 @@ public class StrategyTest extends AtsdProperties {
 		final IContentProtocol tp = ProtocolFactory.create(SdkProtocolImpl.class, cd);
 		tp.getContentSchema();
 		StatementContext context = new StatementContext();
-		try (final IStoreStrategy strategy = isDefault ? new KeepAliveStrategy(context) : new FileStoreStrategy(context);
-				final InputStream is = tp.readContent();) {
+		try (final IStoreStrategy strategy = isDefault ? new KeepAliveStrategy(context)
+				: new FileStoreStrategy(context); final InputStream is = tp.readContent();) {
 			assertNotNull(is);
 			strategy.store(is);
 			final String[] header = strategy.openToRead();

@@ -18,6 +18,7 @@ import static org.junit.Assert.assertNotNull;
 
 import java.util.Arrays;
 
+import org.apache.commons.lang3.StringUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -43,6 +44,8 @@ public class DataProviderTest extends AtsdProperties {
 
 	@Test
 	public final void testSecureByDefault() throws Exception {
+		if (StringUtils.isEmpty(SMALL_TABLE))
+			return;
 		try (DataProvider provider = new DataProvider(HTTP_ATDS_URL,
 				SELECT_ALL_CLAUSE + SMALL_TABLE + SELECT_LIMIT_1000, LOGIN_NAME, LOGIN_PASSWORD,
 				new StatementContext());) {
@@ -52,6 +55,8 @@ public class DataProviderTest extends AtsdProperties {
 
 	@Test
 	public final void testSecureTrusted() throws Exception {
+		if (StringUtils.isEmpty(SMALL_TABLE))
+			return;
 		try (DataProvider provider = new DataProvider(HTTP_ATDS_URL + TRUST_PARAMETER_IN_QUERY,
 				SELECT_ALL_CLAUSE + SMALL_TABLE + SELECT_LIMIT_1000, LOGIN_NAME, LOGIN_PASSWORD,
 				new StatementContext());) {
@@ -61,6 +66,8 @@ public class DataProviderTest extends AtsdProperties {
 
 	@Test
 	public final void testSecureUntrusted() throws Exception {
+		if (StringUtils.isEmpty(SMALL_TABLE))
+			return;
 		try (DataProvider provider = new DataProvider(HTTP_ATDS_URL + UNTRUST_PARAMETER_IN_QUERY,
 				SELECT_ALL_CLAUSE + SMALL_TABLE + SELECT_LIMIT_1000, LOGIN_NAME, LOGIN_PASSWORD,
 				new StatementContext());) {
@@ -70,6 +77,8 @@ public class DataProviderTest extends AtsdProperties {
 
 	@Test
 	public final void testCheckScheme() throws Exception {
+		if (StringUtils.isEmpty(SMALL_TABLE))
+			return;
 		try (DataProvider provider = new DataProvider(HTTP_ATDS_URL,
 				SELECT_ALL_CLAUSE + SMALL_TABLE + SELECT_LIMIT_1000, LOGIN_NAME, LOGIN_PASSWORD,
 				new StatementContext());) {
@@ -80,6 +89,8 @@ public class DataProviderTest extends AtsdProperties {
 
 	@Test
 	public final void testGetContentDescription() throws Exception {
+		if (StringUtils.isEmpty(SMALL_TABLE))
+			return;
 		try (DataProvider provider = new DataProvider(HTTP_ATDS_URL + UNTRUST_PARAMETER_IN_QUERY,
 				SELECT_ALL_CLAUSE + SMALL_TABLE + SELECT_LIMIT_1000, LOGIN_NAME, LOGIN_PASSWORD,
 				new StatementContext());) {
@@ -94,6 +105,8 @@ public class DataProviderTest extends AtsdProperties {
 
 	@Test
 	public final void testClose() throws Exception {
+		if (StringUtils.isEmpty(SMALL_TABLE))
+			return;
 		try (DataProvider provider = new DataProvider(HTTP_ATDS_URL,
 				SELECT_ALL_CLAUSE + SMALL_TABLE + SELECT_LIMIT_1000, LOGIN_NAME, LOGIN_PASSWORD,
 				new StatementContext());) {

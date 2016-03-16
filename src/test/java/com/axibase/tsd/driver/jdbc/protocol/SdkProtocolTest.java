@@ -24,6 +24,7 @@ import java.io.Reader;
 import java.security.GeneralSecurityException;
 import java.util.Arrays;
 
+import org.apache.commons.lang3.StringUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -49,6 +50,8 @@ public class SdkProtocolTest extends AtsdProperties {
 
 	@Test
 	public final void testCheckContentSecure() throws IOException, AtsdException, GeneralSecurityException {
+		if (StringUtils.isEmpty(SMALL_TABLE))
+			return;
 		String[] params = TRUST_URL != null ? new String[] {
 				TRUST_URL.booleanValue() ? ContentDescription.TRUST_PARAM_TRUE : ContentDescription.TRUST_PARAM_FALSE }
 				: new String[0];
@@ -61,6 +64,8 @@ public class SdkProtocolTest extends AtsdProperties {
 
 	@Test
 	public final void testReadContentSecure() throws IOException, AtsdException, GeneralSecurityException {
+		if (StringUtils.isEmpty(SMALL_TABLE))
+			return;
 		String[] params = TRUST_URL != null ? new String[] {
 				TRUST_URL.booleanValue() ? ContentDescription.TRUST_PARAM_TRUE : ContentDescription.TRUST_PARAM_FALSE }
 				: new String[0];

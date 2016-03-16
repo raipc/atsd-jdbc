@@ -33,6 +33,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.lang3.StringUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -68,6 +69,8 @@ public class RemoteConnectionTest extends AtsdProperties {
 
 	@Test
 	public final void tinyRemoteStatement() throws AtsdException, SQLException {
+		if (StringUtils.isEmpty(TINY_TABLE))
+			return;
 		int count = checkRemoteStatement(SELECT_ALL_CLAUSE + TINY_TABLE);
 		if (logger.isDebugEnabled())
 			logger.debug(String.format("[%s]%d", new Object() {
@@ -76,6 +79,8 @@ public class RemoteConnectionTest extends AtsdProperties {
 
 	@Test
 	public final void smallRemoteStatement() throws AtsdException, SQLException {
+		if (StringUtils.isEmpty(SMALL_TABLE))
+			return;
 		int count = checkRemoteStatement(SELECT_ALL_CLAUSE + SMALL_TABLE);
 		if (logger.isDebugEnabled())
 			logger.debug(String.format("[%s]%d", new Object() {
@@ -84,6 +89,8 @@ public class RemoteConnectionTest extends AtsdProperties {
 
 	@Test
 	public final void mediumRemoteStatement() throws AtsdException, SQLException {
+		if (StringUtils.isEmpty(MEDIUM_TABLE))
+			return;
 		int count = checkRemoteStatement(SELECT_ALL_CLAUSE + MEDIUM_TABLE);
 		if (logger.isDebugEnabled())
 			logger.debug(String.format("[%s]%d", new Object() {
@@ -92,6 +99,8 @@ public class RemoteConnectionTest extends AtsdProperties {
 
 	@Test
 	public final void largeRemoteStatement() throws AtsdException, SQLException {
+		if (StringUtils.isEmpty(LARGE_TABLE))
+			return;
 		int count = checkRemoteStatement(SELECT_ALL_CLAUSE + LARGE_TABLE);
 		if (logger.isDebugEnabled())
 			logger.debug(String.format("[%s]%d", new Object() {
@@ -100,6 +109,8 @@ public class RemoteConnectionTest extends AtsdProperties {
 
 	@Test
 	public final void hugeRemoteStatement() throws AtsdException, SQLException {
+		if (StringUtils.isEmpty(HUGE_TABLE))
+			return;
 		int count = checkRemoteStatement(SELECT_ALL_CLAUSE + HUGE_TABLE);
 		if (logger.isDebugEnabled())
 			logger.debug(String.format("[%s]%d", new Object() {
@@ -108,16 +119,22 @@ public class RemoteConnectionTest extends AtsdProperties {
 
 	@Test
 	public final void testRemoteStatementWithFields() throws AtsdException, SQLException {
+		if (StringUtils.isEmpty(TINY_TABLE))
+			return;
 		checkRemoteStatement(SELECT_TVE_CLAUSE + TINY_TABLE);
 	}
 
 	@Test
 	public final void testRemoteStatementWithDates() throws AtsdException, SQLException {
+		if (StringUtils.isEmpty(TINY_TABLE))
+			return;
 		checkRemoteStatement(SELECT_DVE_CLAUSE + TINY_TABLE);
 	}
 
 	@Test
 	public final void testRemoteStatementWithJoins() throws AtsdException, SQLException {
+		if (StringUtils.isEmpty(TINY_TABLE) || !TINY_TABLE.toLowerCase().endsWith("cpu_busy"))
+			return;
 		int count;
 		count = checkRemoteStatement("SELECT * FROM cpu_busy OUTER JOIN disk_used WHERE time > now - 1 * hour");
 		if (logger.isDebugEnabled())
@@ -151,17 +168,23 @@ public class RemoteConnectionTest extends AtsdProperties {
 
 	@Test
 	public final void testRemotePreparedStatement() throws AtsdException, SQLException {
+		if (StringUtils.isEmpty(TINY_TABLE))
+			return;
 		checkRemotePreparedStatementNoArgs(SELECT_DVE_CLAUSE + TINY_TABLE);
 	}
 
 	@Test
 	public final void testRemotePreparedStatementsWithArg() throws AtsdException, SQLException {
+		if (StringUtils.isEmpty(TINY_TABLE) || !TINY_TABLE.toLowerCase().endsWith("cpu_busy"))
+			return;
 		checkRemotePreparedStatementWithLimits(SELECT_ALL_CLAUSE + TINY_TABLE + WHERE_CLAUSE,
 				new String[] { "nurswgvml212" }, 1001, 10001);
 	}
 
 	@Test
 	public final void smallRemoteStatementTwice() throws AtsdException, SQLException {
+		if (StringUtils.isEmpty(SMALL_TABLE))
+			return;
 		RETRIES = 2;
 		int count = checkRemoteStatement(SELECT_ALL_CLAUSE + SMALL_TABLE);
 		if (logger.isDebugEnabled())
@@ -172,6 +195,8 @@ public class RemoteConnectionTest extends AtsdProperties {
 
 	@Test
 	public final void testPreparedStatementsWithArgs() throws AtsdException, SQLException {
+		if (StringUtils.isEmpty(TINY_TABLE) || !TINY_TABLE.toLowerCase().endsWith("cpu_busy"))
+			return;
 		checkRemotePreparedStatementWithLimits(
 				"SELECT time, value, tags.file_system FROM df.disk_used_percent WHERE tags.file_system LIKE ? AND datetime between ? and ?",
 				new String[] { "tmpfs", "2015-07-08T16:00:00Z", "2017-07-08T16:30:00Z" }, 1001, 10001);
@@ -179,6 +204,8 @@ public class RemoteConnectionTest extends AtsdProperties {
 
 	@Test
 	public final void testPreparedStatementsWithAggregation() throws AtsdException, SQLException {
+		if (StringUtils.isEmpty(TINY_TABLE) || !TINY_TABLE.toLowerCase().endsWith("cpu_busy"))
+			return;
 		checkRemotePreparedStatementWithLimits(
 				"SELECT count(*), entity, tags.*, period (30 minute) FROM df.disk_used "
 						+ "WHERE entity = ? AND tags.mount_point = ? AND tags.file_system = ? "
@@ -189,16 +216,22 @@ public class RemoteConnectionTest extends AtsdProperties {
 
 	@Test
 	public final void testRemoteStatementsOnSmall() throws AtsdException, SQLException {
+		if (StringUtils.isEmpty(SMALL_TABLE))
+			return;
 		checkRemoteStatementWithLimits(SELECT_ALL_CLAUSE + SMALL_TABLE + SELECT_LIMIT_1000, 1001, 10001);
 	}
 
 	@Test
 	public final void testRemoteStatementsOnMedium() throws AtsdException, SQLException {
+		if (StringUtils.isEmpty(MEDIUM_TABLE))
+			return;
 		checkRemoteStatementWithLimits(SELECT_ALL_CLAUSE + MEDIUM_TABLE + SELECT_LIMIT_100000, 10001, 100001);
 	}
 
 	@Test
 	public final void testRemoteStatementsOnLarge() throws AtsdException, SQLException {
+		if (StringUtils.isEmpty(LARGE_TABLE))
+			return;
 		checkRemoteStatementWithLimits(SELECT_ALL_CLAUSE + LARGE_TABLE + SELECT_LIMIT_100000, 100001, 1000001);
 	}
 
@@ -215,21 +248,29 @@ public class RemoteConnectionTest extends AtsdProperties {
 
 	@Test
 	public final void testRemoteStatementsWithLimits() throws AtsdException, SQLException {
+		if (StringUtils.isEmpty(TINY_TABLE))
+			return;
 		checkRemoteStatementWithLimits(SELECT_ALL_CLAUSE + TINY_TABLE, 101, 10001);
 	}
 
 	@Test(expected = UnsupportedOperationException.class)
 	public final void smallRemoteStatementWithAbsPos() throws AtsdException, SQLException {
+		if (StringUtils.isEmpty(TINY_TABLE))
+			throw new UnsupportedOperationException();
 		checkRemoteStatementWithAbsolute(SELECT_ALL_CLAUSE + TINY_TABLE);
 	}
 
 	@Test(expected = UnsupportedOperationException.class)
 	public final void smallRemoteStatementWithRelPos() throws AtsdException, SQLException {
+		if (StringUtils.isEmpty(TINY_TABLE))
+			throw new UnsupportedOperationException();
 		checkRemoteStatementWithRelative(SELECT_ALL_CLAUSE + TINY_TABLE);
 	}
 
 	@Test(expected = SQLException.class)
 	public final void wrongRemoteStatement() throws AssertionError, AtsdException, SQLException {
+		if (StringUtils.isEmpty(WRONG_TABLE))
+			throw new SQLException();
 		try {
 			checkRemoteStatement(SELECT_ALL_CLAUSE + WRONG_TABLE);
 		} catch (final SQLException e) {
@@ -255,6 +296,8 @@ public class RemoteConnectionTest extends AtsdProperties {
 	}
 
 	private void checkRemoteStatementWithDifferentResultSets() throws AtsdException, SQLException {
+		if (StringUtils.isEmpty(TWO_TABLES))
+			return;
 		long start = System.currentTimeMillis();
 		try (final Connection connection = DriverManager.getConnection(JDBC_ATDS_URL, LOGIN_NAME, LOGIN_PASSWORD);
 				final Statement statement = connection.createStatement();) {
@@ -272,6 +315,8 @@ public class RemoteConnectionTest extends AtsdProperties {
 	}
 
 	private void checkStatementWithTraversingSimultaneously() throws AtsdException, SQLException, InterruptedException {
+		if (StringUtils.isEmpty(TWO_TABLES))
+			return;
 		long start = System.currentTimeMillis();
 		ExecutorService service = Executors.newFixedThreadPool(2);
 		try (final Connection connection = DriverManager.getConnection(JDBC_ATDS_URL, LOGIN_NAME, LOGIN_PASSWORD);
@@ -399,7 +444,6 @@ public class RemoteConnectionTest extends AtsdProperties {
 					sb.append("     \t");
 				sb.append(type + ":");
 				switch (type) {
-				case Types.CHAR:
 				case Types.VARCHAR:
 					sb.append("getString: " + resultSet.getString(i));
 					break;
