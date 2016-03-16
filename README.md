@@ -3,7 +3,8 @@
 
 # JDBC driver
 
-The driver is designed to make easier to work with ATSD via SQL API. Communication occurs by means of transferring CSV data via HTTP/HTTPS protocols according to [![SQL API Documentation](http://axibase.com/atsd/api/#sql)]. You can find there as the description of the query format and the list of supported SQL functions.
+The driver is designed to make easier to work with ATSD via SQL API. Communication occurs by means of transferring CSV data via HTTP/HTTPS protocols according to 
+[SQL API Documentation](http://axibase.com/atsd/api/#sql). You can find there as the description of the query format and the list of supported SQL functions.
 
 ## Apache Maven
 
@@ -36,19 +37,19 @@ The project is released under version 2.0 of the [Apache License](http://www.apa
 ## Tests
 
 In order to have an ability to run tests you have to choose (or create) own ATSD metrics to deal with it. It is expected the next set of test properies:
--Daxibase.tsd.driver.jdbc.url=<ATSD_URL [http, https]>
--Daxibase.tsd.driver.jdbc.username=<ATSD_LOGIN> 
--Daxibase.tsd.driver.jdbc.password=<ATSD_PASSWORD> 
--Daxibase.tsd.driver.jdbc.metric.tiny=<METRIC_NAME> 
--Daxibase.tsd.driver.jdbc.metric.small=<METRIC_NAME>
--Daxibase.tsd.driver.jdbc.metric.medium=<METRIC_NAME>
--Daxibase.tsd.driver.jdbc.metric.large=<METRIC_NAME>
--Daxibase.tsd.driver.jdbc.metric.huge=<METRIC_NAME>
--Daxibase.tsd.driver.jdbc.metric.jumbo=<METRIC_NAME>
--Daxibase.tsd.driver.jdbc.metric.wrong=<METRIC_NAME_THROWING_SQL_EXCEPTION>
--Daxibase.tsd.driver.jdbc.metric.concurrent=<SEVERAL_COMMA_SEPARATED_METRIC_NAMES>
--Daxibase.tsd.driver.jdbc.trust=<IGNORE_CERTIFICATES> 
--Daxibase.tsd.driver.jdbc.strategy=<STORE_STRATEGY [file,stream]>
+* -Daxibase.tsd.driver.jdbc.url=<ATSD_URL [http, https]>
+* -Daxibase.tsd.driver.jdbc.username=<ATSD_LOGIN> 
+* -Daxibase.tsd.driver.jdbc.password=<ATSD_PASSWORD> 
+* -Daxibase.tsd.driver.jdbc.metric.tiny=<METRIC_NAME> 
+* -Daxibase.tsd.driver.jdbc.metric.small=<METRIC_NAME>
+* -Daxibase.tsd.driver.jdbc.metric.medium=<METRIC_NAME>
+* -Daxibase.tsd.driver.jdbc.metric.large=<METRIC_NAME>
+* -Daxibase.tsd.driver.jdbc.metric.huge=<METRIC_NAME>
+* -Daxibase.tsd.driver.jdbc.metric.jumbo=<METRIC_NAME>
+* -Daxibase.tsd.driver.jdbc.metric.wrong=<METRIC_NAME_THROWING_SQL_EXCEPTION>
+* -Daxibase.tsd.driver.jdbc.metric.concurrent=<SEVERAL_COMMA_SEPARATED_METRIC_NAMES>
+* -Daxibase.tsd.driver.jdbc.trust=<IGNORE_CERTIFICATES> 
+* -Daxibase.tsd.driver.jdbc.strategy=<STORE_STRATEGY [file,stream]>
 
 The first three parameters are obligatory to run tests and the others are mandatory for more accurate checking.
 
