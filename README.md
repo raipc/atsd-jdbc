@@ -37,6 +37,7 @@ The project is released under version 2.0 of the [Apache License](http://www.apa
 ## Tests
 
 In order to have an ability to run tests you have to choose (or create) own ATSD metrics to deal with it. It is expected the next set of test properies:
+```
 * -Daxibase.tsd.driver.jdbc.url=<ATSD_URL [http, https]>
 * -Daxibase.tsd.driver.jdbc.username=<ATSD_LOGIN> 
 * -Daxibase.tsd.driver.jdbc.password=<ATSD_PASSWORD> 
@@ -50,7 +51,7 @@ In order to have an ability to run tests you have to choose (or create) own ATSD
 * -Daxibase.tsd.driver.jdbc.metric.concurrent=<SEVERAL_COMMA_SEPARATED_METRIC_NAMES>
 * -Daxibase.tsd.driver.jdbc.trust=<IGNORE_CERTIFICATES> 
 * -Daxibase.tsd.driver.jdbc.strategy=<STORE_STRATEGY [file,stream]>
-
+```
 The first three parameters are obligatory to run tests and the others are mandatory for more accurate checking.
 
 ## Usage
