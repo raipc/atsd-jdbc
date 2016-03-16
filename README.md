@@ -44,7 +44,7 @@ $ mvn -DskipTests=true clean install
 
 ## Classpath
 
-To using it in Java projects without build managers like Gradle or Maven you can get a JAR library from Maven Central: [Direct URL](http://search.maven.org/remotecontent?filepath=com/axibase/atsd-jdbc/1.2.1/atsd-jdbc-1.2.1.jar) and add it to the classpath of your application.
+For using in Java projects without build managers like Gradle or Maven you can get a JAR library from Maven Central: [Direct URL](http://search.maven.org/remotecontent?filepath=com/axibase/atsd-jdbc/1.2.1/atsd-jdbc-1.2.1.jar) and add it to the classpath of your application.
 
 ```
 * Unix: java -cp "atsd-jdbc-1.2.1.jar:lib/*" your.package.MainClass
@@ -53,13 +53,15 @@ To using it in Java projects without build managers like Gradle or Maven you can
 
 ## Database Tools
 
-On the other hand you can use an universal database manager like DbVisualizer following appropriate user guide in order to create a custom driver based on JAR file from the link above.
+On the other hand you can use an universal database manager like [DbVisualizer](https://www.dbvis.com) following appropriate user guide in order to create a custom driver based on JAR file from the link above.
 
 ## JDBC URL
 
-Prefix of the JDBS driver is "jdbc:axibase:atsd:". Next you should specify URL where ATSD instance is available. And if it is necessary you should specify JDBC Connection Properties listed above. By combining all three segments together, you can get a full JDBC url using to get a connection.
+A prefix of the JDBC driver is "jdbc:axibase:atsd:". Next, you should specify a URL where your ATSD instance is available. And if it is necessary you should specify some JDBC Connection Properties listed above. By combining all three segments together, you can get a full JDBC url and use it for getting connection.
 
 ```
+Examples:
+
 jdbc:axibase:atsd:http://host.example.com/api/sql
 jdbc:axibase:atsd:http://host.example.com|:4567/api/sql;strategy=stream
 jdbc:axibase:atsd:https://host.example.com/api/sql;trustServerCertificate=true;strategy=file
