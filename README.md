@@ -2,8 +2,7 @@
 
 # JDBC driver
 
-The driver is designed to make easier to work with ATSD via SQL API. Communication occurs by means of transferring CSV data via HTTP/HTTPS protocols according to 
-[SQL API Documentation](http://axibase.com/atsd/api/#sql). You can find there as the description of the query format and the list of supported SQL functions.
+The driver is designed to provide more convenient working with ATSD via SQL API. The internal communication occurs by means of transferring CSV data via HTTP/HTTPS protocols according to [SQL API Documentation](http://axibase.com/atsd/api/#sql). You can find there as the description of the query format and the list of supported SQL functions.
 
 ## Apache Maven
 
@@ -35,7 +34,7 @@ The project is released under version 2.0 of the [Apache License](http://www.apa
 
 ## Tests
 
-In order to have an ability to run tests you have to choose (or create) own ATSD metrics to deal with it. It is expected the next set of test properies:
+In order to to run tests you will have to choose (or create) own ATSD metrics to deal with it. It is expected the next set of test properies:
 ```
 * -Daxibase.tsd.driver.jdbc.url=<ATSD_URL [http, https]>
 * -Daxibase.tsd.driver.jdbc.username=<ATSD_LOGIN> 
@@ -51,7 +50,7 @@ In order to have an ability to run tests you have to choose (or create) own ATSD
 * -Daxibase.tsd.driver.jdbc.trust=<IGNORE_CERTIFICATES> 
 * -Daxibase.tsd.driver.jdbc.strategy=<STORE_STRATEGY [file,stream]>
 ```
-The first three parameters are obligatory to run tests and the others are mandatory for more accurate checking.
+The first three parameters are mandatory to have tests done and the others are optional for more accurate checking.
 
 ## Usage
 
@@ -67,7 +66,7 @@ or the same to create a prepared statement:
 
 ```java
 Connection connection = DriverManager.getConnection("jdbc:axibase:atsd:" + <ATDS_URL>, <ATSD_LOGIN>, <ATSD_PASSWORD>);
-PreparedStatement prepareStatement = connection.prepareStatement(sql);
+PreparedStatement prepareStatement = connection.prepareStatement(<SQL_QUERY>);
 ResultSet resultSet = prepareStatement.executeQuery();
 	    ...
 }
