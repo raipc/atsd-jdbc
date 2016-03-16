@@ -147,6 +147,10 @@ public class ContentMetadata implements DriverConstants {
 			metaType = Types.BIGINT;
 			rep = ColumnMetaData.Rep.LONG;
 			break;
+		case DECIMAL_TYPE :
+			metaType = Types.DECIMAL;
+			rep = ColumnMetaData.Rep.NUMBER;
+			break;
 		case FLOAT_DATA_TYPE:
 			metaType = Types.FLOAT;
 			rep = ColumnMetaData.Rep.FLOAT;

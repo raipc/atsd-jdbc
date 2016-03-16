@@ -34,10 +34,11 @@ public interface DriverConstants {
 	static final String VERSION_ENDPOINT = "/version";
 	
 	static final String COLUMNS_SCHEME = "columns";
+	static final String DATATYPE_PROPERTY = "datatype";
+	static final String DECIMAL_TYPE = "decimal";
+	static final String DEFAULT_CATALOG_NAME = "axiCatalog";
 	static final String DOUBLE_DATA_TYPE = "double";
 	static final String FLOAT_DATA_TYPE = "float";
-	static final String DATATYPE_PROPERTY = "datatype";
-	static final String DEFAULT_CATALOG_NAME = "axiCatalog";
 	static final String INDEX_PROPERTY = "columnIndex";
 	static final String INTEGER_DATA_TYPE = "integer";
 	static final String LONG_DATA_TYPE = "long";
@@ -48,7 +49,6 @@ public interface DriverConstants {
 	static final String STRING_DATA_TYPE = "string";
 	static final String TABLE_PROPERTY = "table";
 	static final String TABLE_SCHEMA_SECTION = "tableSchema";
-	static final String TITLE_PROPERTY = "titles";
 	static final String TIME_STAMP_DATA_TYPE = "xsd:dateTimeStamp";
-
+	static final String TITLE_PROPERTY = "titles";
 }

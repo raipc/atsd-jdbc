@@ -462,6 +462,9 @@ public class RemoteConnectionTest extends AtsdProperties {
 				case Types.DOUBLE:
 					sb.append("getDouble: " + resultSet.getDouble(i));
 					break;
+				case Types.DECIMAL:
+					sb.append("getDecimal: " + resultSet.getBigDecimal(i));
+					break;
 				case Types.TIMESTAMP:
 					sb.append("getTimestamp: " + resultSet.getTimestamp(i).toString());
 					break;

@@ -4,6 +4,26 @@
 
 The driver is designed to provide more convenient working with ATSD via SQL API. The internal communication occurs by means of transferring CSV data via HTTP/HTTPS protocols according to [SQL API Documentation](http://axibase.com/atsd/api/#sql). You can find there as the description of the query format and the list of supported SQL functions.
 
+## Supported Data Types
+
+| TYPE NAME | CASE SENSITIVE | DATA TYPE | PRECISION  |
+|:---------:|---------------:|----------:|-----------:|
+| DECIMAL | false | 3 | -1 |
+| DOUBLE | false | 8 | 52 |
+| FLOAT | false | 6 | 23 |
+| INTEGER | false | 4 | 10 |
+| LONG | false | -5 | 19 |
+| SHORT | false | 5 | 5 |
+| STRING | true  | 12 | 2147483647 |
+| TIMESTAMP | false | 93 | 23 |
+
+## JDBC Connection Properties Supported by Driver
+
+Property Name | Valid Values | Default
+--- | --- | ---
+trustServerCertificate | true, false | `false`
+strategy | file, stream | `stream`
+
 ## Apache Maven
 
 You can find the project in the central repository.
@@ -22,15 +42,36 @@ You can find the project in the central repository.
 $ mvn -DskipTests=true clean install
 ```
 
+## Classpath
+
+To using it in Java projects without build managers like Gradle or Maven you can get a JAR library from Maven Central: [Direct URL](http://search.maven.org/remotecontent?filepath=com/axibase/atsd-jdbc/1.2.1/atsd-jdbc-1.2.1.jar) and add it to the classpath of your application.
+
+```
+* Unix: java -cp "atsd-jdbc-1.2.1.jar:lib/*" your.package.MainClass
+* Windows java -cp "atsd-jdbc-1.2.1.jar;lib/*" your.package.MainClass
+```
+
+## Database Tools
+
+On the other hand you can use an universal database manager like DbVisualizer following appropriate user guide in order to create a custom driver based on JAR file from the link above.
+
+## JDBC URL
+
+Prefix of the JDBS driver is "jdbc:axibase:atsd:". Next you should specify URL where ATSD instance is available. And if it is necessary you should specify JDBC Connection Properties listed above. By combining all three segments together, you can get a full JDBC url using to get a connection.
+
+```
+jdbc:axibase:atsd:http://host.example.com/api/sql
+jdbc:axibase:atsd:http://host.example.com|:4567/api/sql;strategy=stream
+jdbc:axibase:atsd:https://host.example.com/api/sql;trustServerCertificate=true;strategy=file
+```
+
 ## License
 
 The project is released under version 2.0 of the [Apache License](http://www.apache.org/licenses/LICENSE-2.0).
 
-
 ## Requirements
 
 * Java 1.7 and later
-* Maven 3 and later
 
 ## Tests
 
@@ -53,8 +94,7 @@ In order to to run tests you will have to choose (or create) own ATSD metrics to
 The first three parameters are mandatory to have tests done and the others are optional for more accurate checking.
 
 ## Usage
-
-To get started you should have ATSD instance started and valid credentials to deal with it. Prefix of the JDBS driver is "jdbc:axibase:atsd:". In general to create SQL statement you can use the usual java approach like:
+To get started you should have ATSD instance started and valid credentials to deal with it. In general to create SQL statement you can use the usual java approach like:
 
 ```java
 Connection connection = DriverManager.getConnection("jdbc:axibase:atsd:" + <ATDS_URL>, <ATSD_LOGIN>, <ATSD_PASSWORD>);
@@ -89,30 +129,21 @@ In order to check a basic way of using driver you could run the next simple exam
 		System.out.println("Product Version:\t" + databaseProductVersion);
 		System.out.println("Driver Name:    \t" + driverName);
 		System.out.println("Driver Version: \t" + driverVersion);
-		System.out.println("\nTypeInfo:");
-		final ResultSet rs0 = metaData.getTypeInfo();
-		while (rs0.next()) {
-			final String name = rs0.getString("TYPE_NAME");
-			final int type = rs0.getInt("DATA_TYPE");
-			final int precision = rs0.getInt("PRECISION");
-			final boolean isCS = rs0.getBoolean("CASE_SENSITIVE");
-			System.out.println(String.format("\tName: %s     \tCS: %s \tType: %s    \tPrecision: %s", name, isCS, type, precision));
-		}
-		System.out.println("\nTableTypes:");
-		final ResultSet rs1 = metaData.getTableTypes();
-		while (rs1.next()) {
-			final String type = rs1.getString(1);
-			System.out.println('\t' + type);
-		}
-		final ResultSet rs2 = metaData.getCatalogs();
-		while (rs2.next()) {
-			final String catalog = rs2.getString(1);
+		System.out.println("\nTableTypes:")
+		final ResultSet rs = metaData.getCatalogs();
+		while (rs.next()) {
+			final String catalog = rs.getString(1);
 			System.out.println("\nCatalog: \t" + catalog);
-			final ResultSet rs3 = metaData.getSchemas(catalog, null);
-			while (rs3.next()) {
-				final String schema = rs3.getString(1);
+			final ResultSet rs1 = metaData.getSchemas(catalog, null);
+			while (rs1.next()) {
+				final String schema = rs1.getString(1);
 				System.out.println("Schema: \t" + schema);
 			}
+		};
+		final ResultSet rs2 = metaData.getTableTypes();
+		while (rs2.next()) {
+			final String type = rs2.getString(1);
+			System.out.println('\t' + type);
 		}
 		try (ResultSet resultSet = statement.executeQuery("SELECT * from <METRIC_NAME> LIMIT 100");) {
 			final ResultSetMetaData rsmd = resultSet.getMetaData();
@@ -148,6 +179,9 @@ In order to check a basic way of using driver you could run the next simple exam
 					case Types.DOUBLE:
 						sb.append(" getDouble: " + resultSet.getDouble(i));
 						break;
+					case Types.DECIMAL:
+						sb.append("getDecimal: " + resultSet.getBigDecimal(i));
+						break;							
 					case Types.TIMESTAMP:
 						sb.append(" getTimestamp: " + resultSet.getTimestamp(i).toString());
 						break;
@@ -172,15 +206,6 @@ Product Name:   	Axibase
 Product Version:	Axibase Time Series Database, <ATSD_EDITION>, Revision: <ATSD_REVISION_NUMBER>
 Driver Name:    	ATSD JDBC driver
 Driver Version: 	<DRIVER_VERSION>
-
-TypeInfo:
-	Name: LONG		CS: false	Type: -5	Precision: 19
-	Name: DOUBLE	CS: false	Type: 8		Precision: 52
-	Name: INTEGER	CS: false	Type: 4		Precision: 10
-	Name: FLOAT		CS: false	Type: 6		Precision: 23
-	Name: SHORT		CS: false	Type: 5		Precision: 5
-	Name: TIMESTAMP	CS: false	Type: 93	Precision: 23
-	Name: STRING	CS: true	Type: 12	Precision: 2147483647
 	
 TableTypes:
 	TABLE

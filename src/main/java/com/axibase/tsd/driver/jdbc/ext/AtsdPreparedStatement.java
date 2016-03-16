@@ -103,7 +103,7 @@ public class AtsdPreparedStatement extends AvaticaPreparedStatement {
 
 	@Override
 	public void setShort(int parameterIndex, short value) throws SQLException {
-		parameters.put(parameterIndex, TypedValue.ofSerial(ColumnMetaData.Rep.DOUBLE, null));
+		parameters.put(parameterIndex, TypedValue.ofSerial(ColumnMetaData.Rep.SHORT, null));
 	}
 
 	@Override

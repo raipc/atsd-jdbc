@@ -17,6 +17,7 @@ package com.axibase.tsd.driver.jdbc.ext;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
+import java.math.BigDecimal;
 import java.security.GeneralSecurityException;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -300,13 +301,14 @@ public class AtsdMeta extends MetaImpl {
 	@Override
 	public MetaResultSet getTypeInfo(ConnectionHandle ch) {
 		final List<Object> list = new ArrayList<Object>();
-		list.add(getTypeInfo("LONG", Types.BIGINT, false));
+		list.add(getTypeInfo("DECIMAL", Types.DECIMAL, false));
 		list.add(getTypeInfo("DOUBLE", Types.DOUBLE, false));
-		list.add(getTypeInfo("INTEGER", Types.INTEGER, false));
 		list.add(getTypeInfo("FLOAT", Types.FLOAT, false));
+		list.add(getTypeInfo("INTEGER", Types.INTEGER, false));
+		list.add(getTypeInfo("LONG", Types.BIGINT, false));
 		list.add(getTypeInfo("SHORT", Types.SMALLINT, false));
-		list.add(getTypeInfo("TIMESTAMP", Types.TIMESTAMP, false));
 		list.add(getTypeInfo("STRING", Types.VARCHAR, true));
+		list.add(getTypeInfo("TIMESTAMP", Types.TIMESTAMP, false));
 		return getResultSet((Iterable<Object>) list, MetaTypeInfo.class, "TYPE_NAME", "DATA_TYPE", "PRECISION",
 				"LITERAL_PREFIX", "LITERAL_SUFFIX", "CREATE_PARAMS", "NULLABLE", "CASE_SENSITIVE", "SEARCHABLE",
 				"UNSIGNED_ATTRIBUTE", "FIXED_PREC_SCALE", "AUTO_INCREMENT", "LOCAL_TYPE_NAME", "MINIMUM_SCALE",
@@ -441,6 +443,17 @@ public class AtsdMeta extends MetaImpl {
 										Arrays.toString(sarray), i);
 						}
 						row.add(d);
+						break;
+					case Types.DECIMAL:
+						BigDecimal bd = null;
+						try {
+							bd = new BigDecimal(sarray[i]);
+						} catch (final NumberFormatException nfe) {
+							if (logger.isDebugEnabled())
+								logger.debug("[getFrame] decimal type mismatched: {} on {} position",
+										Arrays.toString(sarray), i);
+						}
+						row.add(bd);
 						break;
 					case Types.TIMESTAMP:
 						Timestamp ts = null;
