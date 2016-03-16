@@ -1,8 +1,9 @@
-[![Build Status](https://secure.travis-ci.org/axibase/atsd-jdbc.png?branch=master)](https://travis-ci.org/axibase/atsd-jdbc) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.axibase/atsd-jdbc/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.axibase/atsd-jdbc) [![Dependency Status](https://www.versioneye.com/user/projects/56e93b274e714c003625c322/badge.svg)](https://www.versioneye.com/user/projects)
+[![Build Status](https://secure.travis-ci.org/axibase/atsd-jdbc.png?branch=master)](https://travis-ci.org/axibase/atsd-jdbc) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.axibase/atsd-jdbc/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.axibase/atsd-jdbc) [![Dependency Status](https://www.versioneye.com/user/projects/56e93b274e714c003625c322/badge.svg)](https://www.versioneye.com/user/projects) [![Coverage Status](https://coveralls.io/repos/github/axibase/atsd-jdbc/badge.svg?branch=master)](https://coveralls.io/github/axibase/atsd-jdbc?branch=master) [![Codacy Badge](https://api.codacy.com/project/badge/grade/ee9af82a9b734fe595f35811c632868e)](https://www.codacy.com/app/alexey-reztsov/atsd-jdbc)
 
 # JDBC driver
 
-The driver is designed to provide more convenient working with ATSD via SQL API. The internal communication occurs by means of transferring CSV data via HTTP/HTTPS protocols according to [SQL API Documentation](http://axibase.com/atsd/api/#sql). You can find there as the description of the query format and the list of supported SQL functions.
+The driver is designed to provide a convenient way of access to ATSD instance via SQL API. The internal communication occurs by means of transferring CSV data via HTTP or HTTPS protocols. In [SQL API Documentation](http://axibase.com/atsd/api/#sql) you can find the description of the query format 	
+as well as the list of supported SQL functions and other useful information.
 
 ## Supported Data Types
 
@@ -36,7 +37,7 @@ You can find the project in the central repository.
 </dependency>
 ```
 
-## Building
+Or you can build the project on your own.
 
 ```bash
 $ mvn -DskipTests=true clean install
@@ -44,7 +45,7 @@ $ mvn -DskipTests=true clean install
 
 ## Classpath
 
-For using in Java projects without build managers like Gradle or Maven you can get a JAR library from Maven Central: [Direct URL](http://search.maven.org/remotecontent?filepath=com/axibase/atsd-jdbc/1.2.1/atsd-jdbc-1.2.1.jar) and add it to the classpath of your application.
+If you do not use build managers such as Gradle or Maven you can get a JAR library from Maven Central: [Direct URL](http://search.maven.org/remotecontent?filepath=com/axibase/atsd-jdbc/1.2.1/atsd-jdbc-1.2.1.jar) and add it to the classpath of your application.
 
 ```
 * Unix: java -cp "atsd-jdbc-1.2.1.jar:lib/*" your.package.MainClass
@@ -53,11 +54,11 @@ For using in Java projects without build managers like Gradle or Maven you can g
 
 ## Database Tools
 
-On the other hand you can use an universal database manager like [DbVisualizer](https://www.dbvis.com) following appropriate user guide in order to create a custom driver based on JAR file from the link above.
+On the other hand you can use an universal database manager like [DbVisualizer](https://www.dbvis.com). Please follow their user guide to create a custom driver based on JAR file from the link above.
 
 ## JDBC URL
 
-A prefix of the JDBC driver is "jdbc:axibase:atsd:". Next, you should specify a URL where your ATSD instance is available. And if it is necessary you should specify some JDBC Connection Properties listed above. By combining all three segments together, you can get a full JDBC url and use it for getting connection.
+A prefix of the JDBC driver is "jdbc:axibase:atsd:". Next, you should specify a URL where your ATSD instance is available. And if it is necessary you should specify some JDBC Connection Properties listed above. By combining all three segments together, you can get a full JDBC URL and use it to get a connection.
 
 ```
 Examples:
@@ -77,7 +78,8 @@ The project is released under version 2.0 of the [Apache License](http://www.apa
 
 ## Tests
 
-In order to to run tests you will have to choose (or create) own ATSD metrics to deal with it. It is expected the next set of test properies:
+In order to run tests you have to choose (or create) own ATSD metrics. A test phase is expecting the set of test properties provided below. The first three parameters are mandatory to have tests done and the others are optional for more accurate checking.
+
 ```
 * -Daxibase.tsd.driver.jdbc.url=<ATSD_URL [http, https]>
 * -Daxibase.tsd.driver.jdbc.username=<ATSD_LOGIN> 
@@ -93,10 +95,11 @@ In order to to run tests you will have to choose (or create) own ATSD metrics to
 * -Daxibase.tsd.driver.jdbc.trust=<IGNORE_CERTIFICATES> 
 * -Daxibase.tsd.driver.jdbc.strategy=<STORE_STRATEGY [file,stream]>
 ```
-The first three parameters are mandatory to have tests done and the others are optional for more accurate checking.
+
 
 ## Usage
-To get started you should have ATSD instance started and valid credentials to deal with it. In general to create SQL statement you can use the usual java approach like:
+
+To begin you should have your ATSD instance started and valid credentials to it. In general to create SQL statement you can use the usual java approach:
 
 ```java
 Connection connection = DriverManager.getConnection("jdbc:axibase:atsd:" + <ATDS_URL>, <ATSD_LOGIN>, <ATSD_PASSWORD>);
@@ -114,9 +117,8 @@ ResultSet resultSet = prepareStatement.executeQuery();
 }
 ```
 
-Please note that the current version of the driver has some limitations. It is made read-only by not allowing users to change the data source. It is possible to iterate in one direction only one by one. No positioning is supported yet but would be added later.
-
-In order to check a basic way of using driver you could run the next simple example:
+Please note that the current version of the driver has some limitations. It is made read-only by not allowing users to change the data source. It is possible to iterate over records one by one in the direct direction. No positioning is supported yet but may be added later.
+In order to check a basic way of using driver you can run the next simple example:
 
 ```java
 	Class.forName("com.axibase.tsd.driver.jdbc.AtsdDriver");
