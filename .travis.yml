@@ -1,7 +1,7 @@
 language: java
 sudo: false
 script:
-  - 'mvn package -Dgpg.skip -DskipTests=true'
+  - mvn verify -B -Dgpg.skip -DskipTests=true
 jdk:
   - oraclejdk7
   - openjdk7
