@@ -27,6 +27,10 @@
 		<url>https://github.com/axibase/atsd-jdbc.git</url>
 		<tag>HEAD</tag>
 	</scm>
+	<ciManagement>
+        	<system>travis</system>
+        	<url>https://travis-ci.org/axibase/atsd-jdbc/</url>
+    	</ciManagement>
 	<properties>
 		<java.source.version>1.7</java.source.version>
 		<java.target.version>1.7</java.target.version>
