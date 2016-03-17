@@ -16,6 +16,7 @@ package com.axibase.tsd.driver.jdbc.strategies;
 
 import static org.junit.Assert.*;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,6 +32,7 @@ import org.slf4j.LoggerFactory;
 import com.axibase.tsd.driver.jdbc.AtsdProperties;
 import com.axibase.tsd.driver.jdbc.content.ContentDescription;
 import com.axibase.tsd.driver.jdbc.content.StatementContext;
+import com.axibase.tsd.driver.jdbc.ext.AtsdException;
 import com.axibase.tsd.driver.jdbc.intf.IContentProtocol;
 import com.axibase.tsd.driver.jdbc.intf.IStoreStrategy;
 import com.axibase.tsd.driver.jdbc.protocol.ProtocolFactory;
@@ -101,27 +103,30 @@ public class StrategyTest extends AtsdProperties {
 			assertNotNull(header);
 			if (logger.isDebugEnabled())
 				logger.debug("Header: " + Arrays.toString(header));
-			int pos = 0;
-			String[] last = null;
-			while (true) {
-				final List<String[]> fetched = strategy.fetch(pos, 100);
-				assertNotNull(fetched);
-				int size = fetched.size();
-				if (size != 100) {
-					if (size != 0) {
-						last = fetched.get(size - 1);
-					}
-					if (logger.isDebugEnabled())
-						logger.debug(Arrays.toString(last));
-					return last;
-				} else {
-					last = fetched.get(99);
+			return fetchAllRecords(strategy);
+		}
+	}
+
+	private String[] fetchAllRecords(final IStoreStrategy strategy) throws IOException, AtsdException {
+		int pos = 0;
+		String[] last = null;
+		while (true) {
+			final List<String[]> fetched = strategy.fetch(pos, 100);
+			assertNotNull(fetched);
+			int size = fetched.size();
+			if (size != 100) {
+				if (size != 0) {
+					last = fetched.get(size - 1);
 				}
-				pos += size;
-				if (pos % 100000 == 0) {
-					if (logger.isDebugEnabled())
-						logger.debug(String.format("In progress - %s", pos));
-				}
+				if (logger.isDebugEnabled())
+					logger.debug(Arrays.toString(last));
+				return last;
+			} else {
+				last = fetched.get(99);
+			}
+			pos += size;
+			if (pos % 100000 == 0 && logger.isDebugEnabled()) {
+				logger.debug(String.format("In progress - %s", pos));
 			}
 		}
 	}

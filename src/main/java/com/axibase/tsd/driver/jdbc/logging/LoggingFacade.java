@@ -20,7 +20,7 @@ public abstract class LoggingFacade {
 		try {
 			return (LoggingFacade) Class.forName("com.axibase.tsd.driver.jdbc.logging.LoggingSlf4jImpl")
 					.getDeclaredConstructor(Class.class).newInstance(clazz);
-		} catch (Throwable ignored) {
+		} catch (ReflectiveOperationException | IllegalArgumentException | SecurityException ignored) {
 		}
 		return new LoggingFacadeStub();
 	}

@@ -29,11 +29,11 @@ import com.axibase.tsd.driver.jdbc.strategies.StrategyStatus;
 
 public class FileChannelProducer implements IProducer {
 	private static final LoggingFacade logger = LoggingFacade.getLogger(FileChannelProducer.class);
-
+	private final StrategyStatus status;
 	private AsynchronousFileChannel writeChannel;
 	private Future<Long> taskResult;
 	private ExecutorService execIn;
-	private StrategyStatus status;
+
 
 	public FileChannelProducer(final StrategyStatus status) {
 		this.status = status;

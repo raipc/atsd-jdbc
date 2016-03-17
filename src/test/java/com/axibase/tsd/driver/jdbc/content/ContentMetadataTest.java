@@ -27,7 +27,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.axibase.tsd.driver.jdbc.content.ContentMetadata;
 import com.axibase.tsd.driver.jdbc.ext.AtsdException;
 
 public class ContentMetadataTest {
@@ -49,18 +48,19 @@ public class ContentMetadataTest {
 
 	private void checkMetadataList(String schema, int expected) {
 		try (final InputStream is = this.getClass().getResourceAsStream(schema);
-				final Scanner scanner = new java.util.Scanner(is).useDelimiter("\\A");) {
+				final Scanner scanner = new Scanner(is);) {
+			scanner.useDelimiter("\\A");
 			String json = scanner.hasNext() ? scanner.next() : "";
 			assertTrue(json != null && json.length() != 0 && json.startsWith(CONTEXT_START));
 			final List<ColumnMetaData> metadataList = ContentMetadata.buildMetadataList(json);
 			assertTrue(metadataList != null && metadataList.size() == expected);
 			for (ColumnMetaData cmd : metadataList) {
 				if (cmd.ordinal == 1)
-					assertTrue(cmd.columnName.equals("datetime"));
+					assertTrue("datetime".equals(cmd.columnName));
 				else if (cmd.ordinal == 2)
-					assertTrue(cmd.columnName.equals("value"));
+					assertTrue("value".equals(cmd.columnName));
 				else if (cmd.ordinal == 3)
-					assertTrue(cmd.columnName.equals("entity"));
+					assertTrue("entity".equals(cmd.columnName));
 			}
 		} catch (final IOException | AtsdException e) {
 			fail(e.getMessage());

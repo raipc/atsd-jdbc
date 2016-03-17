@@ -40,9 +40,9 @@ public class FileStoreStrategy implements IStoreStrategy {
 	private static final LoggingFacade logger = LoggingFacade.getLogger(FileStoreStrategy.class);
 	private static final String TMP_FILE_PREFIX = "atsd-driver";
 
-	private IProducer producer;
-	private IConsumer consumer;
-	private StrategyStatus status;
+	private final IProducer producer;
+	private final IConsumer consumer;
+	private final StrategyStatus status;
 	private Path tmp;
 	private long position = 0;
 

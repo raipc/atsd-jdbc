@@ -66,15 +66,15 @@ public class CalciteTest {
 			boolean b = tables.next();
 			assertTrue(b);
 			ResultSet res = connection.getMetaData().getColumns(null, null, "AXI", "datetime");
-			b = tables.next();
+			b = res.next();
 			assertTrue(b);
 			assertEquals(res.getInt("DATA_TYPE"), java.sql.Types.VARCHAR);
 			res = connection.getMetaData().getColumns(null, null, "AXI", "value");
-			b = tables.next();
+			b = res.next();
 			assertTrue(b);
 			assertEquals(res.getInt("DATA_TYPE"), java.sql.Types.VARCHAR);
 			res = connection.getMetaData().getColumns(null, null, "AXI", "entity");
-			b = tables.next();
+			b = res.next();
 			assertTrue(b);
 			assertEquals(res.getInt("DATA_TYPE"), java.sql.Types.VARCHAR);
 			Statement statement = connection.createStatement();

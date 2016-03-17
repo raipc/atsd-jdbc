@@ -32,9 +32,9 @@ public class FileChannelWriter implements Callable<Long> {
 	private static final LoggingFacade logger = LoggingFacade.getLogger(FileChannelWriter.class);
 
 	private static final int PART_LENGTH = 1 * 1024 * 1024;
-	private ReadableByteChannel inputChannel;
-	private AsynchronousFileChannel writeChannel;
-	private StrategyStatus status;
+	private final ReadableByteChannel inputChannel;
+	private final AsynchronousFileChannel writeChannel;
+	private final StrategyStatus status;
 
 	public FileChannelWriter(final ReadableByteChannel inputChannel, final AsynchronousFileChannel writeChannel,
 			final StrategyStatus status) {

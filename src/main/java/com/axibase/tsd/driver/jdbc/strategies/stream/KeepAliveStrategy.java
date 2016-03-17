@@ -34,8 +34,8 @@ import com.axibase.tsd.driver.jdbc.strategies.StrategyStatus;
 public class KeepAliveStrategy implements IStoreStrategy {
 	private static final LoggingFacade logger = LoggingFacade.getLogger(KeepAliveStrategy.class);
 
-	private IConsumer consumer;
-	private StrategyStatus status;
+	private final IConsumer consumer;
+	private final StrategyStatus status;
 	private InputStream is;
 	private long position = 0;
 

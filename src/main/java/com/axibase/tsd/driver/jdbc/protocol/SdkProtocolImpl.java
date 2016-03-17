@@ -92,6 +92,31 @@ public class SdkProtocolImpl implements DriverConstants, IContentProtocol {
 		this.conn = getHttpURLConnection(url);
 		if (cd.isSsl())
 			doTrustToCertificates((HttpsURLConnection) this.conn);
+		setBaseProperties(method);
+		if (StringUtils.isEmpty(cd.getJsonScheme()))
+			processResponse(conn.getHeaderFields());
+		long cl = conn.getContentLengthLong();
+		if (logger.isDebugEnabled()) {
+			logger.debug("[response] " + cl);
+		}
+		cd.setContentLength(cl);
+		if (isHead)
+			return null;
+		int code = conn.getResponseCode();
+		if (code != HttpsURLConnection.HTTP_OK) {
+			if (logger.isDebugEnabled())
+				logger.debug("Response code: " + code);
+			throw new AtsdException("HTTP code " + code);
+		}
+		boolean gzipped = COMPRESSION_ENCODING.equals(conn.getContentEncoding());
+		final InputStream is = conn.getInputStream();
+		return (gzipped ? (InputStream) new GZIPInputStream(is) : is);
+	}
+
+	private void setBaseProperties(String method) throws IOException {
+		boolean isHead = method.equals(HEAD_METHOD);
+		boolean isPost = method.equals(POST_METHOD);
+		String postParams = cd.getPostParams();
 		final String basicCreds = new StringBuilder(cd.getLogin()).append(':').append(cd.getPassword()).toString();
 		final byte[] encoded = Base64.encodeBase64(basicCreds.getBytes());
 		final String authHeader = AUTHORIZATION_TYPE + new String(encoded);
@@ -122,24 +147,6 @@ public class SdkProtocolImpl implements DriverConstants, IContentProtocol {
 			writer.close();
 			os.close();
 		}
-		if (StringUtils.isEmpty(cd.getJsonScheme()))
-			processResponse(conn.getHeaderFields());
-		long cl = conn.getContentLengthLong();
-		if (logger.isDebugEnabled()) {
-			logger.debug("[response] " + cl);
-		}
-		cd.setContentLength(cl);
-		if (isHead)
-			return null;
-		int code = conn.getResponseCode();
-		if (code != HttpsURLConnection.HTTP_OK) {
-			if (logger.isDebugEnabled())
-				logger.debug("Response code: " + code);
-			throw new AtsdException("HTTP code " + code);
-		}
-		boolean gzipped = COMPRESSION_ENCODING.equals(conn.getContentEncoding());
-		final InputStream is = conn.getInputStream();
-		return (gzipped ? (InputStream) new GZIPInputStream(is) : is);
 	}
 
 	public HttpURLConnection getHttpURLConnection(String uri) throws IOException {
@@ -154,11 +161,9 @@ public class SdkProtocolImpl implements DriverConstants, IContentProtocol {
 			}
 
 			public void checkServerTrusted(X509Certificate[] certs, String authType) throws CertificateException {
-				return;
 			}
 
 			public void checkClientTrusted(X509Certificate[] certs, String authType) throws CertificateException {
-				return;
 			}
 		} };
 		final SSLContext sc;
@@ -183,10 +188,9 @@ public class SdkProtocolImpl implements DriverConstants, IContentProtocol {
 		// HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
 		final HostnameVerifier hostnameVerifier = new HostnameVerifier() {
 			public boolean verify(String urlHostName, SSLSession session) {
-				if (!urlHostName.equalsIgnoreCase(session.getPeerHost())) {
-					if (logger.isDebugEnabled())
-						logger.debug("[doTrustToCertificates] URL host {} is different to SSLSession host {}",
-								urlHostName, session.getPeerHost());
+				if (!urlHostName.equalsIgnoreCase(session.getPeerHost()) && logger.isDebugEnabled()) {
+					logger.debug("[doTrustToCertificates] URL host {} is different to SSLSession host {}", urlHostName,
+							session.getPeerHost());
 				}
 				return true;
 			}

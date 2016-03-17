@@ -82,8 +82,13 @@ public class FileChannelIterator<T> implements Iterator<String[]>, AutoCloseable
 			Future<FileLock> fileLock;
 			try {
 				fileLock = readChannel.lock(data.getPosition(), PART_LENGTH, true);
-				while (!fileLock.isDone())
-					;
+				while (!fileLock.isDone()) {
+					try {
+						Thread.sleep(1);
+					} catch (InterruptedException e) {
+						logger.error(e.getMessage(), e);
+					}
+				}
 			} catch (OverlappingFileLockException e) {
 				if (logger.isTraceEnabled())
 					logger.trace("[next] overlapped");

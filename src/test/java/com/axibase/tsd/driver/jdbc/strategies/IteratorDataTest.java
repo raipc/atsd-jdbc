@@ -33,7 +33,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.axibase.tsd.driver.jdbc.content.StatementContext;
-import com.axibase.tsd.driver.jdbc.strategies.IteratorData;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 

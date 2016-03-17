@@ -28,8 +28,8 @@ import com.axibase.tsd.driver.jdbc.strategies.StrategyStatus;
 public class KeepAliveConsumer implements IConsumer {
 	private static final LoggingFacade logger = LoggingFacade.getLogger(KeepAliveConsumer.class);
 
-	private StrategyStatus status;
-	private StatementContext context;
+	private final StrategyStatus status;
+	private final StatementContext context;
 	private KeepAliveIterator<String[]> iterator;
 
 	public KeepAliveConsumer(final StatementContext context, final StrategyStatus status) {
@@ -65,7 +65,7 @@ public class KeepAliveConsumer implements IConsumer {
 	}
 
 	public class IterableConsumer implements Iterable<String[]> {
-		private Iterator<String[]> iterator;
+		private final Iterator<String[]> iterator;
 
 		public IterableConsumer(Iterator<String[]> iterator) {
 			this.iterator = iterator;

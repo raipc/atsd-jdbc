@@ -20,11 +20,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.helpers.NOPLogger;
 
-import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
-
 public class LoggingSlf4jImpl extends LoggingFacade {
 	private Logger logger;
-	private PrintStream filterOut = new PrintStream(System.err) {
+	private final PrintStream filterOut = new PrintStream(System.err) {
 	    public void println(String l) {
 	        if (! l.startsWith("SLF4J") )
 	            super.println(l);

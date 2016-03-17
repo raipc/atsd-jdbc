@@ -29,6 +29,7 @@ import java.sql.SQLWarning;
 import java.sql.Statement;
 import java.sql.Types;
 import java.util.Enumeration;
+import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -133,7 +134,7 @@ public class RemoteConnectionTest extends AtsdProperties {
 
 	@Test
 	public final void testRemoteStatementWithJoins() throws AtsdException, SQLException {
-		if (StringUtils.isEmpty(TINY_TABLE) || !TINY_TABLE.toLowerCase().endsWith("cpu_busy"))
+		if (StringUtils.isEmpty(TINY_TABLE) || !TINY_TABLE.toLowerCase(Locale.US).endsWith("cpu_busy"))
 			return;
 		int count;
 		count = checkRemoteStatement("SELECT * FROM cpu_busy OUTER JOIN disk_used WHERE time > now - 1 * hour");
@@ -175,7 +176,7 @@ public class RemoteConnectionTest extends AtsdProperties {
 
 	@Test
 	public final void testRemotePreparedStatementsWithArg() throws AtsdException, SQLException {
-		if (StringUtils.isEmpty(TINY_TABLE) || !TINY_TABLE.toLowerCase().endsWith("cpu_busy"))
+		if (StringUtils.isEmpty(TINY_TABLE) || !TINY_TABLE.toLowerCase(Locale.US).endsWith("cpu_busy"))
 			return;
 		checkRemotePreparedStatementWithLimits(SELECT_ALL_CLAUSE + TINY_TABLE + WHERE_CLAUSE,
 				new String[] { "nurswgvml212" }, 1001, 10001);
@@ -195,7 +196,7 @@ public class RemoteConnectionTest extends AtsdProperties {
 
 	@Test
 	public final void testPreparedStatementsWithArgs() throws AtsdException, SQLException {
-		if (StringUtils.isEmpty(TINY_TABLE) || !TINY_TABLE.toLowerCase().endsWith("cpu_busy"))
+		if (StringUtils.isEmpty(TINY_TABLE) || !TINY_TABLE.toLowerCase(Locale.US).endsWith("cpu_busy"))
 			return;
 		checkRemotePreparedStatementWithLimits(
 				"SELECT time, value, tags.file_system FROM df.disk_used_percent WHERE tags.file_system LIKE ? AND datetime between ? and ?",
@@ -204,7 +205,7 @@ public class RemoteConnectionTest extends AtsdProperties {
 
 	@Test
 	public final void testPreparedStatementsWithAggregation() throws AtsdException, SQLException {
-		if (StringUtils.isEmpty(TINY_TABLE) || !TINY_TABLE.toLowerCase().endsWith("cpu_busy"))
+		if (StringUtils.isEmpty(TINY_TABLE) || !TINY_TABLE.toLowerCase(Locale.US).endsWith("cpu_busy"))
 			return;
 		checkRemotePreparedStatementWithLimits(
 				"SELECT count(*), entity, tags.*, period (30 minute) FROM df.disk_used "
@@ -271,11 +272,7 @@ public class RemoteConnectionTest extends AtsdProperties {
 	public final void wrongRemoteStatement() throws AssertionError, AtsdException, SQLException {
 		if (StringUtils.isEmpty(WRONG_TABLE))
 			throw new SQLException();
-		try {
-			checkRemoteStatement(SELECT_ALL_CLAUSE + WRONG_TABLE);
-		} catch (final SQLException e) {
-			throw e;
-		}
+		checkRemoteStatement(SELECT_ALL_CLAUSE + WRONG_TABLE);
 	}
 
 	private int checkRemoteStatement(String sql) throws AtsdException, SQLException {
@@ -442,31 +439,31 @@ public class RemoteConnectionTest extends AtsdProperties {
 				int type = rsmd.getColumnType(i);
 				if (i > 1)
 					sb.append("     \t");
-				sb.append(type + ":");
+				sb.append(type).append(':');
 				switch (type) {
 				case Types.VARCHAR:
-					sb.append("getString: " + resultSet.getString(i));
+					sb.append("getString: ").append(resultSet.getString(i));
 					break;
 				case Types.INTEGER:
-					sb.append("getInt: " + resultSet.getInt(i));
+					sb.append("getInt: ").append(resultSet.getInt(i));
 					break;
 				case Types.BIGINT:
-					sb.append("getLong: " + resultSet.getLong(i));
+					sb.append("getLong: ").append(resultSet.getLong(i));
 					break;
 				case Types.SMALLINT:
-					sb.append("getShort: " + resultSet.getShort(i));
+					sb.append("getShort: ").append(resultSet.getShort(i));
 					break;
 				case Types.FLOAT:
-					sb.append("getFloat: " + resultSet.getFloat(i));
+					sb.append("getFloat: ").append(resultSet.getFloat(i));
 					break;
 				case Types.DOUBLE:
-					sb.append("getDouble: " + resultSet.getDouble(i));
+					sb.append("getDouble: ").append(resultSet.getDouble(i));
 					break;
 				case Types.DECIMAL:
-					sb.append("getDecimal: " + resultSet.getBigDecimal(i));
+					sb.append("getDecimal: ").append(resultSet.getBigDecimal(i));
 					break;
 				case Types.TIMESTAMP:
-					sb.append("getTimestamp: " + resultSet.getTimestamp(i).toString());
+					sb.append("getTimestamp: ").append(resultSet.getTimestamp(i).toString());
 					break;
 				default:
 					throw new UnsupportedOperationException();

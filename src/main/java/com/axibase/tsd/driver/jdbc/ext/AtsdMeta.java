@@ -32,8 +32,10 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
+import java.util.TimeZone;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
@@ -61,7 +63,7 @@ import com.axibase.tsd.driver.jdbc.intf.IStoreStrategy;
 import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
 
 public class AtsdMeta extends MetaImpl {
-	private static final LoggingFacade logger = LoggingFacade.getLogger(AtsdMeta.class);
+	private static final LoggingFacade log = LoggingFacade.getLogger(AtsdMeta.class);
 	private static final int TIMESTAMP_LENGTH = "2016-01-01T00:00:00.000".length();
 	private final AtomicInteger idGenerator = new AtomicInteger(1);
 	private final Map<Integer, ContentMetadata> metaCache = new ConcurrentHashMap<>();
@@ -86,12 +88,12 @@ public class AtsdMeta extends MetaImpl {
 		try {
 			lock.lockInterruptibly();
 		} catch (InterruptedException e) {
-			if (logger.isDebugEnabled())
-				logger.debug("[prepare] " + e.getMessage());
+			if (log.isDebugEnabled())
+				log.debug("[prepare] " + e.getMessage());
 		}
 		final int id = idGenerator.getAndIncrement();
-		if (logger.isTraceEnabled()) {
-			logger.trace("[prepare] locked: {} handle: {} query: {}", lock.getHoldCount(), id, query);
+		if (log.isTraceEnabled()) {
+			log.trace("[prepare] locked: {} handle: {} query: {}", lock.getHoldCount(), id, query);
 		}
 		try {
 			final IDataProvider provider = initProvider(id, query);
@@ -99,8 +101,8 @@ public class AtsdMeta extends MetaImpl {
 			final ContentMetadata contentMetadata = findMetadata(query, ch.id, id);
 			return new StatementHandle(ch.id, id, contentMetadata.getSign());
 		} catch (final AtsdException | GeneralSecurityException | IOException e) {
-			if (logger.isDebugEnabled())
-				logger.debug("[prepare]" + e.getMessage());
+			if (log.isDebugEnabled())
+				log.debug("[prepare]" + e.getMessage());
 		}
 		return null;
 	}
@@ -108,8 +110,8 @@ public class AtsdMeta extends MetaImpl {
 	@Override
 	public ExecuteResult execute(StatementHandle h, List<TypedValue> parameterValues, long maxRowCount)
 			throws NoSuchStatementException {
-		if (logger.isTraceEnabled()) {
-			logger.trace("[execute] maxRowCount: {} parameters: {} handle: {}", maxRowCount, parameterValues.size(),
+		if (log.isTraceEnabled()) {
+			log.trace("[execute] maxRowCount: {} parameters: {} handle: {}", maxRowCount, parameterValues.size(),
 					h.toString());
 		}
 		final IDataProvider provider = providerCache.get(h.id);
@@ -138,13 +140,12 @@ public class AtsdMeta extends MetaImpl {
 					sb.append('\'').append(DATE_FORMATTER.get().format((java.sql.Date) next.value)).append('\'');
 				} else if (next.value instanceof java.sql.Time) {
 					sb.append('\'').append(TIME_FORMATTER.get().format((java.sql.Time) next.value)).append('\'');
-				} else if (next.value instanceof java.sql.Timestamp) {
-					sb.append('\'').append(TIMESTAMP_FORMATTER.get().format((java.sql.Timestamp) next.value))
-							.append('\'');
+				} else if (next.value instanceof Timestamp) {
+					sb.append('\'').append(TIMESTAMP_FORMATTER.get().format((Timestamp) next.value)).append('\'');
 				}
 			}
-			if (logger.isDebugEnabled())
-				logger.debug("[execute] " + sb.toString());
+			if (log.isDebugEnabled())
+				log.debug("[execute] " + sb.toString());
 			provider.getContentDescription().setQuery(sb.toString());
 		}
 		try {
@@ -152,8 +153,8 @@ public class AtsdMeta extends MetaImpl {
 			final ContentMetadata contentMetadata = findMetadata(query, h.connectionId, h.id);
 			return new ExecuteResult(contentMetadata.getList());
 		} catch (final AtsdException | GeneralSecurityException | IOException e) {
-			if (logger.isDebugEnabled())
-				logger.debug("[execute] " + e.getMessage());
+			if (log.isDebugEnabled())
+				log.debug("[execute] " + e.getMessage());
 			throw new NoSuchStatementException(h);
 		}
 	}
@@ -164,11 +165,11 @@ public class AtsdMeta extends MetaImpl {
 		try {
 			lock.lockInterruptibly();
 		} catch (InterruptedException e) {
-			if (logger.isDebugEnabled())
-				logger.debug("[prepareAndExecute] " + e.getMessage());
+			if (log.isDebugEnabled())
+				log.debug("[prepareAndExecute] " + e.getMessage());
 		}
-		if (logger.isTraceEnabled()) {
-			logger.trace("[prepareAndExecute] locked: {} maxRowCount: {} handle: {} query: {}", lock.getHoldCount(),
+		if (log.isTraceEnabled()) {
+			log.trace("[prepareAndExecute] locked: {} maxRowCount: {} handle: {} query: {}", lock.getHoldCount(),
 					maxRowCount, h.toString(), query);
 		}
 		try {
@@ -183,8 +184,8 @@ public class AtsdMeta extends MetaImpl {
 			callback.execute();
 			return result;
 		} catch (final AtsdException | IOException | SQLException | GeneralSecurityException e) {
-			if (logger.isDebugEnabled())
-				logger.debug("[prepareAndExecute] " + e.getMessage());
+			if (log.isDebugEnabled())
+				log.debug("[prepareAndExecute] " + e.getMessage());
 			throw new NoSuchStatementException(h);
 		}
 	}
@@ -193,8 +194,8 @@ public class AtsdMeta extends MetaImpl {
 	public Frame fetch(final StatementHandle h, long loffset, int fetchMaxRowCount)
 			throws NoSuchStatementException, MissingResultsException {
 		final int offset = (int) loffset;
-		if (logger.isTraceEnabled()) {
-			logger.trace("[fetch] fetchMaxRowCount: {} offset: {}", fetchMaxRowCount, offset);
+		if (log.isTraceEnabled()) {
+			log.trace("[fetch] fetchMaxRowCount: {} offset: {}", fetchMaxRowCount, offset);
 		}
 		IDataProvider provider = providerCache.get(h.id);
 		assert provider != null;
@@ -211,8 +212,8 @@ public class AtsdMeta extends MetaImpl {
 			final List<Object> rows = getFrame(h, fetchMaxRowCount, subList);
 			return new Meta.Frame(loffset, rows.size() < fetchMaxRowCount, rows);
 		} catch (final AtsdException | IOException e) {
-			if (logger.isDebugEnabled())
-				logger.debug("[fetch] " + e.getMessage());
+			if (log.isDebugEnabled())
+				log.debug("[fetch] " + e.getMessage());
 			throw new MissingResultsException(h);
 		}
 
@@ -220,17 +221,17 @@ public class AtsdMeta extends MetaImpl {
 
 	@Override
 	public void closeStatement(StatementHandle h) {
-		if (logger.isDebugEnabled())
-			logger.debug("[closeStatement] " + h.id + "->" + h.toString());
+		if (log.isDebugEnabled())
+			log.debug("[closeStatement] " + h.id + "->" + h.toString());
 		closeProviderCaches(h);
 		closeProvider(h);
 		if (lock.isHeldByCurrentThread()) {
 			lock.unlock();
-			if (logger.isTraceEnabled())
-				logger.trace("[unlocked]");
+			if (log.isTraceEnabled())
+				log.trace("[unlocked]");
 		}
-		if (logger.isTraceEnabled())
-			logger.trace("[closedStatement]");
+		if (log.isTraceEnabled())
+			log.trace("[closedStatement]");
 	}
 
 	private void closeProviderCaches(StatementHandle h) {
@@ -248,8 +249,8 @@ public class AtsdMeta extends MetaImpl {
 				try {
 					provider.close();
 				} catch (final Exception e) {
-					if (logger.isDebugEnabled())
-						logger.debug("[closeStatement] " + e.getMessage());
+					if (log.isDebugEnabled())
+						log.debug("[closeStatement] " + e.getMessage());
 				}
 		}
 	}
@@ -258,11 +259,11 @@ public class AtsdMeta extends MetaImpl {
 		closeCaches();
 		if (lock.isHeldByCurrentThread()) {
 			lock.unlock();
-			if (logger.isTraceEnabled())
-				logger.trace("[unlocked]");
+			if (log.isTraceEnabled())
+				log.trace("[unlocked]");
 		}
-		if (logger.isTraceEnabled())
-			logger.trace("[closed]");
+		if (log.isTraceEnabled())
+			log.trace("[closed]");
 	}
 
 	private void closeCaches() {
@@ -276,8 +277,8 @@ public class AtsdMeta extends MetaImpl {
 
 	@Override
 	public boolean syncResults(StatementHandle sh, QueryState state, long offset) throws NoSuchStatementException {
-		if (logger.isDebugEnabled())
-			logger.debug("[syncResults] " + offset);
+		if (log.isDebugEnabled())
+			log.debug("[syncResults] " + offset);
 		return false;
 	}
 
@@ -392,8 +393,8 @@ public class AtsdMeta extends MetaImpl {
 				break;
 			}
 			if (sarray.length != headers.length) {
-				if (logger.isDebugEnabled())
-					logger.debug("[getFrame] array length discrepancy: " + Arrays.toString(sarray));
+				if (log.isDebugEnabled())
+					log.debug("[getFrame] array length discrepancy: " + Arrays.toString(sarray));
 				continue;
 			}
 			rows.add(getFrameRow(metadataList, sarray));
@@ -417,8 +418,8 @@ public class AtsdMeta extends MetaImpl {
 					try {
 						s = Short.valueOf(sarray[i]);
 					} catch (final NumberFormatException nfe) {
-						if (logger.isDebugEnabled())
-							logger.debug("[getFrame] short type mismatched: {} on {} position", Arrays.toString(sarray),
+						if (log.isDebugEnabled())
+							log.debug("[getFrame] short type mismatched: {} on {} position", Arrays.toString(sarray),
 									i);
 					}
 					row.add(s);
@@ -428,9 +429,8 @@ public class AtsdMeta extends MetaImpl {
 					try {
 						n = Integer.valueOf(sarray[i]);
 					} catch (final NumberFormatException nfe) {
-						if (logger.isDebugEnabled())
-							logger.debug("[getFrame] int type mismatched: {} on {} position", Arrays.toString(sarray),
-									i);
+						if (log.isDebugEnabled())
+							log.debug("[getFrame] int type mismatched: {} on {} position", Arrays.toString(sarray), i);
 					}
 					row.add(n);
 					break;
@@ -439,9 +439,8 @@ public class AtsdMeta extends MetaImpl {
 					try {
 						l = Long.valueOf(sarray[i]);
 					} catch (final NumberFormatException nfe) {
-						if (logger.isDebugEnabled())
-							logger.debug("[getFrame] long type mismatched: {} on {} position", Arrays.toString(sarray),
-									i);
+						if (log.isDebugEnabled())
+							log.debug("[getFrame] long type mismatched: {} on {} position", Arrays.toString(sarray), i);
 					}
 					row.add(l);
 					break;
@@ -451,9 +450,9 @@ public class AtsdMeta extends MetaImpl {
 					try {
 						d = Double.valueOf(sarray[i]);
 					} catch (final NumberFormatException nfe) {
-						if (logger.isDebugEnabled())
-							logger.debug("[getFrame] double type mismatched: {} on {} position",
-									Arrays.toString(sarray), i);
+						if (log.isDebugEnabled())
+							log.debug("[getFrame] double type mismatched: {} on {} position", Arrays.toString(sarray),
+									i);
 					}
 					row.add(d);
 					break;
@@ -462,9 +461,9 @@ public class AtsdMeta extends MetaImpl {
 					try {
 						bd = new BigDecimal(sarray[i]);
 					} catch (final NumberFormatException nfe) {
-						if (logger.isDebugEnabled())
-							logger.debug("[getFrame] decimal type mismatched: {} on {} position",
-									Arrays.toString(sarray), i);
+						if (log.isDebugEnabled())
+							log.debug("[getFrame] decimal type mismatched: {} on {} position", Arrays.toString(sarray),
+									i);
 					}
 					row.add(bd);
 					break;
@@ -474,14 +473,14 @@ public class AtsdMeta extends MetaImpl {
 						Date dt = TIMESTAMP_FORMATTER.get().parse(sarray[i]);
 						ts = new Timestamp(dt.getTime());
 					} catch (final ParseException e) {
-						if (logger.isDebugEnabled())
-							logger.debug("[getFrame] " + e.getMessage());
+						if (log.isDebugEnabled())
+							log.debug("[getFrame] " + e.getMessage());
 						try {
 							Date dt = TIMESTAMP_SHORT_FORMATTER.get().parse(sarray[i]);
 							ts = new Timestamp(dt.getTime());
 						} catch (ParseException e1) {
-							if (logger.isDebugEnabled())
-								logger.debug("[getFrame] " + e1.getMessage());
+							if (log.isDebugEnabled())
+								log.debug("[getFrame] " + e1.getMessage());
 						}
 					}
 					row.add(ts);
@@ -499,28 +498,36 @@ public class AtsdMeta extends MetaImpl {
 	private static final ThreadLocal<SimpleDateFormat> DATE_FORMATTER = new ThreadLocal<SimpleDateFormat>() {
 		@Override
 		protected SimpleDateFormat initialValue() {
-			return new SimpleDateFormat("yyyy-MM-dd");
+			SimpleDateFormat sdt = new SimpleDateFormat("yyyy-MM-dd", Locale.UK);
+			sdt.setTimeZone(TimeZone.getTimeZone("UTC"));
+			return sdt;
 		}
 	};
 
 	private static final ThreadLocal<SimpleDateFormat> TIME_FORMATTER = new ThreadLocal<SimpleDateFormat>() {
 		@Override
 		protected SimpleDateFormat initialValue() {
-			return new SimpleDateFormat("HH:mm:ss");
+			SimpleDateFormat sdt = new SimpleDateFormat("HH:mm:ss", Locale.UK);
+			sdt.setTimeZone(TimeZone.getTimeZone("UTC"));
+			return sdt;
 		}
 	};
 
 	public static final ThreadLocal<SimpleDateFormat> TIMESTAMP_FORMATTER = new ThreadLocal<SimpleDateFormat>() {
 		@Override
 		protected SimpleDateFormat initialValue() {
-			return new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+			SimpleDateFormat sdt = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.UK);
+			sdt.setTimeZone(TimeZone.getTimeZone("UTC"));
+			return sdt;
 		}
 	};
 
 	public static final ThreadLocal<SimpleDateFormat> TIMESTAMP_SHORT_FORMATTER = new ThreadLocal<SimpleDateFormat>() {
 		@Override
 		protected SimpleDateFormat initialValue() {
-			return new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+			SimpleDateFormat sdt = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.UK);
+			sdt.setTimeZone(TimeZone.getTimeZone("UTC"));
+			return sdt;
 		}
 	};
 
@@ -566,14 +573,14 @@ public class AtsdMeta extends MetaImpl {
 
 	@Override
 	public void commit(ConnectionHandle ch) {
-		if (logger.isDebugEnabled())
-			logger.debug("[commit] " + ch.id + "->" + ch.toString());
+		if (log.isDebugEnabled())
+			log.debug("[commit] " + ch.id + "->" + ch.toString());
 	}
 
 	@Override
 	public void rollback(ConnectionHandle ch) {
-		if (logger.isDebugEnabled())
-			logger.debug("[rollback] " + ch.id + "->" + ch.toString());
+		if (log.isDebugEnabled())
+			log.debug("[rollback] " + ch.id + "->" + ch.toString());
 	}
 
 }

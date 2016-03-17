@@ -20,6 +20,7 @@ import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
@@ -137,7 +138,7 @@ public class ContentDescription implements DriverConstants {
 	}
 
 	public boolean isSsl() {
-		return host.toLowerCase().startsWith("https://");
+		return host.toLowerCase(Locale.US).startsWith("https://");
 	}
 
 	public Boolean isTrusted() {
@@ -156,7 +157,7 @@ public class ContentDescription implements DriverConstants {
 		if (params == null || params.length == 0)
 			return null;
 		for (final String param : params) {
-			if (!param.toLowerCase().startsWith(STRATEGY_PARAM_NAME))
+			if (!param.toLowerCase(Locale.US).startsWith(STRATEGY_PARAM_NAME))
 				continue;
 			final String value = param.substring(STRATEGY_PARAM_NAME.length());
 			return StringUtils.isNoneEmpty(value) ? value : null;
