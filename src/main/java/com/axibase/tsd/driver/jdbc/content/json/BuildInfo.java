@@ -155,7 +155,6 @@ public class BuildInfo {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((buildId == null) ? 0 : buildId.hashCode());
-		result = prime * result + ((buildNumber == null) ? 0 : buildNumber.hashCode());
 		result = prime * result + ((revisionNumber == null) ? 0 : revisionNumber.hashCode());
 		return result;
 	}
@@ -173,11 +172,6 @@ public class BuildInfo {
 			if (other.buildId != null)
 				return false;
 		} else if (!buildId.equals(other.buildId))
-			return false;
-		if (buildNumber == null) {
-			if (other.buildNumber != null)
-				return false;
-		} else if (!buildNumber.equals(other.buildNumber))
 			return false;
 		if (revisionNumber == null) {
 			if (other.revisionNumber != null)

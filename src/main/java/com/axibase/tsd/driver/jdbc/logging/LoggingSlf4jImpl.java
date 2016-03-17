@@ -23,7 +23,12 @@ import org.slf4j.helpers.NOPLogger;
 import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
 
 public class LoggingSlf4jImpl extends LoggingFacade {
-
+	private PrintStream filterOut = new PrintStream(System.err) {
+	    public void println(String l) {
+	        if (! l.startsWith("SLF4J") )
+	            super.println(l);
+	    }
+	};
 	private Logger logger;
 
 	public LoggingSlf4jImpl(Class<?> clazz) {
@@ -189,10 +194,4 @@ public class LoggingSlf4jImpl extends LoggingFacade {
 		logger.error(msg, t);
 	}
 
-	PrintStream filterOut = new PrintStream(System.err) {
-	    public void println(String l) {
-	        if (! l.startsWith("SLF4J") )
-	            super.println(l);
-	    }
-	};
 }

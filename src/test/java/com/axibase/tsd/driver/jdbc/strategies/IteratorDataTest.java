@@ -42,42 +42,6 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 public class IteratorDataTest {
 	@SuppressWarnings("unused")
 	private static final Logger logger = LoggerFactory.getLogger(IteratorDataTest.class);
-	private IteratorData data;
-	private StatementContext context;
-
-	@Before
-	public void setUp() throws Exception {
-		context = new StatementContext();
-		data = PowerMockito.spy(new IteratorData(context));
-		data.getBuffer().put(CONTENT_PART.getBytes()).put(EXCEPTION_IN_COMMENT.getBytes());
-		data.bufferOperations();
-	}
-
-	@After
-	public void tearDown() throws Exception {
-		data = null;
-		context = null;
-	}
-
-	@Test
-	public void testGetNext() {
-		String[] arr = data.getNext(false);
-		assertArrayEquals(arr, new String[]{"entity", "time", "value"});
-		while ((arr = data.getNext(true)) != null) {
-			assertTrue(arr.length == 3);
-		}
-		assertTrue(data.getSb().toString().length() == 0);
-	}
-
-	@Test(expected = SQLException.class)
-	public void testProcessComments() throws JsonParseException, JsonMappingException, IOException, SQLException {
-		data.processComments();
-		SQLException exc = context.getException();
-		assertNotNull(exc);
-		assertEquals(exc.getMessage(), "Name not found for id=10358022, type=TAG_VALUE");
-		throw exc;
-	}
-
 	private static final String CONTENT_PART = "entity,time,value\r\n060190011,1392048000000,1.0\r\n"
 			+ "060190011,1392055200000,2.0\r\n060190011,1392058800000,3.0\r\n060190011,1392062400000,4.0\r\n"
 			+ "060190011,1392066000000,5.0\r\n060190011,1392069600000,6.0\r\n060190011,1392073200000,7.0\r\n"
@@ -124,4 +88,40 @@ public class IteratorDataTest {
 			+ "#      \"fileName\" : \"Thread.java\",\r\n#      \"lineNumber\" : 745,\r\n"
 			+ "#      \"className\" : \"java.lang.Thread\",\r\n#      \"nativeMethod\" : false\r\n"
 			+ "#    } ],\r\n#    \"message\" : \"Name not found for id=10358022, type=TAG_VALUE\"\r\n" + "#  } ]\r\n#}";
+	private IteratorData data;
+	private StatementContext context;
+
+	@Before
+	public void setUp() throws Exception {
+		context = new StatementContext();
+		data = PowerMockito.spy(new IteratorData(context));
+		data.getBuffer().put(CONTENT_PART.getBytes()).put(EXCEPTION_IN_COMMENT.getBytes());
+		data.bufferOperations();
+	}
+
+	@After
+	public void tearDown() throws Exception {
+		data = null;
+		context = null;
+	}
+
+	@Test
+	public void testGetNext() {
+		String[] arr = data.getNext(false);
+		assertArrayEquals(arr, new String[] { "entity", "time", "value" });
+		while ((arr = data.getNext(true)) != null) {
+			assertTrue(arr.length == 3);
+		}
+		assertTrue(data.getSb().toString().length() == 0);
+	}
+
+	@Test(expected = SQLException.class)
+	public void testProcessComments() throws JsonParseException, JsonMappingException, IOException, SQLException {
+		data.processComments();
+		SQLException exc = context.getException();
+		assertNotNull(exc);
+		assertEquals(exc.getMessage(), "Name not found for id=10358022, type=TAG_VALUE");
+		throw exc;
+	}
+
 }

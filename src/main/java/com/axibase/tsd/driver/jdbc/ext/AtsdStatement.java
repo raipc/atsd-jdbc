@@ -47,8 +47,4 @@ public class AtsdStatement extends AvaticaStatement {
 			logger.trace("[close] " + this.handle.id);
 	}
 
-	void discardCloseOnCompletion() {
-		closeOnCompletion = false;
-	}
-
 }

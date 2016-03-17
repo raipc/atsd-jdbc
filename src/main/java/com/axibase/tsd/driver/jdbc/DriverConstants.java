@@ -17,7 +17,7 @@ public interface DriverConstants {
 	static final String DRIVER_PROPERTIES = "META-INF/axibase-atsd-jdbc.properties";
 	static final String JDBC_COMPLIENT_KEY = "jdbc.compliant";
 	static final String RETRIES_NUMBER = "2";
-	static final String JDBC_DRIVER_VERSION_DEFAULT = "1.2.0";
+	static final String JDBC_DRIVER_VERSION_DEFAULT = "1.2.1";
 	static final int    DRIVER_VERSION_MAJOR_DEFAULT = 1;
 	static final int    DRIVER_VERSION_MINOR_DEFAULT = 2;
 
@@ -51,4 +51,27 @@ public interface DriverConstants {
 	static final String TABLE_SCHEMA_SECTION = "tableSchema";
 	static final String TIME_STAMP_DATA_TYPE = "xsd:dateTimeStamp";
 	static final String TITLE_PROPERTY = "titles";
+	
+	static final String ACCEPT_HEADER = "Accept";
+	static final String AUTHORIZATION_HEADER = "Authorization";
+	static final String AUTHORIZATION_TYPE = "Basic ";
+	static final String ACCEPT_ENCODING = "Accept-Encoding";
+	static final String CONNECTION_HEADER = "Connection";
+	static final String CONTENT_TYPE = "Content-Type";
+	static final String CONTENT_LENGTH = "Content-Length";
+	static final String CONTEXT_INSTANCE_TYPE = "SSL";
+	static final String CSV_MIME_TYPE = "text/csv";
+	static final String COMPRESSION_ENCODING = "gzip";
+	static final String DEFAULT_ENCODING = "identity";
+	static final String END_LINK = ">; rel=\"describedBy\"; type=\"application/csvm+json\"";
+	static final String GET_METHOD = "GET";
+	static final String HEAD_METHOD = "HEAD";
+	static final String POST_METHOD = "POST";
+	static final String KEEP_ALIVE = "Keep-Alive";
+	static final String FORM_URLENCODED_TYPE = "application/x-www-form-urlencoded";
+	static final String MULTIPART_FORM_DATA_BOUNDARY = "multipart/form-data;boundary=---------------------------1717271041";
+	static final String SCHEME_HEADER = "Link";
+	static final String START_LINK = "<data:application/csvm+json;base64,";
+	static final String USER_AGENT = "User-Agent";
+	static final String USER_AGENT_HEADER = "ATSD Client/1.0 axibase.com";
 }

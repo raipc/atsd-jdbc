@@ -170,7 +170,6 @@ public class ContentDescription implements DriverConstants {
 		int result = 1;
 		result = prime * result + ((login == null) ? 0 : login.hashCode());
 		result = prime * result + ((password == null) ? 0 : password.hashCode());
-		result = prime * result + ((jsonScheme == null) ? 0 : jsonScheme.hashCode());
 		result = prime * result + ((url == null) ? 0 : url.hashCode());
 		return result;
 	}
@@ -193,11 +192,6 @@ public class ContentDescription implements DriverConstants {
 			if (other.password != null)
 				return false;
 		} else if (!password.equals(other.password))
-			return false;
-		if (jsonScheme == null) {
-			if (other.jsonScheme != null)
-				return false;
-		} else if (!jsonScheme.equals(other.jsonScheme))
 			return false;
 		if (url == null) {
 			if (other.url != null)

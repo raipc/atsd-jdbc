@@ -35,6 +35,17 @@ import com.axibase.tsd.driver.jdbc.content.StatementContext;
 @PrepareForTest(IteratorData.class)
 public class EscapedCharactersTest {
 	private static final Logger logger = LoggerFactory.getLogger(EscapedCharactersTest.class);
+	private static final String CONTENT_PART = "entity,time,value,tags.collector-host\r\n"
+			+ "ac2dff755072c526a63208706a459827ae18c09122077564ac3ccdbc79066323,1456424003535,15620.0,Mikhail's-Air\r\n"
+			+ "ac2dff755072c526a63208706a459827ae18c09122077564ac3ccdbc79066323,1456424188535,15620.0,Mikhail's-Air\r\n"
+			+ "ac2dff755072c526a63208706a459827ae18c09122077564ac3ccdbc79066323,1456424827535,15620.0,Mikhail's-Air\r\n"
+			+ "ac2dff755072c526a63208706a459827ae18c09122077564ac3ccdbc79066323,1456466167759,15620.0,Mikhail's-Air\r\n"
+			+ "ac2dff755072c526a63208706a459827ae18c09122077564ac3ccdbc79066323,1456466216759,15620.0,Mikhail's-Air\r\n"
+			+ "ac2dff755072c526a63208706a459827ae18c09122077564ac3ccdbc79066323,1456467148826,15620.0,Mikhail's-Air\r\n"
+			+ "ac2dff755072c526a63208706a459827ae18c09122077564ac3ccdbc79066323,1456731652280,1052.0,\"Mikhail's-Macbook-Air,\"local\"\r\n"
+			+ "ac2dff755072c526a63208706a459827ae18c09122077564ac3ccdbc79066323,1456821593554,1052.0,Mikhail's-Air\r\n"
+			+ "ac2dff755072c526a63208706a459827ae18c09122077564ac3ccdbc79066323,1456823266554,1052.0,Mikhail's-Air\r\n"
+			+ "ac2dff755072c526a63208706a459827ae18c09122077564ac3ccdbc79066323,1456823411602,1052.0,Mikhail's-Air\r\n";
 	private IteratorData data;
 	private StatementContext context;
 
@@ -64,15 +75,4 @@ public class EscapedCharactersTest {
 		assertTrue(data.getSb().toString().length() == 0);
 	}
 
-	private static final String CONTENT_PART = "entity,time,value,tags.collector-host\r\n"
-			+ "ac2dff755072c526a63208706a459827ae18c09122077564ac3ccdbc79066323,1456424003535,15620.0,Mikhail's-Air\r\n"
-			+ "ac2dff755072c526a63208706a459827ae18c09122077564ac3ccdbc79066323,1456424188535,15620.0,Mikhail's-Air\r\n"
-			+ "ac2dff755072c526a63208706a459827ae18c09122077564ac3ccdbc79066323,1456424827535,15620.0,Mikhail's-Air\r\n"
-			+ "ac2dff755072c526a63208706a459827ae18c09122077564ac3ccdbc79066323,1456466167759,15620.0,Mikhail's-Air\r\n"
-			+ "ac2dff755072c526a63208706a459827ae18c09122077564ac3ccdbc79066323,1456466216759,15620.0,Mikhail's-Air\r\n"
-			+ "ac2dff755072c526a63208706a459827ae18c09122077564ac3ccdbc79066323,1456467148826,15620.0,Mikhail's-Air\r\n"
-			+ "ac2dff755072c526a63208706a459827ae18c09122077564ac3ccdbc79066323,1456731652280,1052.0,\"Mikhail's-Macbook-Air,\"local\"\r\n"
-			+ "ac2dff755072c526a63208706a459827ae18c09122077564ac3ccdbc79066323,1456821593554,1052.0,Mikhail's-Air\r\n"
-			+ "ac2dff755072c526a63208706a459827ae18c09122077564ac3ccdbc79066323,1456823266554,1052.0,Mikhail's-Air\r\n"
-			+ "ac2dff755072c526a63208706a459827ae18c09122077564ac3ccdbc79066323,1456823411602,1052.0,Mikhail's-Air\r\n";
 }

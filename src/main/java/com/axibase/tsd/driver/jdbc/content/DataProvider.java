@@ -29,7 +29,8 @@ import com.axibase.tsd.driver.jdbc.strategies.StrategyFactory;
 
 public class DataProvider implements IDataProvider {
 	private static final LoggingFacade logger = LoggingFacade.getLogger(DataProvider.class);
-
+	private static final String WHERE_CLAUSE = " WHERE ";
+	private static final String PARAM_SEPARATOR = ";";
 	private final ContentDescription cd;
 	private final IContentProtocol tp;
 	private final StatementContext context;
@@ -88,6 +89,4 @@ public class DataProvider implements IDataProvider {
 		return StrategyFactory.create(StrategyFactory.findClassByName(this.cd.getStrategyName()), this.context);
 	}
 
-	private static final String WHERE_CLAUSE = " WHERE ";
-	private static final String PARAM_SEPARATOR = ";";
 }

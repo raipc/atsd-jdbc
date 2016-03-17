@@ -191,11 +191,8 @@ public class ExceptionSection {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((className == null) ? 0 : className.hashCode());
 		result = prime * result + ((fileName == null) ? 0 : fileName.hashCode());
 		result = prime * result + ((lineNumber == null) ? 0 : lineNumber.hashCode());
-		result = prime * result + ((methodName == null) ? 0 : methodName.hashCode());
-		result = prime * result + ((nativeMethod == null) ? 0 : nativeMethod.hashCode());
 		return result;
 	}
 
@@ -208,11 +205,6 @@ public class ExceptionSection {
 		if (getClass() != obj.getClass())
 			return false;
 		ExceptionSection other = (ExceptionSection) obj;
-		if (className == null) {
-			if (other.className != null)
-				return false;
-		} else if (!className.equals(other.className))
-			return false;
 		if (fileName == null) {
 			if (other.fileName != null)
 				return false;
@@ -222,16 +214,6 @@ public class ExceptionSection {
 			if (other.lineNumber != null)
 				return false;
 		} else if (!lineNumber.equals(other.lineNumber))
-			return false;
-		if (methodName == null) {
-			if (other.methodName != null)
-				return false;
-		} else if (!methodName.equals(other.methodName))
-			return false;
-		if (nativeMethod == null) {
-			if (other.nativeMethod != null)
-				return false;
-		} else if (!nativeMethod.equals(other.nativeMethod))
 			return false;
 		return true;
 	}

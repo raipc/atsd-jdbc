@@ -44,6 +44,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class AtsdDatabaseMetaData extends AvaticaDatabaseMetaData implements DriverConstants {
 	private static final LoggingFacade logger = LoggingFacade.getLogger(AtsdDatabaseMetaData.class);
+	private static final ObjectMapper mapper = new ObjectMapper();
+	private static final ReservedWordsSQL2003[] FILTERED_KEYWORDS = ReservedWordsSQL2003.values();
 	private String revision = "Unknown Revision";
 	private String edition = "Unknown Edition";
 
@@ -70,18 +72,22 @@ public class AtsdDatabaseMetaData extends AvaticaDatabaseMetaData implements Dri
 			logger.trace("[init] host: " + parts[0]);
 			logger.trace("[init] params: " + params.length);
 		}
+		initVersions(host, user, pass, params);
+	}
+
+	private void initVersions(final String host, String user, String pass, String[] params) {
 		final ContentDescription cd = new ContentDescription(host, "", user, pass, params);
 		final IContentProtocol protocol = ProtocolFactory.create(SdkProtocolImpl.class, cd);
 		try {
 			final InputStream is = protocol.readInfo();
 			final Version version = mapper.readValue(is, Version.class);
 			if (logger.isTraceEnabled())
-				logger.trace("[init] " + version.toString());
+				logger.trace("[initVersions] " + version.toString());
 			edition = version.getLicense().getProductVersion();
 			revision = version.getBuildInfo().getRevisionNumber();
 			if (logger.isDebugEnabled()) {
-				logger.debug("[init] edition: " + edition);
-				logger.debug("[init] revision: " + revision);
+				logger.debug("[initVersions] edition: " + edition);
+				logger.debug("[initVersions] revision: " + revision);
 			}
 		} catch (final AtsdException | GeneralSecurityException | IOException e) {
 			if (logger.isDebugEnabled())
@@ -446,8 +452,5 @@ public class AtsdDatabaseMetaData extends AvaticaDatabaseMetaData implements Dri
 	public void setEdition(String edition) {
 		this.edition = edition;
 	}
-
-	private static final ObjectMapper mapper = new ObjectMapper();
-	private static final ReservedWordsSQL2003[] FILTERED_KEYWORDS = ReservedWordsSQL2003.values();
 
 }

@@ -48,31 +48,35 @@ public class AtsdDriver extends UnregisteredDriver implements DriverConstants {
 			if (is != null) {
 				final Properties properties = new Properties();
 				properties.load(is);
-				String driverName = properties.getProperty(DRIVER_NAME_KEY, JDBC_DRIVER_NAME);
-				String driverVersion = properties.getProperty(DRIVER_VERSION_KEY, JDBC_DRIVER_VERSION_DEFAULT);
-				String productName = properties.getProperty(PRODUCT_NAME_KEY, DATABASE_PRODUCT_NAME);
-				String productVersion = properties.getProperty(PRODUCT_VERSION_KEY, DATABASE_PRODUCT_VERSION);
-				String property = properties.getProperty(DATABASE_VERSION_MAJOR_KEY);
-				int productVersionMajor = StringUtils.isNoneEmpty(property) ? NumberUtils.toInt(property) : 1;
-				property = properties.getProperty(DATABASE_VERSION_MINOR_KEY);
-				int productVersionMinor = StringUtils.isNoneEmpty(property) ? NumberUtils.toInt(property) : 0;
-				property = properties.getProperty(DRIVER_VERSION_MAJOR_KEY);
-				int driverVersionMajor = StringUtils.isNoneEmpty(property) ? NumberUtils.toInt(property)
-						: DRIVER_VERSION_MAJOR_DEFAULT;
-				property = properties.getProperty(DRIVER_VERSION_MINOR_KEY);
-				int driverVersionMinor = StringUtils.isNoneEmpty(property) ? NumberUtils.toInt(property)
-						: DRIVER_VERSION_MINOR_DEFAULT;
-				boolean jdbcComplient = BooleanUtils.toBoolean(properties.getProperty(JDBC_COMPLIENT_KEY));
-				if (logger.isDebugEnabled())
-					logger.debug("[createDriverVersion] " + driverVersion);
-				return new DriverVersion(driverName, driverVersion, productName, productVersion, jdbcComplient,
-						driverVersionMajor, driverVersionMinor, productVersionMajor, productVersionMinor);
+				return getDriverVersion(properties);
 			}
 		} catch (final IOException e) {
 			if (logger.isDebugEnabled())
 				logger.debug("[createDriverVersion] " + e.getMessage());
 		}
 		return getDefaultDriverVersion();
+	}
+
+	private DriverVersion getDriverVersion(final Properties properties) {
+		String driverName = properties.getProperty(DRIVER_NAME_KEY, JDBC_DRIVER_NAME);
+		String driverVersion = properties.getProperty(DRIVER_VERSION_KEY, JDBC_DRIVER_VERSION_DEFAULT);
+		String productName = properties.getProperty(PRODUCT_NAME_KEY, DATABASE_PRODUCT_NAME);
+		String productVersion = properties.getProperty(PRODUCT_VERSION_KEY, DATABASE_PRODUCT_VERSION);
+		String property = properties.getProperty(DATABASE_VERSION_MAJOR_KEY);
+		int productVersionMajor = StringUtils.isNoneEmpty(property) ? NumberUtils.toInt(property) : 1;
+		property = properties.getProperty(DATABASE_VERSION_MINOR_KEY);
+		int productVersionMinor = StringUtils.isNoneEmpty(property) ? NumberUtils.toInt(property) : 0;
+		property = properties.getProperty(DRIVER_VERSION_MAJOR_KEY);
+		int driverVersionMajor = StringUtils.isNoneEmpty(property) ? NumberUtils.toInt(property)
+				: DRIVER_VERSION_MAJOR_DEFAULT;
+		property = properties.getProperty(DRIVER_VERSION_MINOR_KEY);
+		int driverVersionMinor = StringUtils.isNoneEmpty(property) ? NumberUtils.toInt(property)
+				: DRIVER_VERSION_MINOR_DEFAULT;
+		boolean jdbcComplient = BooleanUtils.toBoolean(properties.getProperty(JDBC_COMPLIENT_KEY));
+		if (logger.isDebugEnabled())
+			logger.debug("[createDriverVersion] " + driverVersion);
+		return new DriverVersion(driverName, driverVersion, productName, productVersion, jdbcComplient,
+				driverVersionMajor, driverVersionMinor, productVersionMajor, productVersionMinor);
 	}
 
 	@Override

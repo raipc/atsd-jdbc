@@ -34,6 +34,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class IteratorData {
 	private static final LoggingFacade logger = LoggingFacade.getLogger(IteratorData.class);
+	private static final String COMMENT_NEW_LINE = "#";
+	private static final String COMMENT_NEXT_LINE = '\n' + COMMENT_NEW_LINE;
+	private static final char CSV_ESCAPE_SYMBOL = '\\';
+	private static final char CSV_QUOTE_SYMBOL = '"';
+	private static final char CSV_SEPARATOR_SYMBOL = ',';
 	private final ByteBuffer buffer = ByteBuffer.allocate(16 * 1024);
 	private final StatementContext context;
 	private final StringBuilder comments = new StringBuilder();
@@ -192,11 +197,5 @@ public class IteratorData {
 	private static boolean noSeparatorAround(char prevChar, char nextChar) {
 		return prevChar != CSV_SEPARATOR_SYMBOL && nextChar != CSV_SEPARATOR_SYMBOL;
 	}
-
-	private static final String COMMENT_NEW_LINE = "#";
-	private static final String COMMENT_NEXT_LINE = '\n' + COMMENT_NEW_LINE;
-	private static final char CSV_ESCAPE_SYMBOL = '\\';
-	private static final char CSV_QUOTE_SYMBOL = '"';
-	private static final char CSV_SEPARATOR_SYMBOL = ',';
 
 }

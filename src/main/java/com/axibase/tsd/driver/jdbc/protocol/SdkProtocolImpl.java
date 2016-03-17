@@ -44,12 +44,13 @@ import javax.net.ssl.X509TrustManager;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 
+import com.axibase.tsd.driver.jdbc.DriverConstants;
 import com.axibase.tsd.driver.jdbc.content.ContentDescription;
 import com.axibase.tsd.driver.jdbc.ext.AtsdException;
 import com.axibase.tsd.driver.jdbc.intf.IContentProtocol;
 import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
 
-public class SdkProtocolImpl implements IContentProtocol {
+public class SdkProtocolImpl implements DriverConstants, IContentProtocol {
 	private static final LoggingFacade logger = LoggingFacade.getLogger(SdkProtocolImpl.class);
 	private final ContentDescription cd;
 	private HttpURLConnection conn;
@@ -90,7 +91,7 @@ public class SdkProtocolImpl implements IContentProtocol {
 		}
 		this.conn = getHttpURLConnection(url);
 		if (cd.isSsl())
-			doTrustToCertificates((HttpsURLConnection)this.conn);
+			doTrustToCertificates((HttpsURLConnection) this.conn);
 		final String basicCreds = new StringBuilder(cd.getLogin()).append(':').append(cd.getPassword()).toString();
 		final byte[] encoded = Base64.encodeBase64(basicCreds.getBytes());
 		final String authHeader = AUTHORIZATION_TYPE + new String(encoded);
@@ -141,12 +142,11 @@ public class SdkProtocolImpl implements IContentProtocol {
 		return (gzipped ? (InputStream) new GZIPInputStream(is) : is);
 	}
 
-	
 	public HttpURLConnection getHttpURLConnection(String uri) throws IOException {
 		final URL url = new URL(uri);
 		return (HttpURLConnection) url.openConnection();
 	}
-	 
+
 	public void doTrustToCertificates(final HttpsURLConnection sslConnection) {
 		final TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
 			public X509Certificate[] getAcceptedIssuers() {
@@ -180,7 +180,7 @@ public class SdkProtocolImpl implements IContentProtocol {
 			return;
 		}
 		sslConnection.setSSLSocketFactory(sc.getSocketFactory());
-//		HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+		// HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
 		final HostnameVerifier hostnameVerifier = new HostnameVerifier() {
 			public boolean verify(String urlHostName, SSLSession session) {
 				if (!urlHostName.equalsIgnoreCase(session.getPeerHost())) {
@@ -194,7 +194,7 @@ public class SdkProtocolImpl implements IContentProtocol {
 		};
 		if (trusted != null && trusted)
 			sslConnection.setHostnameVerifier(hostnameVerifier);
-//		HttpsURLConnection.setDefaultHostnameVerifier(hostnameVerifier);
+		// HttpsURLConnection.setDefaultHostnameVerifier(hostnameVerifier);
 	}
 
 	private void processResponse(Map<String, List<String>> map) throws UnsupportedEncodingException {
@@ -219,26 +219,4 @@ public class SdkProtocolImpl implements IContentProtocol {
 		}
 	}
 
-	static final String ACCEPT_HEADER = "Accept";
-	static final String AUTHORIZATION_HEADER = "Authorization";
-	static final String AUTHORIZATION_TYPE = "Basic ";
-	static final String ACCEPT_ENCODING = "Accept-Encoding";
-	static final String CONNECTION_HEADER = "Connection";
-	static final String CONTENT_TYPE = "Content-Type";
-	static final String CONTENT_LENGTH = "Content-Length";
-	static final String CONTEXT_INSTANCE_TYPE = "SSL";
-	static final String CSV_MIME_TYPE = "text/csv";
-	static final String COMPRESSION_ENCODING = "gzip";
-	static final String DEFAULT_ENCODING = "identity";
-	static final String END_LINK = ">; rel=\"describedBy\"; type=\"application/csvm+json\"";
-	static final String GET_METHOD = "GET";
-	static final String HEAD_METHOD = "HEAD";
-	static final String POST_METHOD = "POST";
-	static final String KEEP_ALIVE = "Keep-Alive";
-	static final String FORM_URLENCODED_TYPE = "application/x-www-form-urlencoded";
-	static final String MULTIPART_FORM_DATA_BOUNDARY = "multipart/form-data;boundary=---------------------------1717271041";
-	static final String SCHEME_HEADER = "Link";
-	static final String START_LINK = "<data:application/csvm+json;base64,";
-	static final String USER_AGENT = "User-Agent";
-	static final String USER_AGENT_HEADER = "ATSD Client/1.0 axibase.com";
 }

@@ -93,21 +93,27 @@ public class ContentMetadata implements DriverConstants {
 		final List<ColumnMetaData> metadataList = new ArrayList<>();
 		int ind = 1;
 		for (final Object obj : columns) {
-			final Map<String, Object> property = (Map<String, Object>) obj;
-			String name = (String) property.get(NAME_PROPERTY);
-			String title = (String) property.get(TITLE_PROPERTY);
-			String table = (String) property.get(TABLE_PROPERTY);
-			String datatype = (String) property.get(DATATYPE_PROPERTY);
-			Integer index = (Integer) property.get(INDEX_PROPERTY);
-			final ColumnMetaData.AvaticaType atype = getAvaticaType(datatype);
-			final ColumnMetaData cmd = new ColumnMetaData(index != null ? index.intValue() : ind++, false, false, false, false, 0, false, 10, name, title,
-					schema, 1, 1, table, DEFAULT_CATALOG_NAME, atype, true, false, false,
-					atype.rep.clazz.getCanonicalName());
+			final ColumnMetaData cmd = getColumnMetaData(schema, ind, obj);
 			metadataList.add(cmd);
+			ind++;
 		}
-		if(logger.isDebugEnabled())
-			logger.debug("Schema is processed: " + metadataList.size());
+		if (logger.isDebugEnabled())
+			logger.debug(String.format("Schema is processed. %s headers are found.", metadataList.size()));
 		return Collections.unmodifiableList(metadataList);
+	}
+
+	private static ColumnMetaData getColumnMetaData(String schema, int ind, final Object obj) {
+		final Map<String, Object> property = (Map<String, Object>) obj;
+		String name = (String) property.get(NAME_PROPERTY);
+		String title = (String) property.get(TITLE_PROPERTY);
+		String table = (String) property.get(TABLE_PROPERTY);
+		String datatype = (String) property.get(DATATYPE_PROPERTY);
+		Integer index = (Integer) property.get(INDEX_PROPERTY);
+		final ColumnMetaData.AvaticaType atype = getAvaticaType(datatype);
+		final ColumnMetaData cmd = new ColumnMetaData(index != null ? index.intValue() : ind, false, false, false,
+				false, 0, false, 10, name, title, schema, 1, 1, table, DEFAULT_CATALOG_NAME, atype, true, false,
+				false, atype.rep.clazz.getCanonicalName());
+		return cmd;
 	}
 
 	private static Map<String, Object> getJsonScheme(String json) throws IOException {
@@ -147,7 +153,7 @@ public class ContentMetadata implements DriverConstants {
 			metaType = Types.BIGINT;
 			rep = ColumnMetaData.Rep.LONG;
 			break;
-		case DECIMAL_TYPE :
+		case DECIMAL_TYPE:
 			metaType = Types.DECIMAL;
 			rep = ColumnMetaData.Rep.NUMBER;
 			break;

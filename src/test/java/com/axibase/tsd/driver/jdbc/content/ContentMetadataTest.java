@@ -32,7 +32,7 @@ import com.axibase.tsd.driver.jdbc.ext.AtsdException;
 
 public class ContentMetadataTest {
 	private static final String CONTEXT_START = "{\n   \"@context\":[";
-	private static final String MCB_TABLE_NAME = "mpstat_cpu_busy";
+	private static final String MCN_JSON_SCHEMA = "/json/mpstat_cpu_busy.jsonld";
 
 	@Before
 	public void setUp() throws Exception {
@@ -44,11 +44,11 @@ public class ContentMetadataTest {
 
 	@Test
 	public final void testGetMetadataList() {
-		checkMetadataList(MCB_TABLE_NAME, 3);
+		checkMetadataList(MCN_JSON_SCHEMA, 3);
 	}
 
-	private void checkMetadataList(String table, int expected) {
-		try (final InputStream is = this.getClass().getResourceAsStream("/json/" + table + ".jsonld");
+	private void checkMetadataList(String schema, int expected) {
+		try (final InputStream is = this.getClass().getResourceAsStream(schema);
 				final Scanner scanner = new java.util.Scanner(is).useDelimiter("\\A");) {
 			String json = scanner.hasNext() ? scanner.next() : "";
 			assertTrue(json != null && json.length() != 0 && json.startsWith(CONTEXT_START));

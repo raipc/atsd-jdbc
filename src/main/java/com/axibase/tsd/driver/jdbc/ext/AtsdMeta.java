@@ -62,6 +62,11 @@ import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
 
 public class AtsdMeta extends MetaImpl {
 	private static final LoggingFacade logger = LoggingFacade.getLogger(AtsdMeta.class);
+	private static final int TIMESTAMP_LENGTH = "2016-01-01T00:00:00.000".length();
+	private final AtomicInteger idGenerator = new AtomicInteger(1);
+	private final Map<Integer, ContentMetadata> metaCache = new ConcurrentHashMap<>();
+	private final Map<Integer, IDataProvider> providerCache = new ConcurrentHashMap<>();
+	private final Map<Integer, StatementContext> contextMap = new ConcurrentHashMap<>();
 	private final ReentrantLock lock = new ReentrantLock();
 
 	public AtsdMeta(final AvaticaConnection conn) {
@@ -217,20 +222,8 @@ public class AtsdMeta extends MetaImpl {
 	public void closeStatement(StatementHandle h) {
 		if (logger.isDebugEnabled())
 			logger.debug("[closeStatement] " + h.id + "->" + h.toString());
-		if (metaCache != null && metaCache.size() != 0)
-			metaCache.remove(h.id);
-		if (contextMap != null && contextMap.size() != 0)
-			contextMap.remove(h.id);
-		if (providerCache == null || providerCache.size() == 0)
-			return;
-		final IDataProvider provider = providerCache.remove(h.id);
-		if (provider != null)
-			try {
-				provider.close();
-			} catch (final Exception e) {
-				if (logger.isDebugEnabled())
-					logger.debug("[closeStatement] " + e.getMessage());
-			}
+		closeProviderCaches(h);
+		closeProvider(h);
 		if (lock.isHeldByCurrentThread()) {
 			lock.unlock();
 			if (logger.isTraceEnabled())
@@ -240,13 +233,29 @@ public class AtsdMeta extends MetaImpl {
 			logger.trace("[closedStatement]");
 	}
 
-	public void close() {
+	private void closeProviderCaches(StatementHandle h) {
 		if (metaCache != null && metaCache.size() != 0)
-			metaCache.clear();
-		if (providerCache != null && providerCache.size() != 0)
-			providerCache.clear();
+			metaCache.remove(h.id);
 		if (contextMap != null && contextMap.size() != 0)
-			contextMap.clear();
+			contextMap.remove(h.id);
+
+	}
+
+	private void closeProvider(StatementHandle h) {
+		if (providerCache != null && !providerCache.isEmpty()) {
+			final IDataProvider provider = providerCache.remove(h.id);
+			if (provider != null)
+				try {
+					provider.close();
+				} catch (final Exception e) {
+					if (logger.isDebugEnabled())
+						logger.debug("[closeStatement] " + e.getMessage());
+				}
+		}
+	}
+
+	public void close() {
+		closeCaches();
 		if (lock.isHeldByCurrentThread()) {
 			lock.unlock();
 			if (logger.isTraceEnabled())
@@ -254,6 +263,15 @@ public class AtsdMeta extends MetaImpl {
 		}
 		if (logger.isTraceEnabled())
 			logger.trace("[closed]");
+	}
+
+	private void closeCaches() {
+		if (metaCache != null && metaCache.size() != 0)
+			metaCache.clear();
+		if (contextMap != null && contextMap.size() != 0)
+			contextMap.clear();
+		if (providerCache != null && providerCache.size() != 0)
+			providerCache.clear();
 	}
 
 	@Override
@@ -379,110 +397,104 @@ public class AtsdMeta extends MetaImpl {
 					logger.debug("[getFrame] array length discrepancy: " + Arrays.toString(sarray));
 				continue;
 			}
-			final List<Object> row = new ArrayList<>();
-			for (int i = 0; i < sarray.length; i++) {
-				for (ColumnMetaData columnMetaData : metadataList) {
-					if (i != columnMetaData.ordinal - 1)
-						continue;
-					if (StringUtils.isEmpty(sarray[i])) {
-						row.add(columnMetaData.type.id == Types.VARCHAR ? sarray[i] : null);
-						continue;
-					}
-					switch (columnMetaData.type.id) {
-					case Types.SMALLINT:
-						Short s = null;
-						try {
-							s = Short.valueOf(sarray[i]);
-						} catch (final NumberFormatException nfe) {
-							if (logger.isDebugEnabled())
-								logger.debug("[getFrame] short type mismatched: {} on {} position",
-										Arrays.toString(sarray), i);
-						}
-						row.add(s);
-						break;
-					case Types.INTEGER:
-						Integer n = null;
-						try {
-							n = Integer.valueOf(sarray[i]);
-						} catch (final NumberFormatException nfe) {
-							if (logger.isDebugEnabled())
-								logger.debug("[getFrame] int type mismatched: {} on {} position",
-										Arrays.toString(sarray), i);
-						}
-						row.add(n);
-						break;
-					case Types.BIGINT:
-						Long l = null;
-						try {
-							l = Long.valueOf(sarray[i]);
-						} catch (final NumberFormatException nfe) {
-							if (logger.isDebugEnabled())
-								logger.debug("[getFrame] long type mismatched: {} on {} position",
-										Arrays.toString(sarray), i);
-						}
-						row.add(l);
-						break;
-					case Types.FLOAT:
-						Float f = null;
-						try {
-							f = Float.valueOf(sarray[i]);
-						} catch (final NumberFormatException nfe) {
-							if (logger.isDebugEnabled())
-								logger.debug("[getFrame] float type mismatched: {} on {} position",
-										Arrays.toString(sarray), i);
-						}
-						row.add(f);
-						break;
-					case Types.DOUBLE:
-						Double d = null;
-						try {
-							d = Double.valueOf(sarray[i]);
-						} catch (final NumberFormatException nfe) {
-							if (logger.isDebugEnabled())
-								logger.debug("[getFrame] double type mismatched: {} on {} position",
-										Arrays.toString(sarray), i);
-						}
-						row.add(d);
-						break;
-					case Types.DECIMAL:
-						BigDecimal bd = null;
-						try {
-							bd = new BigDecimal(sarray[i]);
-						} catch (final NumberFormatException nfe) {
-							if (logger.isDebugEnabled())
-								logger.debug("[getFrame] decimal type mismatched: {} on {} position",
-										Arrays.toString(sarray), i);
-						}
-						row.add(bd);
-						break;
-					case Types.TIMESTAMP:
-						Timestamp ts = null;
-						try {
-							Date dt = TIMESTAMP_FORMATTER.get().parse(sarray[i]);
-							ts = new Timestamp(dt.getTime());
-						} catch (final ParseException e) {
-							if (logger.isDebugEnabled())
-								logger.debug("[getFrame] " + e.getMessage());
-							try {
-								Date dt = TIMESTAMP_SHORT_FORMATTER.get().parse(sarray[i]);
-								ts = new Timestamp(dt.getTime());
-							} catch (ParseException e1) {
-								if (logger.isDebugEnabled())
-									logger.debug("[getFrame] " + e1.getMessage());
-							}
-						}
-						row.add(ts);
-						break;
-					case Types.VARCHAR:
-					default:
-						row.add(sarray[i]);
-					}
-					break;
-				}
-			}
-			rows.add(row);
+			rows.add(getFrameRow(metadataList, sarray));
 		}
 		return rows;
+	}
+
+	private List<Object> getFrameRow(final List<ColumnMetaData> metadataList, final String[] sarray) {
+		final List<Object> row = new ArrayList<>();
+		for (int i = 0; i < sarray.length; i++) {
+			for (ColumnMetaData columnMetaData : metadataList) {
+				if (i != columnMetaData.ordinal - 1)
+					continue;
+				if (StringUtils.isEmpty(sarray[i])) {
+					row.add(columnMetaData.type.id == Types.VARCHAR ? sarray[i] : null);
+					continue;
+				}
+				switch (columnMetaData.type.id) {
+				case Types.SMALLINT:
+					Short s = null;
+					try {
+						s = Short.valueOf(sarray[i]);
+					} catch (final NumberFormatException nfe) {
+						if (logger.isDebugEnabled())
+							logger.debug("[getFrame] short type mismatched: {} on {} position",
+									Arrays.toString(sarray), i);
+					}
+					row.add(s);
+					break;
+				case Types.INTEGER:
+					Integer n = null;
+					try {
+						n = Integer.valueOf(sarray[i]);
+					} catch (final NumberFormatException nfe) {
+						if (logger.isDebugEnabled())
+							logger.debug("[getFrame] int type mismatched: {} on {} position",
+									Arrays.toString(sarray), i);
+					}
+					row.add(n);
+					break;
+				case Types.BIGINT:
+					Long l = null;
+					try {
+						l = Long.valueOf(sarray[i]);
+					} catch (final NumberFormatException nfe) {
+						if (logger.isDebugEnabled())
+							logger.debug("[getFrame] long type mismatched: {} on {} position",
+									Arrays.toString(sarray), i);
+					}
+					row.add(l);
+					break;
+				case Types.FLOAT:
+				case Types.DOUBLE:
+					Double d = null;
+					try {
+						d = Double.valueOf(sarray[i]);
+					} catch (final NumberFormatException nfe) {
+						if (logger.isDebugEnabled())
+							logger.debug("[getFrame] double type mismatched: {} on {} position",
+									Arrays.toString(sarray), i);
+					}
+					row.add(d);
+					break;
+				case Types.DECIMAL:
+					BigDecimal bd = null;
+					try {
+						bd = new BigDecimal(sarray[i]);
+					} catch (final NumberFormatException nfe) {
+						if (logger.isDebugEnabled())
+							logger.debug("[getFrame] decimal type mismatched: {} on {} position",
+									Arrays.toString(sarray), i);
+					}
+					row.add(bd);
+					break;
+				case Types.TIMESTAMP:
+					Timestamp ts = null;
+					try {
+						Date dt = TIMESTAMP_FORMATTER.get().parse(sarray[i]);
+						ts = new Timestamp(dt.getTime());
+					} catch (final ParseException e) {
+						if (logger.isDebugEnabled())
+							logger.debug("[getFrame] " + e.getMessage());
+						try {
+							Date dt = TIMESTAMP_SHORT_FORMATTER.get().parse(sarray[i]);
+							ts = new Timestamp(dt.getTime());
+						} catch (ParseException e1) {
+							if (logger.isDebugEnabled())
+								logger.debug("[getFrame] " + e1.getMessage());
+						}
+					}
+					row.add(ts);
+					break;
+				case Types.VARCHAR:
+				default:
+					row.add(sarray[i]);
+				}
+				break;
+			}
+		}
+		return row;
 	}
 
 	private static final ThreadLocal<SimpleDateFormat> DATE_FORMATTER = new ThreadLocal<SimpleDateFormat>() {
@@ -565,9 +577,4 @@ public class AtsdMeta extends MetaImpl {
 			logger.debug("[rollback] " + ch.id + "->" + ch.toString());
 	}
 
-	private static final int TIMESTAMP_LENGTH = "2016-01-01T00:00:00.000".length();
-	private final AtomicInteger idGenerator = new AtomicInteger(1);
-	private final Map<Integer, ContentMetadata> metaCache = new ConcurrentHashMap<>();
-	private final Map<Integer, IDataProvider> providerCache = new ConcurrentHashMap<>();
-	private final Map<Integer, StatementContext> contextMap = new ConcurrentHashMap<>();
 }

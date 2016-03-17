@@ -14,7 +14,7 @@
 */
 package com.axibase.tsd.driver.jdbc;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.net.URL;
 import java.sql.Connection;
@@ -30,7 +30,6 @@ import java.util.Properties;
 
 import org.apache.calcite.linq4j.function.Function1;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -64,18 +63,18 @@ public class CalciteTest {
 		info.put("model", jsonPath("aximodel"));
 		try (Connection connection = DriverManager.getConnection("jdbc:calcite:", info)) {
 			ResultSet tables = connection.getMetaData().getTables(null, null, null, null);
-			Assert.assertTrue(tables.next());
+			assertTrue(tables.next());
 			ResultSet res = connection.getMetaData().getColumns(null, null, "AXI", "datetime");
-			Assert.assertTrue(res.next());
-			Assert.assertEquals(res.getInt("DATA_TYPE"), java.sql.Types.VARCHAR);
+			assertTrue(res.next());
+			assertEquals(res.getInt("DATA_TYPE"), java.sql.Types.VARCHAR);
 
 			res = connection.getMetaData().getColumns(null, null, "AXI", "value");
-			Assert.assertTrue(res.next());
-			Assert.assertEquals(res.getInt("DATA_TYPE"), java.sql.Types.VARCHAR);
+			assertTrue(res.next());
+			assertEquals(res.getInt("DATA_TYPE"), java.sql.Types.VARCHAR);
 
 			res = connection.getMetaData().getColumns(null, null, "AXI", "entity");
-			Assert.assertTrue(res.next());
-			Assert.assertEquals(res.getInt("DATA_TYPE"), java.sql.Types.VARCHAR);
+			assertTrue(res.next());
+			assertEquals(res.getInt("DATA_TYPE"), java.sql.Types.VARCHAR);
 
 			Statement statement = connection.createStatement();
 			ResultSet resultSet = statement.executeQuery("select \"datetime\", \"value\", \"entity\" from \"AXI\"");
@@ -171,12 +170,14 @@ public class CalciteTest {
 		if (statement != null) {
 			try {
 				statement.close();
-			} catch (SQLException ignored) {}
+			} catch (SQLException ignored) {
+			}
 		}
 		if (connection != null) {
 			try {
 				connection.close();
-			} catch (SQLException ignored) {}
+			} catch (SQLException ignored) {
+			}
 		}
 	}
 
@@ -190,7 +191,7 @@ public class CalciteTest {
 				try {
 					final List<String> lines = new ArrayList<>();
 					collect(lines, resultSet);
-					Assert.assertEquals(Arrays.asList(expected), lines);
+					assertEquals(Arrays.asList(expected), lines);
 				} catch (SQLException e) {
 					throw new RuntimeException(e);
 				}

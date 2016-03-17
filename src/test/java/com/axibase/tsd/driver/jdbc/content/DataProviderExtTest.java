@@ -25,7 +25,6 @@ import java.util.zip.ZipInputStream;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.powermock.api.mockito.PowerMockito;
@@ -34,74 +33,82 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.axibase.tsd.driver.jdbc.AtsdProperties;
 import com.axibase.tsd.driver.jdbc.ext.AtsdException;
 import com.axibase.tsd.driver.jdbc.intf.IContentProtocol;
 import com.axibase.tsd.driver.jdbc.intf.IStoreStrategy;
 import com.axibase.tsd.driver.jdbc.protocol.SdkProtocolImpl;
 import com.axibase.tsd.driver.jdbc.strategies.storage.FileStoreStrategy;
+import com.axibase.tsd.driver.jdbc.strategies.stream.KeepAliveStrategy;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(DataProvider.class)
-public class DataProviderExtTest {
+public class DataProviderExtTest extends AtsdProperties {
 	private static final Logger logger = LoggerFactory.getLogger(DataProviderExtTest.class);
 	private IContentProtocol protocolImpl;
+	private boolean isDefaultStrategy;
 
 	@Before
-	public void before() throws Exception {
+	public void setUp() throws Exception {
 		protocolImpl = PowerMockito.mock(SdkProtocolImpl.class);
+		isDefaultStrategy = READ_STRATEGY == null || READ_STRATEGY.equalsIgnoreCase("stream");
 	}
 
 	@Test
 	public void testStrategyOnOne() throws Exception {
-		try (IStoreStrategy storeStrategy = PowerMockito.spy(new FileStoreStrategy(new StatementContext()));) {
+		final StatementContext context = new StatementContext();
+		try (final IStoreStrategy storeStrategy = PowerMockito
+				.spy(isDefaultStrategy ? new KeepAliveStrategy(context) : new FileStoreStrategy(context));) {
 			fetch(storeStrategy, "/csv/1.csv", 1);
 		}
 	}
 
 	@Test
 	public void testStrategyStrategyOn143() throws Exception {
-		try (IStoreStrategy storeStrategy = PowerMockito.spy(new FileStoreStrategy(new StatementContext()));) {
+		final StatementContext context = new StatementContext();
+		try (final IStoreStrategy storeStrategy = PowerMockito
+				.spy(isDefaultStrategy ? new KeepAliveStrategy(context) : new FileStoreStrategy(context));) {
 			fetch(storeStrategy, "/csv/143.csv", 143);
 		}
 	}
 
 	@Test
 	public void testStrategyOn20001() throws Exception {
-		try (IStoreStrategy storeStrategy = PowerMockito.spy(new FileStoreStrategy(new StatementContext()));) {
+		final StatementContext context = new StatementContext();
+		try (final IStoreStrategy storeStrategy = PowerMockito
+				.spy(isDefaultStrategy ? new KeepAliveStrategy(context) : new FileStoreStrategy(context));) {
 			fetch(storeStrategy, "/csv/20001.csv", 20001);
-		}
-	}
-
-	@Ignore
-	@Test
-	public void testStrategyOn5m() throws Exception {
-		try (IStoreStrategy storeStrategy = PowerMockito.spy(new FileStoreStrategy(new StatementContext()));) {
-			fetch(storeStrategy, "/csv/5m.csv.zip", 4858440);
 		}
 	}
 
 	@Test(expected = SQLException.class)
 	public void testStrategyOnSqleWithoutRecords() throws Exception {
-		try (IStoreStrategy storeStrategy = PowerMockito.spy(new FileStoreStrategy(new StatementContext()));) {
+		final StatementContext context = new StatementContext();
+		try (final IStoreStrategy storeStrategy = PowerMockito
+				.spy(isDefaultStrategy ? new KeepAliveStrategy(context) : new FileStoreStrategy(context));) {
 			fetch(storeStrategy, "/csv/docker.network.eth0.rxerrors.csv", 1);
 		}
 	}
 
 	@Test(expected = SQLException.class)
 	public void testStrategyOnSqleWithRecords() throws Exception {
-		try (IStoreStrategy storeStrategy = PowerMockito.spy(new FileStoreStrategy(new StatementContext()));) {
+		final StatementContext context = new StatementContext();
+		try (final IStoreStrategy storeStrategy = PowerMockito
+				.spy(isDefaultStrategy ? new KeepAliveStrategy(context) : new FileStoreStrategy(context));) {
 			fetch(storeStrategy, "/csv/df.bytes.free.csv.zip", 18835);
 		}
 	}
 
 	@Test(expected = SQLException.class)
 	public void testStrategyOnSqleWithManyRecords() throws Exception {
-		try (IStoreStrategy storeStrategy = PowerMockito.spy(new FileStoreStrategy(new StatementContext()));) {
+		final StatementContext context = new StatementContext();
+		try (final IStoreStrategy storeStrategy = PowerMockito
+				.spy(isDefaultStrategy ? new KeepAliveStrategy(context) : new FileStoreStrategy(context));) {
 			fetch(storeStrategy, "/csv/gc_time_persent.csv.zip", 323115);
 		}
 	}
 
-	private void fetch(IStoreStrategy storeStrategy, String resource, int fetchSize)
+	private void fetch(final IStoreStrategy storeStrategy, String resource, int fetchSize)
 			throws AtsdException, IOException, GeneralSecurityException, SQLException {
 		long start = System.currentTimeMillis();
 		final InputStream mockIs = this.getClass().getResourceAsStream(resource);

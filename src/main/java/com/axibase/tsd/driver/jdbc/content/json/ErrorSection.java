@@ -161,11 +161,6 @@ public class ErrorSection {
 				return false;
 		} else if (!message.equals(other.message))
 			return false;
-		if (state == null) {
-			if (other.state != null)
-				return false;
-		} else if (!state.equals(other.state))
-			return false;
 		return true;
 	}
 

@@ -214,11 +214,7 @@ public class License {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + (dataVersioningEnabled ? 1231 : 1237);
-		result = prime * result + (forecastEnabled ? 1231 : 1237);
-		result = prime * result + hbaseServers;
 		result = prime * result + ((productVersion == null) ? 0 : productVersion.hashCode());
-		result = prime * result + (remoteHbase ? 1231 : 1237);
 		return result;
 	}
 
@@ -231,18 +227,10 @@ public class License {
 		if (getClass() != obj.getClass())
 			return false;
 		License other = (License) obj;
-		if (dataVersioningEnabled != other.dataVersioningEnabled)
-			return false;
-		if (forecastEnabled != other.forecastEnabled)
-			return false;
-		if (hbaseServers != other.hbaseServers)
-			return false;
 		if (productVersion == null) {
 			if (other.productVersion != null)
 				return false;
 		} else if (!productVersion.equals(other.productVersion))
-			return false;
-		if (remoteHbase != other.remoteHbase)
 			return false;
 		return true;
 	}
