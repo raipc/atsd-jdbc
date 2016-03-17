@@ -33,7 +33,7 @@ public class SchemaUrl {
     @JsonProperty("@id")
     private String Id;
     @JsonIgnore
-    private Map<String, Object> additionalProperties = new HashMap<String, Object>();
+    private final Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     /**
      * 

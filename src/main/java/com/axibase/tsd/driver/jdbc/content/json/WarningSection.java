@@ -40,7 +40,7 @@ public class WarningSection {
     @JsonProperty("message")
     private String message;
     @JsonIgnore
-    private Map<String, Object> additionalProperties = new HashMap<String, Object>();
+    private final Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     /**
      * 

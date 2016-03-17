@@ -329,7 +329,7 @@ public class RemoteConnectionTest extends AtsdProperties {
 							int count = printResultSet(resultSet);
 							assertTrue(count != 0);
 						} catch (SQLException | AtsdException e) {
-							e.printStackTrace();
+							logger.error(e.getMessage(), e);
 							fail();
 						}
 					}
@@ -482,7 +482,7 @@ public class RemoteConnectionTest extends AtsdProperties {
 		}
 		final SQLWarning warnings = resultSet.getWarnings();
 		if (warnings != null)
-			warnings.printStackTrace();
+			logger.error(warnings.getMessage(), warnings);
 		return count;
 	}
 

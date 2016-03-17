@@ -36,7 +36,7 @@ public class DcCreated {
     @JsonProperty("@type")
     private String Type;
     @JsonIgnore
-    private Map<String, Object> additionalProperties = new HashMap<String, Object>();
+    private final Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     /**
      * 

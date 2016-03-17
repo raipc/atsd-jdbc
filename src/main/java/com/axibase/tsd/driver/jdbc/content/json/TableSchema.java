@@ -35,7 +35,7 @@ public class TableSchema {
     @JsonProperty("columns")
     private List<Column> columns = new ArrayList<Column>();
     @JsonIgnore
-    private Map<String, Object> additionalProperties = new HashMap<String, Object>();
+    private final Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     /**
      * 

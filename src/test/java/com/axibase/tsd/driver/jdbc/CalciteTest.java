@@ -54,7 +54,7 @@ public class CalciteTest {
 	@Test
 	public void testPushDownProjectDumb() throws SQLException {
 		checkSql("aximodel", "explain plan for select * from AXI",
-				"PLAN=EnumerableInterpreter\n" + "  BindableTableScan(table=[[AXI, AXI]])\n");
+				"PLAN=EnumerableInterpreter\n  BindableTableScan(table=[[AXI, AXI]])\n");
 	}
 
 	@Test
@@ -63,19 +63,20 @@ public class CalciteTest {
 		info.put("model", jsonPath("aximodel"));
 		try (Connection connection = DriverManager.getConnection("jdbc:calcite:", info)) {
 			ResultSet tables = connection.getMetaData().getTables(null, null, null, null);
-			assertTrue(tables.next());
+			boolean b = tables.next();
+			assertTrue(b);
 			ResultSet res = connection.getMetaData().getColumns(null, null, "AXI", "datetime");
-			assertTrue(res.next());
+			b = tables.next();
+			assertTrue(b);
 			assertEquals(res.getInt("DATA_TYPE"), java.sql.Types.VARCHAR);
-
 			res = connection.getMetaData().getColumns(null, null, "AXI", "value");
-			assertTrue(res.next());
+			b = tables.next();
+			assertTrue(b);
 			assertEquals(res.getInt("DATA_TYPE"), java.sql.Types.VARCHAR);
-
 			res = connection.getMetaData().getColumns(null, null, "AXI", "entity");
-			assertTrue(res.next());
+			b = tables.next();
+			assertTrue(b);
 			assertEquals(res.getInt("DATA_TYPE"), java.sql.Types.VARCHAR);
-
 			Statement statement = connection.createStatement();
 			ResultSet resultSet = statement.executeQuery("select \"datetime\", \"value\", \"entity\" from \"AXI\"");
 			ResultSetMetaData metaData = resultSet.getMetaData();

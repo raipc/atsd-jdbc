@@ -110,7 +110,7 @@ public class IteratorData {
 		final ObjectMapper mapper = new ObjectMapper();
 		final Comments commentsObject = mapper.readValue(json, Comments.class);
 		final List<ErrorSection> errorSections = commentsObject.getErrors();
-		if (errorSections != null && errorSections.size() != 0) {
+		if (errorSections != null && !errorSections.isEmpty()) {
 			for (ErrorSection section : errorSections) {
 				SQLException sqle = new SQLException(section.getMessage(), section.getState());
 				final List<ExceptionSection> exceptions = section.getException();
@@ -119,12 +119,12 @@ public class IteratorData {
 					list.add(new StackTraceElement(exc.getClassName(), exc.getMethodName(), exc.getFileName(),
 							exc.getLineNumber()));
 				}
-				sqle.setStackTrace(list.toArray(new StackTraceElement[0]));
+				sqle.setStackTrace(list.toArray(new StackTraceElement[list.size()]));
 				context.addException(sqle);
 			}
 		}
 		final List<WarningSection> warningSections = commentsObject.getWarnings();
-		if (warningSections != null && warningSections.size() != 0) {
+		if (warningSections != null && !warningSections.isEmpty()) {
 			for (WarningSection section : warningSections) {
 				SQLWarning sqlw = new SQLWarning(section.getMessage(), section.getState());
 				final List<ExceptionSection> exceptions = section.getException();
@@ -133,7 +133,7 @@ public class IteratorData {
 					list.add(new StackTraceElement(exc.getClassName(), exc.getMethodName(), exc.getFileName(),
 							exc.getLineNumber()));
 				}
-				sqlw.setStackTrace(list.toArray(new StackTraceElement[0]));
+				sqlw.setStackTrace(list.toArray(new StackTraceElement[list.size()]));
 				context.addWarning(sqlw);
 			}
 		}

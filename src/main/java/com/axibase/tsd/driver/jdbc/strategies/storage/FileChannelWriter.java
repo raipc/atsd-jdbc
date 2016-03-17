@@ -69,7 +69,7 @@ public class FileChannelWriter implements Callable<Long> {
 					try {
 						lastWrite.get();
 					} catch (InterruptedException | ExecutionException e) {
-						e.printStackTrace();
+						logger.error(e.getMessage(), e);
 						throw new AtsdException(e.getMessage());
 					}
 				buffer.compact();
@@ -103,7 +103,7 @@ public class FileChannelWriter implements Callable<Long> {
 			if (logger.isTraceEnabled())
 				logger.trace("[Writer->call] Locked " + position);
 		} catch (InterruptedException | ExecutionException e) {
-			e.printStackTrace();
+			logger.error(e.getMessage(), e);
 			throw new AtsdException(e.getMessage());
 		}
 		return fileLock;

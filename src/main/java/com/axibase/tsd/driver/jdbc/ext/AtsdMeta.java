@@ -208,7 +208,7 @@ public class AtsdMeta extends MetaImpl {
 				cd.setHeaders(headers);
 			}
 			final List<String[]> subList = strategy.fetch(offset, fetchMaxRowCount);
-			final List<Object> rows = getFrame(h, loffset, fetchMaxRowCount, subList);
+			final List<Object> rows = getFrame(h, fetchMaxRowCount, subList);
 			return new Meta.Frame(loffset, rows.size() < fetchMaxRowCount, rows);
 		} catch (final AtsdException | IOException e) {
 			if (logger.isDebugEnabled())
@@ -234,9 +234,9 @@ public class AtsdMeta extends MetaImpl {
 	}
 
 	private void closeProviderCaches(StatementHandle h) {
-		if (metaCache != null && metaCache.size() != 0)
+		if (metaCache != null && !metaCache.isEmpty())
 			metaCache.remove(h.id);
-		if (contextMap != null && contextMap.size() != 0)
+		if (contextMap != null && !contextMap.isEmpty())
 			contextMap.remove(h.id);
 
 	}
@@ -266,11 +266,11 @@ public class AtsdMeta extends MetaImpl {
 	}
 
 	private void closeCaches() {
-		if (metaCache != null && metaCache.size() != 0)
+		if (metaCache != null && !metaCache.isEmpty())
 			metaCache.clear();
-		if (contextMap != null && contextMap.size() != 0)
+		if (contextMap != null && !contextMap.isEmpty())
 			contextMap.clear();
-		if (providerCache != null && providerCache.size() != 0)
+		if (providerCache != null && !providerCache.isEmpty())
 			providerCache.clear();
 	}
 
@@ -380,8 +380,7 @@ public class AtsdMeta extends MetaImpl {
 		return contentMetadata;
 	}
 
-	private List<Object> getFrame(final StatementHandle h, long loffset, int fetchMaxRowCount,
-			final List<String[]> subList) {
+	private List<Object> getFrame(final StatementHandle h, int fetchMaxRowCount, final List<String[]> subList) {
 		IDataProvider provider = providerCache.get(h.id);
 		assert provider != null;
 		final String[] headers = provider.getContentDescription().getHeaders();
@@ -419,8 +418,8 @@ public class AtsdMeta extends MetaImpl {
 						s = Short.valueOf(sarray[i]);
 					} catch (final NumberFormatException nfe) {
 						if (logger.isDebugEnabled())
-							logger.debug("[getFrame] short type mismatched: {} on {} position",
-									Arrays.toString(sarray), i);
+							logger.debug("[getFrame] short type mismatched: {} on {} position", Arrays.toString(sarray),
+									i);
 					}
 					row.add(s);
 					break;
@@ -430,8 +429,8 @@ public class AtsdMeta extends MetaImpl {
 						n = Integer.valueOf(sarray[i]);
 					} catch (final NumberFormatException nfe) {
 						if (logger.isDebugEnabled())
-							logger.debug("[getFrame] int type mismatched: {} on {} position",
-									Arrays.toString(sarray), i);
+							logger.debug("[getFrame] int type mismatched: {} on {} position", Arrays.toString(sarray),
+									i);
 					}
 					row.add(n);
 					break;
@@ -441,8 +440,8 @@ public class AtsdMeta extends MetaImpl {
 						l = Long.valueOf(sarray[i]);
 					} catch (final NumberFormatException nfe) {
 						if (logger.isDebugEnabled())
-							logger.debug("[getFrame] long type mismatched: {} on {} position",
-									Arrays.toString(sarray), i);
+							logger.debug("[getFrame] long type mismatched: {} on {} position", Arrays.toString(sarray),
+									i);
 					}
 					row.add(l);
 					break;

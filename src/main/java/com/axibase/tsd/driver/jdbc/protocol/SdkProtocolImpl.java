@@ -81,7 +81,7 @@ public class SdkProtocolImpl implements DriverConstants, IContentProtocol {
 			this.conn.disconnect();
 	}
 
-	synchronized InputStream executeRequest(String method) throws AtsdException, IOException, GeneralSecurityException {
+	public InputStream executeRequest(String method) throws AtsdException, IOException, GeneralSecurityException {
 		boolean isHead = method.equals(HEAD_METHOD);
 		boolean isPost = method.equals(POST_METHOD);
 		String postParams = cd.getPostParams();
@@ -200,7 +200,7 @@ public class SdkProtocolImpl implements DriverConstants, IContentProtocol {
 	private void processResponse(Map<String, List<String>> map) throws UnsupportedEncodingException {
 		printHeaders(map);
 		List<String> list = map.get(SCHEME_HEADER);
-		String value = list != null && list.size() != 0 ? list.get(0) : null;
+		String value = list != null && !list.isEmpty() ? list.get(0) : null;
 		if (value == null)
 			return;
 		assert value.startsWith(START_LINK) && value.endsWith(END_LINK);

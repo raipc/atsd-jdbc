@@ -121,7 +121,7 @@ public class DataProviderExtTest extends AtsdProperties {
 		try {
 			PowerMockito.doReturn(zipped ? mockZip : mockIs).when(protocolImpl, "readContent");
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error(e.getMessage(), e);
 			throw new AtsdException(e.getMessage());
 		}
 		try {
@@ -140,7 +140,7 @@ public class DataProviderExtTest extends AtsdProperties {
 				logger.debug("Fetched: " + fetched.size());
 			assertTrue(fetched.size() == fetchSize);
 		} catch (final IOException e) {
-			e.printStackTrace();
+			logger.error(e.getMessage(), e);
 			throw new AtsdException(e.getMessage());
 		} finally {
 			if (mockIs != null)

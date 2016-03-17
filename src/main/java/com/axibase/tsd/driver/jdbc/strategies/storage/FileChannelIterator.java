@@ -71,7 +71,7 @@ public class FileChannelIterator<T> implements Iterator<String[]>, AutoCloseable
 				try {
 					Thread.sleep(100);
 				} catch (InterruptedException e) {
-					e.printStackTrace();
+					logger.error(e.getMessage(), e);
 				}
 				if (!status.isInProgress()) {
 					break;
@@ -90,15 +90,20 @@ public class FileChannelIterator<T> implements Iterator<String[]>, AutoCloseable
 				try {
 					Thread.sleep(500);
 				} catch (InterruptedException e1) {
-					e1.printStackTrace();
+					logger.error(e1.getMessage(), e1);
 				}
 				continue;
 			}
 			if (logger.isTraceEnabled())
 				logger.trace("[next] locked on read: " + data.getPosition());
 			Future<Integer> operation = readChannel.read(data.getBuffer(), data.getPosition());
-			while (!operation.isDone())
-				;
+			while (!operation.isDone()) {
+				try {
+					Thread.sleep(1);
+				} catch (InterruptedException e) {
+					logger.error(e.getMessage(), e);
+				}
+			}
 			lock.lock();
 			try {
 				if (operation.get() == -1) {

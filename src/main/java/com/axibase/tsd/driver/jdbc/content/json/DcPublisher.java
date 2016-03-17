@@ -36,7 +36,7 @@ public class DcPublisher {
     @JsonProperty("schema:url")
     private SchemaUrl schemaUrl;
     @JsonIgnore
-    private Map<String, Object> additionalProperties = new HashMap<String, Object>();
+    private final Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     /**
      * 

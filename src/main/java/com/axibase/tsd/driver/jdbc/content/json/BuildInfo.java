@@ -39,7 +39,7 @@ public class BuildInfo {
     @JsonProperty("buildId")
     private String buildId;
     @JsonIgnore
-    private Map<String, Object> additionalProperties = new HashMap<String, Object>();
+    private final Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     /**
      * No args constructor for use in serialization

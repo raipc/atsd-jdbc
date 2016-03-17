@@ -44,7 +44,7 @@ public class AtsdProperties implements TestConstants {
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		String trustProp = System.getProperty("axibase.tsd.driver.jdbc.trust");
-		TRUST_URL = trustProp != null ? new Boolean(trustProp) : null;
+		TRUST_URL = trustProp != null ? Boolean.valueOf(trustProp) : null;
 		LOGIN_NAME = System.getProperty("axibase.tsd.driver.jdbc.username");
 		LOGIN_PASSWORD = System.getProperty("axibase.tsd.driver.jdbc.password");
 		HTTP_ATDS_URL = System.getProperty("axibase.tsd.driver.jdbc.url");
