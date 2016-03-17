@@ -6,7 +6,7 @@
 
 # JDBC driver
 
-The driver is designed to provide a convenient way of access to ATSD instance via SQL API. The internal communication occurs by means of transferring CSV data via HTTP or HTTPS protocols. In [SQL API Documentation](http://axibase.com/atsd/api/#sql) you can find the description of the query format as well as the list of supported SQL functions and other useful information.
+The driver is designed to provide a convenient way to access ATSD instance via SQL API. The internal communication happens by means of transferring CSV data via HTTP or HTTPS protocols. See the [SQL API Documentation](http://axibase.com/atsd/api/#sql) to find a description of the query format, a list of supported SQL functions, and other useful information.
 
 ## Supported Data Types
 
@@ -40,7 +40,7 @@ You can find the project in the central repository.
 </dependency>
 ```
 
-Or you can build the project on your own.
+Alternatively, you can build a project yourself.
 
 ```bash
 $ mvn -DskipTests=true clean install
@@ -48,7 +48,7 @@ $ mvn -DskipTests=true clean install
 
 ## Classpath
 
-If you do not use build managers such as Gradle or Maven you can get a JAR library from Maven Central: [Direct URL](http://search.maven.org/remotecontent?filepath=com/axibase/atsd-jdbc/1.2.1/atsd-jdbc-1.2.1.jar) and add it to the classpath of your application.
+If you do not use any build managers such as Gradle or Maven, you can get a JAR library from Maven Central: [Direct URL](http://search.maven.org/remotecontent?filepath=com/axibase/atsd-jdbc/1.2.1/atsd-jdbc-1.2.1.jar) and add it to the classpath of your application.
 
 ```
 * Unix: java -cp "atsd-jdbc-1.2.1.jar:lib/*" your.package.MainClass
@@ -57,11 +57,11 @@ If you do not use build managers such as Gradle or Maven you can get a JAR libra
 
 ## Database Tools
 
-On the other hand you can use an universal database manager like [DbVisualizer](https://www.dbvis.com). Please follow their user guide to create a custom driver based on JAR file from the link above.
+You can also use a universal database manager, for example [DbVisualizer](https://www.dbvis.com). Follow instructions in their user guide to create a custom driver based on JAR file from the link above.
 
 ## JDBC URL
 
-A prefix of the JDBC driver is "jdbc:axibase:atsd:". Next, you should specify a URL where your ATSD instance is available. And if it is necessary you should specify some JDBC Connection properties listed above. By combining all three segments together, you can get a full JDBC URL and use it to get a connection.
+Next you should specify a URL where your ATSD instance is installed. And, if necessary, specify JDBC Connection properties listed above. By combining all three segments together you can get a full JDBC URL and use it to set a connection.
 
 ```
 Examples:
@@ -81,7 +81,7 @@ The project is released under version 2.0 of the [Apache License](http://www.apa
 
 ## Tests
 
-In order to run tests you have to choose (or create) own ATSD metrics. A test phase is expecting the set of test properties provided below. The first three parameters are mandatory to have tests done and the others are optional for more accurate checking.
+To run tests, you have to choose (or create) your own ATSD metrics. A test phase requires a set of test properties listed below. The first three parameters are mandatory. You can use the rest of the parameters to get more accurate test results.
 
 ```
 * -Daxibase.tsd.driver.jdbc.url=<ATSD_URL [http, https]>
@@ -102,7 +102,7 @@ In order to run tests you have to choose (or create) own ATSD metrics. A test ph
 
 ## Usage
 
-To begin you should have your ATSD instance started and valid credentials to it. In general to create SQL statement you can use the usual Java approach:
+First, start you ATSD instance and log in to it. In general to create SQL statement you can use the usual Java approach:
 
 ```java
 Connection connection = DriverManager.getConnection("jdbc:axibase:atsd:" + <ATDS_URL>, <ATSD_LOGIN>, <ATSD_PASSWORD>);
@@ -110,7 +110,7 @@ Statement statement = connection.createStatement();
 ResultSet resultSet = statement.executeQuery(<SQL_QUERY>);
 ```
 
-or the same to create a prepared statement:
+You can the same approach to create a prepared statement:
 
 ```java
 Connection connection = DriverManager.getConnection("jdbc:axibase:atsd:" + <ATDS_URL>, <ATSD_LOGIN>, <ATSD_PASSWORD>);
@@ -120,7 +120,7 @@ ResultSet resultSet = prepareStatement.executeQuery();
 }
 ```
 
-Please note that the current version of the driver has some limitations. It is made read-only by not allowing users to change the data source. It is possible to iterate over records one by one in the direct direction. No positioning is supported yet but may be added later. In order to check a basic way of using driver you can run the simple example:
+Please note that the current version of the driver has limitations. Users do not have permissions to change the data source. It is possible to iterate over records one by one. No positioning is supported yet but this option may be added later. To check how the driver works, run the following example:
 
 ```java
 	Class.forName("com.axibase.tsd.driver.jdbc.AtsdDriver");
