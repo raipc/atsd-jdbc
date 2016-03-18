@@ -61,7 +61,7 @@ You can also use a universal database manager, for example [DbVisualizer](https:
 
 ## JDBC URL
 
-Next you should specify a URL where your ATSD instance is installed. And, if necessary, specify JDBC Connection properties listed above. By combining all three segments together you can get a full JDBC URL and use it to set a connection.
+A prefix of the JDBC driver is "jdbc:axibase:atsd:". Next you should specify a URL where your ATSD instance is installed. And, if necessary, specify JDBC Connection properties listed above. By combining all three segments together you can get a full JDBC URL and use it to set a connection.
 
 ```
 Examples:
@@ -102,7 +102,7 @@ To run tests, you have to choose (or create) your own ATSD metrics. A test phase
 
 ## Usage
 
-First, start you ATSD instance and log in to it. In general to create SQL statement you can use the usual Java approach:
+First, make sure your ATSD instance is started and you have valid credentials to it. In general to create SQL statement you can use the usual Java approach:
 
 ```java
 Connection connection = DriverManager.getConnection("jdbc:axibase:atsd:" + <ATDS_URL>, <ATSD_LOGIN>, <ATSD_PASSWORD>);
