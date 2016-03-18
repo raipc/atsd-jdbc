@@ -7,7 +7,7 @@
     </appender>
  
     <logger name="com.axibase.tsd.driver.jdbc">
-        <level value="DEBUG" />
+        <level value="TRACE" />
     </logger>
     
     <logger name="org.apache.calcite.avatica">

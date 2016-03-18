@@ -97,8 +97,11 @@ public class IteratorData {
 		if (commentStart != -1) {
 			content.append(new String(line.substring(0, commentStart)));
 			comments.append(new String(line.substring(commentStart)));
-		} else
+		} else {
+			if (logger.isTraceEnabled())
+				logger.trace("[bufferOperations] " + line);
 			content.append(line);
+		}
 	}
 
 	public void processComments() throws JsonParseException, JsonMappingException, IOException {

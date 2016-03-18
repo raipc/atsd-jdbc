@@ -195,9 +195,13 @@ public class RemoteConnectionTest extends AtsdProperties {
 	}
 
 	@Test
+	public final void testStatementsWithCondition() throws AtsdException, SQLException {
+		checkRemoteStatement(
+				"SELECT entity, datetime, value, tags.mount_point, tags.file_system FROM df.disk_used_percent WHERE entity = 'NURSWGHBS001' AND datetime > now - 1 * HOUR LIMIT 10");
+	}
+
+	@Test
 	public final void testPreparedStatementsWithArgs() throws AtsdException, SQLException {
-		if (StringUtils.isEmpty(TINY_TABLE) || !TINY_TABLE.toLowerCase(Locale.US).endsWith("cpu_busy"))
-			return;
 		checkRemotePreparedStatementWithLimits(
 				"SELECT time, value, tags.file_system FROM df.disk_used_percent WHERE tags.file_system LIKE ? AND datetime between ? and ?",
 				new String[] { "tmpfs", "2015-07-08T16:00:00Z", "2017-07-08T16:30:00Z" }, 1001, 10001);
@@ -205,8 +209,6 @@ public class RemoteConnectionTest extends AtsdProperties {
 
 	@Test
 	public final void testPreparedStatementsWithAggregation() throws AtsdException, SQLException {
-		if (StringUtils.isEmpty(TINY_TABLE) || !TINY_TABLE.toLowerCase(Locale.US).endsWith("cpu_busy"))
-			return;
 		checkRemotePreparedStatementWithLimits(
 				"SELECT count(*), entity, tags.*, period (30 minute) FROM df.disk_used "
 						+ "WHERE entity = ? AND tags.mount_point = ? AND tags.file_system = ? "

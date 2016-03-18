@@ -27,11 +27,10 @@ import com.axibase.tsd.driver.jdbc.strategies.storage.FileStoreStrategy;
 import com.axibase.tsd.driver.jdbc.strategies.stream.KeepAliveStrategy;
 
 @RunWith(PowerMockRunner.class)
-public class DecimalTypeMock extends AtsdProperties {
-	private static final Logger logger = LoggerFactory.getLogger(DecimalTypeMock.class);
+public class DoubleTypeMock extends AtsdProperties {
+	private static final Logger logger = LoggerFactory.getLogger(DoubleTypeMock.class);
 	private static final String CONTEXT_START = "{";
-	private static final String TMD_TABLE = "jdbc.driver.test.metric.decimal";
-	private static final String TMD_TABLE_200 = TMD_TABLE + ".200";
+	private static final String TMD_TABLE = "jdbc.driver.test.metric.double";
 	private static final String TMD_JSON_SCHEMA = String.format("/json/%s.jsonld", TMD_TABLE);
 	private SdkProtocolImpl protocolImpl;
 	private boolean isDefaultStrategy;
@@ -50,21 +49,12 @@ public class DecimalTypeMock extends AtsdProperties {
 	}
 
 	@Test
-	public void testDecimalType() throws Exception {
+	public void testDoubleType() throws Exception {
 		final StatementContext context = new StatementContext();
 
 		try (IStoreStrategy storeStrategy = PowerMockito
 				.spy(isDefaultStrategy ? new KeepAliveStrategy(context) : new FileStoreStrategy(context));) {
 			fetch(storeStrategy, String.format("/csv/%S.csv", TMD_TABLE), 1);
-		}
-	}
-
-	@Test
-	public void testBidDecimalsType() throws Exception {
-		final StatementContext context = new StatementContext();
-		try (IStoreStrategy storeStrategy = PowerMockito
-				.spy(isDefaultStrategy ? new KeepAliveStrategy(context) : new FileStoreStrategy(context));) {
-			fetch(storeStrategy, String.format("/csv/%S.csv", TMD_TABLE_200), 200);
 		}
 	}
 

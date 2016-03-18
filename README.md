@@ -126,83 +126,123 @@ Please note that the current version of the driver has limitations. Users do not
 	Class.forName("com.axibase.tsd.driver.jdbc.AtsdDriver");
 	try (Connection connection = DriverManager.getConnection("jdbc:axibase:atsd:<PROTOCOL>://<HOST>.<DOMAIN>:<PORT>/api/sql", <ATSD_LOGIN>, <ATSD_PASSWORD>); 
 			Statement statement = connection.createStatement();) {
-		final DatabaseMetaData metaData = connection.getMetaData();
-		final String databaseProductName = metaData.getDatabaseProductName();
-		final String databaseProductVersion = metaData.getDatabaseProductVersion();
-		final String driverName = metaData.getDriverName();
-		final String driverVersion = metaData.getDriverVersion();
-		System.out.println("Product Name:   \t" + databaseProductName);
-		System.out.println("Product Version:\t" + databaseProductVersion);
-		System.out.println("Driver Name:    \t" + driverName);
-		System.out.println("Driver Version: \t" + driverVersion);
-		System.out.println("\nTableTypes:")
-		final ResultSet rs = metaData.getCatalogs();
-		while (rs.next()) {
-			final String catalog = rs.getString(1);
-			System.out.println("\nCatalog: \t" + catalog);
-			final ResultSet rs1 = metaData.getSchemas(catalog, null);
-			while (rs1.next()) {
-				final String schema = rs1.getString(1);
-				System.out.println("Schema: \t" + schema);
-			}
-		};
-		final ResultSet rs2 = metaData.getTableTypes();
-		while (rs2.next()) {
-			final String type = rs2.getString(1);
-			System.out.println('\t' + type);
-		}
-		try (ResultSet resultSet = statement.executeQuery("SELECT * from <METRIC_NAME> LIMIT 100");) {
-			final ResultSetMetaData rsmd = resultSet.getMetaData();
-			System.out.println("\nColumns:");
-			for (int i = 1; i <= rsmd.getColumnCount(); i++) {
-				String name = rsmd.getColumnName(i);
-				String typeName = rsmd.getColumnTypeName(i);
-				System.out.println(String.format("\t%s\t%s", typeName, name));
-			}
-			System.out.println("\nData:");
-			int count = 1;
-			final StringBuilder sb = new StringBuilder();
-			while (resultSet.next()) {
-				sb.append(count++).append(" ");
+			try (ResultSet resultSet = statement.executeQuery(
+			  "SELECT entity, datetime, value, tags.mount_point, tags.file_system FROM df.disk_used_percent WHERE entity = 'NURSWGHBS001' AND datetime > now - 1 * HOUR LIMIT 10");) {
+				final ResultSetMetaData rsmd = resultSet.getMetaData();
+				System.out.println("\nColumns:");
 				for (int i = 1; i <= rsmd.getColumnCount(); i++) {
-					int type = rsmd.getColumnType(i);
-					switch (type) {
-					case Types.VARCHAR:
-						sb.append(" getString: " + resultSet.getString(i));
-						break;
-					case Types.INTEGER:
-						sb.append(" getInt: " + resultSet.getInt(i));
-						break;
-					case Types.BIGINT:
-						sb.append(" getLong: " + resultSet.getLong(i));
-						break;
-					case Types.SMALLINT:
-						sb.append(" getShort: " + resultSet.getShort(i));
-						break;
-					case Types.FLOAT:
-						sb.append(" getFloat: " + resultSet.getFloat(i));
-						break;
-					case Types.DOUBLE:
-						sb.append(" getDouble: " + resultSet.getDouble(i));
-						break;
-					case Types.DECIMAL:
-						sb.append("getDecimal: " + resultSet.getBigDecimal(i));
-						break;							
-					case Types.TIMESTAMP:
-						sb.append(" getTimestamp: " + resultSet.getTimestamp(i).toString());
-						break;
-					default:
-						throw new UnsupportedOperationException();
-					}
+					String name = rsmd.getColumnName(i);
+					String typeName = rsmd.getColumnTypeName(i);
+					System.out.println(String.format("\t%s\t%s", typeName, name));
 				}
-				sb.append('\n');
+				System.out.println("\nData:");
+				int count = 1;
+				while (resultSet.next()) {
+					System.out.print(count++);
+					for (int i = 1; i <= rsmd.getColumnCount(); i++) {
+						int type = rsmd.getColumnType(i);
+						switch (type) {
+						case Types.VARCHAR:
+							System.out.print(" getString: " + resultSet.getString(i));
+							break;
+						case Types.INTEGER:
+							System.out.print(" getInt: " + resultSet.getInt(i));
+							break;
+						case Types.BIGINT:
+							System.out.print(" getLong: " + resultSet.getLong(i));
+							break;
+						case Types.SMALLINT:
+							System.out.print(" getShort: " + resultSet.getShort(i));
+							break;
+						case Types.FLOAT:
+							System.out.print(" getFloat: " + resultSet.getFloat(i));
+							break;
+						case Types.DOUBLE:
+							System.out.print(" getDouble: " + resultSet.getDouble(i));
+							break;
+						case Types.DECIMAL:
+							System.out.print(" getDecimal: " + resultSet.getBigDecimal(i));
+							break;
+						case Types.TIMESTAMP:
+							System.out.print(" getTimestamp: " + resultSet.getTimestamp(i).toString());
+							break;
+						default:
+							throw new UnsupportedOperationException();
+						}
+					}
+					System.out.println("");
+				}
+				final SQLWarning warnings = resultSet.getWarnings();
+				if (warnings != null)
+					warnings.printStackTrace();
 			}
-			System.out.println(sb.toString());
-			final SQLWarning warnings = resultSet.getWarnings();
-			if (warnings != null)
-				warnings.printStackTrace();
-		}
 	}
+```
+
+Results:
+
+```
+Columns:
+1	string				entity
+2	xsd:dateTimeStamp	datetime
+3	float				value
+4	string				tags.mount_point
+5	string				tags.file_system
+
+Data:
+1  getString: nurswghbs001 	getTimestamp: 2016-03-18 13:35:39.0 	getFloat: 28.0181 	getString: / getString: /dev/md2
+2  getString: nurswghbs001 	getTimestamp: 2016-03-18 13:35:45.0 	getFloat: 28.0181 	getString: / getString: /dev/md2
+3  getString: nurswghbs001 	getTimestamp: 2016-03-18 13:35:54.0 	getFloat: 28.0181 	getString: / getString: /dev/md2
+4  getString: nurswghbs001 	getTimestamp: 2016-03-18 13:36:00.0 	getFloat: 28.0181 	getString: / getString: /dev/md2
+5  getString: nurswghbs001 	getTimestamp: 2016-03-18 13:36:09.0 	getFloat: 28.0182 	getString: / getString: /dev/md2
+6  getString: nurswghbs001 	getTimestamp: 2016-03-18 13:36:15.0 	getFloat: 28.0182 	getString: / getString: /dev/md2
+7  getString: nurswghbs001 	getTimestamp: 2016-03-18 13:36:24.0 	getFloat: 28.0182 	getString: / getString: /dev/md2
+8  getString: nurswghbs001 	getTimestamp: 2016-03-18 13:36:30.0 	getFloat: 28.0182 	getString: / getString: /dev/md2
+9  getString: nurswghbs001 	getTimestamp: 2016-03-18 13:36:39.0 	getFloat: 28.0183 	getString: / getString: /dev/md2
+10 getString: nurswghbs001 	getTimestamp: 2016-03-18 13:36:45.0 	getFloat: 28.0183 	getString: / getString: /dev/md2
+
+```
+
+The following example shows how to extract metadata from a database:
+
+```java
+	Class.forName("com.axibase.tsd.driver.jdbc.AtsdDriver");
+	try (Connection connection = DriverManager.getConnection("jdbc:axibase:atsd:<PROTOCOL>://<HOST>.<DOMAIN>:<PORT>/api/sql", <ATSD_LOGIN>, <ATSD_PASSWORD>); 
+			Statement statement = connection.createStatement();) {
+			final DatabaseMetaData metaData = connection.getMetaData();
+			final String databaseProductName = metaData.getDatabaseProductName();
+			final String databaseProductVersion = metaData.getDatabaseProductVersion();
+			final String driverName = metaData.getDriverName();
+			final String driverVersion = metaData.getDriverVersion();
+			System.out.println("Product Name:   \t" + databaseProductName);
+			System.out.println("Product Version:\t" + databaseProductVersion);
+			System.out.println("Driver Name:    \t" + driverName);
+			System.out.println("Driver Version: \t" + driverVersion);
+			System.out.println("\nTypeInfo:");
+			ResultSet rs = metaData.getTypeInfo();
+			while (rs.next()) {
+				final String name = rs.getString("TYPE_NAME");
+				final int type = rs.getInt("DATA_TYPE");
+				final int precision = rs.getInt("PRECISION");
+				final boolean isCS = rs.getBoolean("CASE_SENSITIVE");
+				System.out.println(String.format("\tName: %s      \tCS: %s \tType: %s    \tPrecision: %s", name, isCS, type, precision));
+			}
+			System.out.println("\nTableTypes:");
+			rs = metaData.getTableTypes();
+			while (rs.next()) {
+				final String type = rs.getString(1);
+				System.out.println('\t' + type);
+			}
+			rs = metaData.getCatalogs();
+			while (rs.next()) {
+				final String catalog = rs.getString(1);
+				System.out.println("\nCatalog: \t" + catalog);
+				final ResultSet rs1 = metaData.getSchemas(catalog, null);
+				while (rs1.next()) {
+					final String schema = rs1.getString(1);
+					System.out.println("Schema: \t" + schema);
+				}
+			}
 ```
 
 Results:
@@ -212,7 +252,17 @@ Product Name:   	Axibase
 Product Version:	Axibase Time Series Database, <ATSD_EDITION>, Revision: <ATSD_REVISION_NUMBER>
 Driver Name:    	ATSD JDBC driver
 Driver Version: 	<DRIVER_VERSION>
-	
+
+TypeInfo:
+	Name: DECIMAL      	CS: false 	Type: 3    	Precision: -1
+	Name: DOUBLE      	CS: false 	Type: 8    	Precision: 52
+	Name: FLOAT      	CS: false 	Type: 6    	Precision: 23
+	Name: INTEGER      	CS: false 	Type: 4    	Precision: 10
+	Name: LONG      	CS: false 	Type: -5    Precision: 19
+	Name: SHORT      	CS: false 	Type: 5    	Precision: 5
+	Name: STRING      	CS: true 	Type: 12    Precision: 2147483647
+	Name: TIMESTAMP     CS: false 	Type: 93    Precision: 23
+
 TableTypes:
 	TABLE
 	VIEW
@@ -220,11 +270,5 @@ TableTypes:
 	
 Catalog: 	ATSD
 Schema: 	Axibase
-
-Columns:
-	...
-	
-Data:
-	...
 
 ```

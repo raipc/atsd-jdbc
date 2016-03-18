@@ -27,18 +27,17 @@ import com.axibase.tsd.driver.jdbc.strategies.storage.FileStoreStrategy;
 import com.axibase.tsd.driver.jdbc.strategies.stream.KeepAliveStrategy;
 
 @RunWith(PowerMockRunner.class)
-public class DecimalTypeMock extends AtsdProperties {
-	private static final Logger logger = LoggerFactory.getLogger(DecimalTypeMock.class);
+public class LongTypeMock extends AtsdProperties {
+	private static final Logger logger = LoggerFactory.getLogger(LongTypeMock.class);
 	private static final String CONTEXT_START = "{";
-	private static final String TMD_TABLE = "jdbc.driver.test.metric.decimal";
-	private static final String TMD_TABLE_200 = TMD_TABLE + ".200";
-	private static final String TMD_JSON_SCHEMA = String.format("/json/%s.jsonld", TMD_TABLE);
+	private static final String TML_TABLE = "jdbc.driver.test.metric.long";
+	private static final String TML_JSON_SCHEMA = String.format("/json/%s.jsonld", TML_TABLE);
 	private SdkProtocolImpl protocolImpl;
 	private boolean isDefaultStrategy;
 
 	@Before
 	public void setUp() throws Exception {
-		final ContentDescription cd = new ContentDescription(HTTP_ATDS_URL, SELECT_ALL_CLAUSE + TMD_TABLE, LOGIN_NAME,
+		final ContentDescription cd = new ContentDescription(HTTP_ATDS_URL, SELECT_ALL_CLAUSE + TML_TABLE, LOGIN_NAME,
 				LOGIN_PASSWORD, null);
 		cd.setJsonScheme(getSchema());
 		this.protocolImpl = PowerMockito.spy(new SdkProtocolImpl(cd));
@@ -50,26 +49,17 @@ public class DecimalTypeMock extends AtsdProperties {
 	}
 
 	@Test
-	public void testDecimalType() throws Exception {
+	public void testLongType() throws Exception {
 		final StatementContext context = new StatementContext();
 
 		try (IStoreStrategy storeStrategy = PowerMockito
 				.spy(isDefaultStrategy ? new KeepAliveStrategy(context) : new FileStoreStrategy(context));) {
-			fetch(storeStrategy, String.format("/csv/%S.csv", TMD_TABLE), 1);
-		}
-	}
-
-	@Test
-	public void testBidDecimalsType() throws Exception {
-		final StatementContext context = new StatementContext();
-		try (IStoreStrategy storeStrategy = PowerMockito
-				.spy(isDefaultStrategy ? new KeepAliveStrategy(context) : new FileStoreStrategy(context));) {
-			fetch(storeStrategy, String.format("/csv/%S.csv", TMD_TABLE_200), 200);
+			fetch(storeStrategy, String.format("/csv/%S.csv", TML_TABLE), 1);
 		}
 	}
 
 	private String getSchema() throws IOException {
-		try (final InputStream is = this.getClass().getResourceAsStream(TMD_JSON_SCHEMA);
+		try (final InputStream is = this.getClass().getResourceAsStream(TML_JSON_SCHEMA);
 				final Scanner scanner = new Scanner(is);) {
 			scanner.useDelimiter("\\A");
 			String json = scanner.hasNext() ? scanner.next() : "";
