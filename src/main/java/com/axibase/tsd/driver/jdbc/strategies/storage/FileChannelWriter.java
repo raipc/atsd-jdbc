@@ -82,7 +82,7 @@ public class FileChannelWriter implements Callable<Long> {
 				logger.trace("[Writer->call] File size: " + writeChannel.size());
 			writeChannel.close();
 			inputChannel.close();
-			status.setInProgress(true);
+//			status.setInProgress(true);
 		}
 		return position;
 	}

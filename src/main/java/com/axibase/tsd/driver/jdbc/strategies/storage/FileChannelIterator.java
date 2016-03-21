@@ -24,6 +24,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.locks.ReentrantLock;
 
 import com.axibase.tsd.driver.jdbc.content.StatementContext;
+import com.axibase.tsd.driver.jdbc.ext.AtsdException;
 import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
 import com.axibase.tsd.driver.jdbc.strategies.IteratorData;
 import com.axibase.tsd.driver.jdbc.strategies.StrategyStatus;
@@ -113,6 +114,7 @@ public class FileChannelIterator<T> implements Iterator<String[]>, AutoCloseable
 			try {
 				if (operation.get() == -1) {
 					data.processComments();
+					status.setInProgress(false);
 					return data.getNext(true);
 				}
 			} catch (ExecutionException | InterruptedException | IOException e) {
@@ -123,7 +125,14 @@ public class FileChannelIterator<T> implements Iterator<String[]>, AutoCloseable
 				releaseFileLock(fileLock);
 				lock.unlock();
 			}
-			data.bufferOperations();
+			try {
+				data.bufferOperations();
+			} catch (final AtsdException e) {
+				if (logger.isDebugEnabled())
+					logger.debug("[bufferOperations] " + e.getMessage());
+				status.setInProgress(false);
+				return null;
+			}
 			found = data.getNext(false);
 			if (found != null)
 				return found;

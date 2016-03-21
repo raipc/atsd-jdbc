@@ -67,8 +67,8 @@ public class KeepAliveStrategy implements IStoreStrategy {
 			if (logger.isDebugEnabled())
 				logger.debug("[openToRead] " + e.getMessage());
 		}
-		if (logger.isDebugEnabled())
-			logger.debug("[openToRead] " + is.hashCode() + " -> " + is.available());
+		if (logger.isTraceEnabled())
+			logger.trace("[openToRead] " + is.hashCode() + " -> " + is.available());
 		final ReadableByteChannel rbc = Channels.newChannel(is);
 		return consumer.open(rbc);
 	}
@@ -105,8 +105,8 @@ public class KeepAliveStrategy implements IStoreStrategy {
 
 	@Override
 	public void store(InputStream is) throws IOException {
-		if (logger.isDebugEnabled())
-			logger.debug("[store] " + is.hashCode() + " -> " + is.available());
+		if (logger.isTraceEnabled())
+			logger.trace("[store] " + is.hashCode() + " -> " + is.available());
 		this.is = is;
 		final CountDownLatch syncLatch = status.getSyncLatch();
 		if(syncLatch.getCount() != 0)

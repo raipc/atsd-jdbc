@@ -27,6 +27,7 @@ import com.axibase.tsd.driver.jdbc.content.json.Comments;
 import com.axibase.tsd.driver.jdbc.content.json.ErrorSection;
 import com.axibase.tsd.driver.jdbc.content.json.ExceptionSection;
 import com.axibase.tsd.driver.jdbc.content.json.WarningSection;
+import com.axibase.tsd.driver.jdbc.ext.AtsdException;
 import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -80,15 +81,18 @@ public class IteratorData {
 		return splitLine(line);
 	}
 
-	public void bufferOperations() {
+	public void bufferOperations() throws AtsdException {
 		buffer.flip();
 		final byte[] tmp = new byte[buffer.limit()];
 		buffer.get(tmp);
 		buffer.clear();
+		final String line = new String(tmp, Charset.defaultCharset());
+		if(position == 0 && (line.charAt(0) == '<' || line.charAt(0) == '{' )){
+			throw new AtsdException("Unexpected answer format");
+		}
 		position += tmp.length;
 		if (logger.isTraceEnabled())
 			logger.trace("[position] " + position);
-		final String line = new String(tmp, Charset.defaultCharset());
 		if (line.startsWith(COMMENT_NEW_LINE) || comments.length() > 0) {
 			comments.append(new String(line));
 			return;

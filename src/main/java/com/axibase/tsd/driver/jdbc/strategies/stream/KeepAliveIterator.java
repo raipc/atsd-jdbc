@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 
 import com.axibase.tsd.driver.jdbc.content.StatementContext;
+import com.axibase.tsd.driver.jdbc.ext.AtsdException;
 import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
 import com.axibase.tsd.driver.jdbc.strategies.IteratorData;
 import com.axibase.tsd.driver.jdbc.strategies.StrategyStatus;
@@ -49,7 +50,14 @@ public class KeepAliveIterator<T> implements Iterator<String[]>, AutoCloseable {
 			return found;
 		}
 		while (readNextBuffer() != -1) {
-			data.bufferOperations();
+			try {
+				data.bufferOperations();
+			} catch (final AtsdException e) {
+				if (logger.isDebugEnabled())
+					logger.debug("[bufferOperations] " + e.getMessage());
+				status.setInProgress(false);
+				return null;
+			}
 			found = data.getNext(false);
 			if (found != null) {
 				return found;
@@ -61,7 +69,7 @@ public class KeepAliveIterator<T> implements Iterator<String[]>, AutoCloseable {
 			if (logger.isDebugEnabled())
 				logger.debug("[processComments] " + e.getMessage());
 		}
-		status.setInProgress(true);
+		status.setInProgress(false);
 		found = data.getNext(true);
 		if (logger.isTraceEnabled()) {
 			logger.trace("[last] " + Arrays.toString(found));
