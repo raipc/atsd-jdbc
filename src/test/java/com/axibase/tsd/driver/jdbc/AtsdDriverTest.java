@@ -19,8 +19,6 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import com.axibase.tsd.driver.jdbc.ext.AtsdConnection;
-import com.axibase.tsd.driver.jdbc.ext.AtsdFactory;
-import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(AtsdDriver.class)
@@ -32,9 +30,8 @@ public class AtsdDriverTest {
 
 	@Before
 	public void setUp() throws Exception {
-		final AtsdFactory atsdFactory = new AtsdFactory();
 		this.driver = PowerMockito.spy(new AtsdDriver());
-		this.conn = PowerMockito.spy(new AtsdConnection(driver, atsdFactory, JDBC_URL, new Properties()));
+		this.conn = PowerMockito.mock(AtsdConnection.class);
 	}
 
 	@After
