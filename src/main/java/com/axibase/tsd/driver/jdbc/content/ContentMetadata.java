@@ -91,7 +91,7 @@ public class ContentMetadata implements DriverConstants {
 		if (columns == null)
 			throw new AtsdException("Wrong columns schema");
 		final List<ColumnMetaData> metadataList = new ArrayList<>();
-		int ind = 1;
+		int ind = 0;
 		for (final Object obj : columns) {
 			final ColumnMetaData cmd = getColumnMetaData(schema, ind, obj);
 			metadataList.add(cmd);
@@ -110,7 +110,7 @@ public class ContentMetadata implements DriverConstants {
 		String datatype = (String) property.get(DATATYPE_PROPERTY);
 		Integer index = (Integer) property.get(INDEX_PROPERTY);
 		final ColumnMetaData.AvaticaType atype = getAvaticaType(datatype);
-		final ColumnMetaData cmd = new ColumnMetaData(index != null ? index.intValue() : ind, false, false, false,
+		final ColumnMetaData cmd = new ColumnMetaData(index != null ? index.intValue() - 1 : ind, false, false, false,
 				false, 0, false, 10, name, title, schema, 1, 1, table, DEFAULT_CATALOG_NAME, atype, true, false,
 				false, atype.rep.clazz.getCanonicalName());
 		return cmd;

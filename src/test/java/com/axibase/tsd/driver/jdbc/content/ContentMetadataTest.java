@@ -55,11 +55,11 @@ public class ContentMetadataTest {
 			final List<ColumnMetaData> metadataList = ContentMetadata.buildMetadataList(json);
 			assertTrue(metadataList != null && metadataList.size() == expected);
 			for (ColumnMetaData cmd : metadataList) {
-				if (cmd.ordinal == 1)
+				if (cmd.ordinal == 0)
 					assertTrue("datetime".equals(cmd.columnName));
-				else if (cmd.ordinal == 2)
+				else if (cmd.ordinal == 1)
 					assertTrue("value".equals(cmd.columnName));
-				else if (cmd.ordinal == 3)
+				else if (cmd.ordinal == 2)
 					assertTrue("entity".equals(cmd.columnName));
 			}
 		} catch (final IOException | AtsdException e) {

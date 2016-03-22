@@ -406,7 +406,7 @@ public class AtsdMeta extends MetaImpl {
 		final List<Object> row = new ArrayList<>();
 		for (int i = 0; i < sarray.length; i++) {
 			for (ColumnMetaData columnMetaData : metadataList) {
-				if (i != columnMetaData.ordinal - 1)
+				if (i != columnMetaData.ordinal)
 					continue;
 				if (StringUtils.isEmpty(sarray[i])) {
 					row.add(columnMetaData.type.id == Types.VARCHAR ? sarray[i] : null);
