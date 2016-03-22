@@ -7,18 +7,12 @@
 
 The driver is designed to provide a convenient way to access ATSD instance via SQL API. The internal communication happens by means of transferring CSV data via HTTP or HTTPS protocols. See the [SQL API Documentation](http://axibase.com/atsd/api/#sql) to find a description of the query format, a list of supported SQL functions, and other useful information.
 
-## Supported Data Types
+## Compatibility
 
-| TYPE NAME | CASE SENSITIVE | DATA TYPE | PRECISION  |
-|:---------:|---------------:|----------:|-----------:|
-| DECIMAL | false | 3 | -1 |
-| DOUBLE | false | 8 | 52 |
-| FLOAT | false | 6 | 23 |
-| INTEGER | false | 4 | 10 |
-| LONG | false | -5 | 19 |
-| SHORT | false | 5 | 5 |
-| STRING | true  | 12 | 2147483647 |
-| TIMESTAMP | false | 93 | 23 |
+| JDBC Driver  | 1.2.1 | 1.2.2 |
+|:------------:|------:|------:|
+| ATSD Version | 12400 | 12500 |
+
 
 ## JDBC Connection Properties Supported by Driver
 
@@ -26,6 +20,7 @@ Property Name | Valid Values | Default
 --- | --- | ---
 trustServerCertificate | true, false | `false`
 strategy | file, stream | `stream`
+
 
 ## Apache Maven
 
@@ -78,170 +73,269 @@ The project is released under version 2.0 of the [Apache License](http://www.apa
 
 * Java 1.7 and later
 
-## Tests
+## Supported Data Types
 
-To run tests, you have to choose (or create) your own ATSD metrics. A test phase requires a set of test properties listed below. The first three parameters are mandatory. You can use the rest of the parameters to get more accurate test results.
+| TYPE NAME | CASE SENSITIVE | DATA TYPE | PRECISION  |
+|:---------:|---------------:|----------:|-----------:|
+| DECIMAL | false | 3 | -1 |
+| DOUBLE | false | 8 | 52 |
+| FLOAT | false | 6 | 23 |
+| INTEGER | false | 4 | 10 |
+| LONG | false | -5 | 19 |
+| SHORT | false | 5 | 5 |
+| STRING | true  | 12 | 2147483647 |
+| TIMESTAMP | false | 93 | 23 |
 
-```
-* -Daxibase.tsd.driver.jdbc.url=<ATSD_URL [http, https]>
-* -Daxibase.tsd.driver.jdbc.username=<ATSD_LOGIN> 
-* -Daxibase.tsd.driver.jdbc.password=<ATSD_PASSWORD> 
-* -Daxibase.tsd.driver.jdbc.metric.tiny=<METRIC_NAME> 
-* -Daxibase.tsd.driver.jdbc.metric.small=<METRIC_NAME>
-* -Daxibase.tsd.driver.jdbc.metric.medium=<METRIC_NAME>
-* -Daxibase.tsd.driver.jdbc.metric.large=<METRIC_NAME>
-* -Daxibase.tsd.driver.jdbc.metric.huge=<METRIC_NAME>
-* -Daxibase.tsd.driver.jdbc.metric.jumbo=<METRIC_NAME>
-* -Daxibase.tsd.driver.jdbc.metric.wrong=<METRIC_NAME_THROWING_SQL_EXCEPTION>
-* -Daxibase.tsd.driver.jdbc.metric.concurrent=<SEVERAL_COMMA_SEPARATED_METRIC_NAMES>
-* -Daxibase.tsd.driver.jdbc.trust=<IGNORE_CERTIFICATES> 
-* -Daxibase.tsd.driver.jdbc.strategy=<STORE_STRATEGY [file,stream]>
-```
+## Database Capabilities
 
+| TYPE NAME | CASE SENSITIVE |
+|:---------:|---------------:|
+| All Procedures Are Callable | false |
+| All Tables Are Selectable | false |
+| Auto Commit Failure Closes All Result Sets | false |
+| Catalog Separator | . |
+| Catalog Term |  catalog |
+| Database Major Version |  12500 |
+| Database Minor Version |  0 |
+| Data Definition Causes Transaction Commit |  false |
+| Data Definition Ignored In Transactions |  false |
+| Default Transaction Isolation |  0 |
+| Does Max Row Size Include Blobs |  false |
+| Driver Major Version |  1 |
+| Driver Minor Version |  2 |
+| Extra Name Characters |   |
+| Generated Key Always Returned |  false |
+| Identifier Quote String |  " |
+| Is Catalog At Start |  false |
+| Is Read Only |  true |
+| JDBCMajor Version |  4 |
+| JDBCMinor Version |  1 |
+| Locators Update Copy |  false |
+| Max Binary Literal Length |  0 |
+| Max Catalog Name Length |  0 |
+| Max Char Literal Length |  0 |
+| Max Column Name Length |  0 |
+| Max Columns In Group By |  0 |
+| Max Columns In Index |  0 |
+| Max Columns In Order By |  0 |
+| Max Columns In Select |  0 |
+| Max Columns In Table |  0 |
+| Max Connections |  0 |
+| Max Cursor Name Length |  0 |
+| Max Index Length |  0 |
+| Max Procedure Name Length |  0 |
+| Max Row Size |  0 |
+| Max Schema Name Length |  0 |
+| Max Statement Length |  0 |
+| Max Statements |  0 |
+| Max Table Name Length |  0 |
+| Max Tables In Select |  0 |
+| Max User Name Length |  0 |
+| Null Plus Non Null Is Null |  true |
+| Nulls Are Sorted At End |  true |
+| Nulls Are Sorted At Start |  false |
+| Nulls Are Sorted High |  false |
+| Nulls Are Sorted Low |  false |
+| Procedure Term |  procedure |
+| Result Set Holdability |  1 |
+| Schema Term |  schema |
+| Search String Escape |  \ |
+| SQL State Type |  2 |
+| Stores Lower Case Identifiers |  true |
+| Stores Lower Case Quoted Identifiers |  true |
+| Stores Mixed Case Identifiers |  false |
+| Stores Mixed Case Quoted Identifiers |  false |
+| Stores Upper Case Identifiers |  false |
+| Stores Upper Case Quoted Identifiers |  false |
+| Supports Alter Table With Add Column |  false |
+| Supports Alter Table With Drop Column |  false |
+| Supports ANSI92 Entry Level SQL |  false |
+| Supports ANSI92 Full SQL |  false |
+| Supports ANSI92 Intermediate SQL |  false |
+| Supports Batch Updates |  false |
+| Supports Catalogs In Data Manipulation |  false |
+| Supports Catalogs In Index Definitions |  false |
+| Supports Catalogs In Privilege Definitions |  false |
+| Supports Catalogs In Procedure Calls |  false |
+| Supports Catalogs In Table Definitions |  false |
+| Supports Column Aliasing |  true |
+| Supports Convert |  false |
+| Supports Core SQLGrammar |  false |
+| Supports Correlated Subqueries |  false |
+| Supports Data Definition And Data Manipulation Transactions |  false |
+| Supports Data Manipulation Transactions Only |  true |
+| Supports Different Table Correlation Names |  false |
+| Supports Expressions In Order By |  true |
+| Supports Extended SQLGrammar |  false |
+| Supports Full Outer Joins |  true |
+| Supports Get Generated Keys |  false |
+| Supports Group By |  true |
+| Supports Group By Beyond Select |  true |
+| Supports Group By Unrelated |  true |
+| Supports Integrity Enhancement Facility |  false |
+| Supports Like Escape Clause |  true |
+| Supports Limited Outer Joins |  true |
+| Supports Minimum SQLGrammar |  false |
+| Supports Mixed Case Identifiers |  true |
+| Supports Mixed Case Quoted Identifiers |  true |
+| Supports Multiple Open Results |  false |
+| Supports Multiple Result Sets |  false |
+| Supports Multiple Transactions |  false |
+| Supports Named Parameters |  false |
+| Supports Non Nullable Columns |  true |
+| Supports Open Cursors Across Commit |  false |
+| Supports Open Cursors Across Rollback |  false |
+| Supports Open Statements Across Commit |  false |
+| Supports Open Statements Across Rollback |  false |
+| Supports Order By Unrelated |  true |
+| Supports Outer Joins |  true |
+| Supports Positioned Delete |  false |
+| Supports Positioned Update |  false |
+| Supports Savepoints |  false |
+| Supports Schemas In Data Manipulation |  false |
+| Supports Schemas In Index Definitions |  false |
+| Supports Schemas In Privilege Definitions |  false |
+| Supports Schemas In Procedure Calls |  false |
+| Supports Schemas In Table Definitions |  false |
+| Supports Select For Update |  false |
+| Supports Statement Pooling |  false |
+| Supports Stored Functions Using Call Syntax |  false |
+| Supports Stored Procedures |  false |
+| Supports Subqueries In Comparisons |  false |
+| Supports Subqueries In Exists |  false |
+| Supports Subqueries In Ins |  false |
+| Supports Subqueries In Quantifieds |  false |
+| Supports Table Correlation Names |  false |
+| Supports Transactions |  false |
+| Supports Union |  false |
+| Supports Union All |  false |
+| URL |  jdbc:axibase:atsd:https://host.domain/api/sql;trustServerCertificate=false;strategy=stream |
+| User Name |  axibase |
+| Uses Local File Per Table |  false |
+| Uses Local Files |  false |
 
 ## Usage
 
 First, make sure your ATSD instance is started and you have valid credentials to it. In general to create SQL statement you can use the usual Java approach:
 
 ```java
-Connection connection = DriverManager.getConnection("jdbc:axibase:atsd:" + <ATDS_URL>, <ATSD_LOGIN>, <ATSD_PASSWORD>);
-Statement statement = connection.createStatement();
-ResultSet resultSet = statement.executeQuery(<SQL_QUERY>);
+
+	Connection connection = DriverManager.getConnection("jdbc:axibase:atsd:" + <ATDS_URL>, <ATSD_LOGIN>, <ATSD_PASSWORD>);
+	Statement statement = connection.createStatement();
+	ResultSet resultSet = statement.executeQuery(<SQL_QUERY>);
+
 ```
 
 You can the same approach to create a prepared statement:
 
 ```java
-Connection connection = DriverManager.getConnection("jdbc:axibase:atsd:" + <ATDS_URL>, <ATSD_LOGIN>, <ATSD_PASSWORD>);
-PreparedStatement prepareStatement = connection.prepareStatement(<SQL_QUERY>);
-ResultSet resultSet = prepareStatement.executeQuery();
-	    ...
+
+	Connection connection = DriverManager.getConnection("jdbc:axibase:atsd:" + <ATDS_URL>, <ATSD_LOGIN>, <ATSD_PASSWORD>);
+	PreparedStatement prepareStatement = connection.prepareStatement(<SQL_QUERY>);
+	ResultSet resultSet = prepareStatement.executeQuery();
+
 }
 ```
 
 Please note that the current version of the driver has limitations. Users do not have permissions to change the data source. It is possible to iterate over records one by one. No positioning is supported yet but this option may be added later. To check how the driver works, run the following example:
 
 ```java
+
 	Class.forName("com.axibase.tsd.driver.jdbc.AtsdDriver");
-	try (Connection connection = DriverManager.getConnection("jdbc:axibase:atsd:<PROTOCOL>://<HOST>.<DOMAIN>:<PORT>/api/sql", <ATSD_LOGIN>, <ATSD_PASSWORD>); 
-			Statement statement = connection.createStatement();) {
-			try (ResultSet resultSet = statement.executeQuery(
-			  "SELECT entity, datetime, value, tags.mount_point, tags.file_system FROM df.disk_used_percent WHERE entity = 'NURSWGHBS001' AND datetime > now - 1 * HOUR LIMIT 10");) {
-				final ResultSetMetaData rsmd = resultSet.getMetaData();
-				System.out.println("\nColumns:");
-				for (int i = 1; i <= rsmd.getColumnCount(); i++) {
-					String name = rsmd.getColumnName(i);
-					String typeName = rsmd.getColumnTypeName(i);
-					System.out.println(String.format("\t%s\t%s", typeName, name));
-				}
-				System.out.println("\nData:");
-				int count = 1;
-				while (resultSet.next()) {
-					System.out.print(count++);
-					for (int i = 1; i <= rsmd.getColumnCount(); i++) {
-						int type = rsmd.getColumnType(i);
-						switch (type) {
-						case Types.VARCHAR:
-							System.out.print(" getString: " + resultSet.getString(i));
-							break;
-						case Types.INTEGER:
-							System.out.print(" getInt: " + resultSet.getInt(i));
-							break;
-						case Types.BIGINT:
-							System.out.print(" getLong: " + resultSet.getLong(i));
-							break;
-						case Types.SMALLINT:
-							System.out.print(" getShort: " + resultSet.getShort(i));
-							break;
-						case Types.FLOAT:
-							System.out.print(" getFloat: " + resultSet.getFloat(i));
-							break;
-						case Types.DOUBLE:
-							System.out.print(" getDouble: " + resultSet.getDouble(i));
-							break;
-						case Types.DECIMAL:
-							System.out.print(" getDecimal: " + resultSet.getBigDecimal(i));
-							break;
-						case Types.TIMESTAMP:
-							System.out.print(" getTimestamp: " + resultSet.getTimestamp(i).toString());
-							break;
-						default:
-							throw new UnsupportedOperationException();
-						}
-					}
-					System.out.println("");
-				}
-				final SQLWarning warnings = resultSet.getWarnings();
-				if (warnings != null)
-					warnings.printStackTrace();
+	
+	String url = "jdbc:axibase:atsd:https://10.102.0.6:8443/api/sql";
+	String query = "SELECT entity, datetime, value, tags.mount_point, tags.file_system "
+		+ "FROM df.disk_used_percent WHERE entity = 'NURSWGHBS001' AND datetime > now - 1 * HOUR LIMIT 10";
+		
+	try (Connection connection = DriverManager.getConnection(url, "axibase", "axibase");
+		Statement statement = connection.createStatement();
+		ResultSet resultSet = statement.executeQuery(query);) {
+		
+			int rowNumber = 1;
+			while (resultSet.next()) {
+				System.out.print(rowNumber++);
+				System.out.print("\tentity = " + resultSet.getString("entity"));
+				System.out.print("\tdatetime = " + resultSet.getTimestamp("datetime").toString());
+				System.out.print("\tvalue = " + resultSet.getString("value"));
+				System.out.print("\ttags.mount_point = " + resultSet.getString("tags.mount_point"));
+				System.out.println("\ttags.file_system = " + resultSet.getString("tags.file_system"));
 			}
+			
+			final SQLWarning warnings = resultSet.getWarnings();
+			if (warnings != null)
+				warnings.printStackTrace();
 	}
+	
 ```
 
 Results:
 
 ```
-Columns:
-1	string				entity
-2	xsd:dateTimeStamp	datetime
-3	float				value
-4	string				tags.mount_point
-5	string				tags.file_system
 
-Data:
-1  getString: nurswghbs001 	getTimestamp: 2016-03-18 13:35:39.0 	getFloat: 28.0181 	getString: / getString: /dev/md2
-2  getString: nurswghbs001 	getTimestamp: 2016-03-18 13:35:45.0 	getFloat: 28.0181 	getString: / getString: /dev/md2
-3  getString: nurswghbs001 	getTimestamp: 2016-03-18 13:35:54.0 	getFloat: 28.0181 	getString: / getString: /dev/md2
-4  getString: nurswghbs001 	getTimestamp: 2016-03-18 13:36:00.0 	getFloat: 28.0181 	getString: / getString: /dev/md2
-5  getString: nurswghbs001 	getTimestamp: 2016-03-18 13:36:09.0 	getFloat: 28.0182 	getString: / getString: /dev/md2
-6  getString: nurswghbs001 	getTimestamp: 2016-03-18 13:36:15.0 	getFloat: 28.0182 	getString: / getString: /dev/md2
-7  getString: nurswghbs001 	getTimestamp: 2016-03-18 13:36:24.0 	getFloat: 28.0182 	getString: / getString: /dev/md2
-8  getString: nurswghbs001 	getTimestamp: 2016-03-18 13:36:30.0 	getFloat: 28.0182 	getString: / getString: /dev/md2
-9  getString: nurswghbs001 	getTimestamp: 2016-03-18 13:36:39.0 	getFloat: 28.0183 	getString: / getString: /dev/md2
-10 getString: nurswghbs001 	getTimestamp: 2016-03-18 13:36:45.0 	getFloat: 28.0183 	getString: / getString: /dev/md2
+1	entity = nurswghbs001	datetime = 2016-03-22 12:52:03.0	value = 28.8116	tags.mount_point = /	tags.file_system = /dev/md2
+2	entity = nurswghbs001	datetime = 2016-03-22 12:52:04.0	value = 28.8116	tags.mount_point = /	tags.file_system = /dev/md2
+3	entity = nurswghbs001	datetime = 2016-03-22 12:52:18.0	value = 28.8116	tags.mount_point = /	tags.file_system = /dev/md2
+4	entity = nurswghbs001	datetime = 2016-03-22 12:52:19.0	value = 28.8116	tags.mount_point = /	tags.file_system = /dev/md2
+5	entity = nurswghbs001	datetime = 2016-03-22 12:52:33.0	value = 28.8117	tags.mount_point = /	tags.file_system = /dev/md2
+6	entity = nurswghbs001	datetime = 2016-03-22 12:52:34.0	value = 28.8117	tags.mount_point = /	tags.file_system = /dev/md2
+7	entity = nurswghbs001	datetime = 2016-03-22 12:52:48.0	value = 28.8117	tags.mount_point = /	tags.file_system = /dev/md2
+8	entity = nurswghbs001	datetime = 2016-03-22 12:52:49.0	value = 28.8117	tags.mount_point = /	tags.file_system = /dev/md2
+9	entity = nurswghbs001	datetime = 2016-03-22 12:53:03.0	value = 28.8117	tags.mount_point = /	tags.file_system = /dev/md2
+10	entity = nurswghbs001	datetime = 2016-03-22 12:53:04.0	value = 28.8117	tags.mount_point = /	tags.file_system = /dev/md2
 
 ```
 
 The following example shows how to extract metadata from a database:
 
 ```java
+
 	Class.forName("com.axibase.tsd.driver.jdbc.AtsdDriver");
-	try (Connection connection = DriverManager.getConnection("jdbc:axibase:atsd:<PROTOCOL>://<HOST>.<DOMAIN>:<PORT>/api/sql", <ATSD_LOGIN>, <ATSD_PASSWORD>); 
-			Statement statement = connection.createStatement();) {
-			final DatabaseMetaData metaData = connection.getMetaData();
-			final String databaseProductName = metaData.getDatabaseProductName();
-			final String databaseProductVersion = metaData.getDatabaseProductVersion();
-			final String driverName = metaData.getDriverName();
-			final String driverVersion = metaData.getDriverVersion();
-			System.out.println("Product Name:   \t" + databaseProductName);
-			System.out.println("Product Version:\t" + databaseProductVersion);
-			System.out.println("Driver Name:    \t" + driverName);
-			System.out.println("Driver Version: \t" + driverVersion);
-			System.out.println("\nTypeInfo:");
-			ResultSet rs = metaData.getTypeInfo();
-			while (rs.next()) {
-				final String name = rs.getString("TYPE_NAME");
-				final int type = rs.getInt("DATA_TYPE");
-				final int precision = rs.getInt("PRECISION");
-				final boolean isCS = rs.getBoolean("CASE_SENSITIVE");
-				System.out.println(String.format("\tName: %s      \tCS: %s \tType: %s    \tPrecision: %s", name, isCS, type, precision));
+	
+	String url = "jdbc:axibase:atsd:https://10.102.0.6:8443/api/sql";
+	
+	try (Connection connection = DriverManager.getConnection(url, "axibase", "axibase");
+		Statement statement = connection.createStatement();) {
+		
+		DatabaseMetaData metaData = connection.getMetaData();
+		String databaseProductName = metaData.getDatabaseProductName();
+		String databaseProductVersion = metaData.getDatabaseProductVersion();
+		String driverName = metaData.getDriverName();
+		String driverVersion = metaData.getDriverVersion();
+		System.out.println("Product Name:   \t" + databaseProductName);
+		System.out.println("Product Version:\t" + databaseProductVersion);
+		System.out.println("Driver Name:    \t" + driverName);
+		System.out.println("Driver Version: \t" + driverVersion);
+		System.out.println("\nTypeInfo:");
+		
+		ResultSet rs = metaData.getTypeInfo();
+		while (rs.next()) {
+			String name = rs.getString("TYPE_NAME");
+			int type = rs.getInt("DATA_TYPE");
+			int precision = rs.getInt("PRECISION");
+			boolean isCS = rs.getBoolean("CASE_SENSITIVE");
+			System.out.println(
+				String.format("\tName:%s \tCS: %s \tType: %s \tPrecision: %s", name, isCS, type, precision));
+		}
+		System.out.println("\nTableTypes:");
+		
+		rs = metaData.getTableTypes();
+		while (rs.next()) {
+			String type = rs.getString(1);
+			System.out.println('\t' + type);
+		}
+		rs = metaData.getCatalogs();
+		
+		while (rs.next()) {
+			String catalog = rs.getString(1);
+			System.out.println("\nCatalog: \t" + catalog);
+			ResultSet rs1 = metaData.getSchemas(catalog, null);
+			while (rs1.next()) {
+				String schema = rs1.getString(1);
+				System.out.println("Schema: \t" + schema);
 			}
-			System.out.println("\nTableTypes:");
-			rs = metaData.getTableTypes();
-			while (rs.next()) {
-				final String type = rs.getString(1);
-				System.out.println('\t' + type);
-			}
-			rs = metaData.getCatalogs();
-			while (rs.next()) {
-				final String catalog = rs.getString(1);
-				System.out.println("\nCatalog: \t" + catalog);
-				final ResultSet rs1 = metaData.getSchemas(catalog, null);
-				while (rs1.next()) {
-					final String schema = rs1.getString(1);
-					System.out.println("Schema: \t" + schema);
-				}
-			}
+		}
+	}
+		
 ```
 
 Results:
