@@ -50,7 +50,7 @@
 		<build.timestamp>${maven.build.timestamp}</build.timestamp>
 		<maven.build.timestamp.format>E dd-MM-yyyy HH:mm:ss z</maven.build.timestamp.format>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<version.major>12400</version.major>
+		<version.major>12500</version.major>
 		<version.minor>0</version.minor>
 	</properties>
 	<build>
@@ -209,38 +209,6 @@
 							<value>${axibase.tsd.driver.jdbc.password}</value>
 						</property>
 						<property>
-							<name>axibase.tsd.driver.jdbc.metric.tiny</name>
-							<value>${axibase.tsd.driver.jdbc.metric.tiny}</value>
-						</property>
-						<property>
-							<name>axibase.tsd.driver.jdbc.metric.small</name>
-							<value>${axibase.tsd.driver.jdbc.metric.small}</value>
-						</property>
-						<property>
-							<name>axibase.tsd.driver.jdbc.metric.medium</name>
-							<value>${axibase.tsd.driver.jdbc.metric.medium}</value>
-						</property>
-						<property>
-							<name>axibase.tsd.driver.jdbc.metric.large</name>
-							<value>${axibase.tsd.driver.jdbc.metric.large}</value>
-						</property>
-						<property>
-							<name>axibase.tsd.driver.jdbc.metric.huge</name>
-							<value>${axibase.tsd.driver.jdbc.metric.huge}</value>
-						</property>
-						<property>
-							<name>axibase.tsd.driver.jdbc.metric.jumbo</name>
-							<value>${axibase.tsd.driver.jdbc.metric.jumbo}</value>
-						</property>
-						<property>
-							<name>axibase.tsd.driver.jdbc.metric.wrong</name>
-							<value>${axibase.tsd.driver.jdbc.metric.wrong}</value>
-						</property>
-						<property>
-							<name>axibase.tsd.driver.jdbc.metric.concurrent</name>
-							<value>${axibase.tsd.driver.jdbc.metric.concurrent}</value>
-						</property>
-						<property>
 							<name>axibase.tsd.driver.jdbc.strategy</name>
 							<value>${axibase.tsd.driver.jdbc.strategy}</value>
 						</property>
@@ -323,19 +291,6 @@
 						<id>attach-javadocs</id>
 						<goals>
 							<goal>jar</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.jacoco</groupId>
-				<artifactId>jacoco-maven-plugin</artifactId>
-				<version>0.7.6.201602180812</version>
-				<executions>
-					<execution>
-						<id>prepare-agent</id>
-						<goals>
-							<goal>prepare-agent</goal>
 						</goals>
 					</execution>
 				</executions>

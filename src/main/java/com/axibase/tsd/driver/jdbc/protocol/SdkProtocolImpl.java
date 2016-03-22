@@ -117,9 +117,14 @@ public class SdkProtocolImpl implements DriverConstants, IContentProtocol {
 		boolean isHead = method.equals(HEAD_METHOD);
 		boolean isPost = method.equals(POST_METHOD);
 		String postParams = cd.getPostParams();
-		final String basicCreds = new StringBuilder(cd.getLogin()).append(':').append(cd.getPassword()).toString();
-		final byte[] encoded = Base64.encodeBase64(basicCreds.getBytes());
-		final String authHeader = AUTHORIZATION_TYPE + new String(encoded);
+		String login = cd.getLogin();
+		String password = cd.getPassword();
+		if (!StringUtils.isEmpty(login) && !StringUtils.isEmpty(password)) {
+			final String basicCreds = new StringBuilder(login).append(':').append(password).toString();
+			final byte[] encoded = Base64.encodeBase64(basicCreds.getBytes());
+			final String authHeader = AUTHORIZATION_TYPE + new String(encoded);
+			conn.setRequestProperty(AUTHORIZATION_HEADER, authHeader);
+		}
 		conn.setAllowUserInteraction(false);
 		conn.setChunkedStreamingMode(100);
 		conn.setConnectTimeout(0);
@@ -128,7 +133,6 @@ public class SdkProtocolImpl implements DriverConstants, IContentProtocol {
 		conn.setInstanceFollowRedirects(true);
 		conn.setReadTimeout(0);
 		conn.setRequestMethod(method);
-		conn.setRequestProperty(AUTHORIZATION_HEADER, authHeader);
 		conn.setRequestProperty(ACCEPT_ENCODING, isPost ? COMPRESSION_ENCODING : DEFAULT_ENCODING);
 		conn.setRequestProperty(CONNECTION_HEADER, KEEP_ALIVE);
 		conn.setRequestProperty(CONTENT_TYPE, FORM_URLENCODED_TYPE);
@@ -185,7 +189,6 @@ public class SdkProtocolImpl implements DriverConstants, IContentProtocol {
 			return;
 		}
 		sslConnection.setSSLSocketFactory(sc.getSocketFactory());
-		// HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
 		final HostnameVerifier hostnameVerifier = new HostnameVerifier() {
 			public boolean verify(String urlHostName, SSLSession session) {
 				if (!urlHostName.equalsIgnoreCase(session.getPeerHost()) && logger.isDebugEnabled()) {
@@ -198,7 +201,6 @@ public class SdkProtocolImpl implements DriverConstants, IContentProtocol {
 		};
 		if (trusted != null && trusted)
 			sslConnection.setHostnameVerifier(hostnameVerifier);
-		// HttpsURLConnection.setDefaultHostnameVerifier(hostnameVerifier);
 	}
 
 	private void processResponse(Map<String, List<String>> map) throws UnsupportedEncodingException {

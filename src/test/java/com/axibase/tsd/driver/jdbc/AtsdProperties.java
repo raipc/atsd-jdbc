@@ -30,14 +30,6 @@ public class AtsdProperties implements TestConstants {
 	protected static String JDBC_ATDS_URL;
 	protected static String LOGIN_NAME;
 	protected static String LOGIN_PASSWORD;
-	protected static String TINY_TABLE;
-	protected static String SMALL_TABLE;
-	protected static String MEDIUM_TABLE;
-	protected static String LARGE_TABLE;
-	protected static String HUGE_TABLE;
-	protected static String JUMBO_TABLE;
-	protected static String TWO_TABLES;
-	protected static String WRONG_TABLE;
 	protected static String READ_STRATEGY;
 	protected static AtsdDriver driver;
 
@@ -59,14 +51,6 @@ public class AtsdProperties implements TestConstants {
 					: STRATEGY_STREAM_PARAMETER);
 		}
 		JDBC_ATDS_URL = sb.toString();
-		TINY_TABLE = System.getProperty("axibase.tsd.driver.jdbc.metric.tiny");
-		SMALL_TABLE = System.getProperty("axibase.tsd.driver.jdbc.metric.small");
-		MEDIUM_TABLE = System.getProperty("axibase.tsd.driver.jdbc.metric.medium");
-		LARGE_TABLE = System.getProperty("axibase.tsd.driver.jdbc.metric.large");
-		HUGE_TABLE = System.getProperty("axibase.tsd.driver.jdbc.metric.huge");
-		JUMBO_TABLE = System.getProperty("axibase.tsd.driver.jdbc.metric.jumbo");
-		TWO_TABLES = System.getProperty("axibase.tsd.driver.jdbc.metric.concurrent");
-		WRONG_TABLE = System.getProperty("axibase.tsd.driver.jdbc.metric.wrong");
 		driver = new AtsdDriver();
 		Class.forName("com.axibase.tsd.driver.jdbc.AtsdDriver");
 		if (logger.isDebugEnabled())

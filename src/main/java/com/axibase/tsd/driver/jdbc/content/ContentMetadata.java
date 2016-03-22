@@ -119,7 +119,7 @@ public class ContentMetadata implements DriverConstants {
 	private static Map<String, Object> getJsonScheme(String json) throws IOException {
 		final MappingJsonFactory jsonFactory = new MappingJsonFactory();
 		try (final InputStream is = new ByteArrayInputStream(json.getBytes(Charset.defaultCharset()));
-				final JsonParser parser = jsonFactory.createParser(is);) {
+				JsonParser parser = jsonFactory.createParser(is);) {
 			final JsonToken token = parser.nextToken();
 			Class<?> type;
 			if (token == JsonToken.START_OBJECT) {
