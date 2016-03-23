@@ -1,5 +1,4 @@
-[![Build Status](https://secure.travis-ci.org/axibase/atsd-jdbc.png?branch=master)](https://travis-ci.org/axibase/atsd-jdbc) 
-[![Codacy Badge](https://api.codacy.com/project/badge/grade/ee9af82a9b734fe595f35811c632868e)](https://www.codacy.com/app/alexey-reztsov/atsd-jdbc) 
+[![Build Status](https://secure.travis-ci.org/axibase/atsd-jdbc.png?branch=master)](https://travis-ci.org/axibase/atsd-jdbc)  [![Codacy Badge](https://api.codacy.com/project/badge/grade/4cdddfc67ef742818be7d81d8f53aebc)](https://www.codacy.com/app/alexey-reztsov/atsd-jdbc)
 [![Dependency Status](https://www.versioneye.com/user/projects/56e93b274e714c003625c322/badge.svg)](https://www.versioneye.com/user/projects) 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.axibase/atsd-jdbc/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.axibase/atsd-jdbc)
 
@@ -12,7 +11,7 @@ The driver is designed to provide a convenient way to access ATSD instance via S
 Product / Date | 2016-03-15 | TBA |
 --- | --- | ---
 | JDBC Driver  | 1.2.1 | 1.2.2 |
-| ATSD Version | 12400 | 12500 |
+| ATSD Version | 12400 | 12500+ |
 
 
 ## JDBC Connection Properties Supported by Driver
