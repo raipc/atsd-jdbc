@@ -44,7 +44,7 @@ public class FileStoreStrategy implements IStoreStrategy {
 	private final IConsumer consumer;
 	private final StrategyStatus status;
 	private Path tmp;
-	private long position = 0;
+	private long position;
 
 	public FileStoreStrategy(StatementContext context) {
 		status = new StrategyStatus();

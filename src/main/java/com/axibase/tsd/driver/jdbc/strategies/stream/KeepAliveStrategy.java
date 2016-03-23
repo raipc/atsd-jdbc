@@ -37,7 +37,7 @@ public class KeepAliveStrategy implements IStoreStrategy {
 	private final IConsumer consumer;
 	private final StrategyStatus status;
 	private InputStream is;
-	private long position = 0;
+	private long position;
 
 	public KeepAliveStrategy(StatementContext context) {
 		status = new StrategyStatus();

@@ -110,7 +110,7 @@ public class SdkProtocolImpl implements DriverConstants, IContentProtocol {
 		}
 		boolean gzipped = COMPRESSION_ENCODING.equals(conn.getContentEncoding());
 		final InputStream is = conn.getInputStream();
-		return (gzipped ? (InputStream) new GZIPInputStream(is) : is);
+		return gzipped ? (InputStream) new GZIPInputStream(is) : is;
 	}
 
 	private void setBaseProperties(String method) throws IOException {

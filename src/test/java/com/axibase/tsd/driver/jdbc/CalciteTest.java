@@ -14,15 +14,18 @@
 */
 package com.axibase.tsd.driver.jdbc;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.net.URL;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -62,28 +65,29 @@ public class CalciteTest {
 		Properties info = new Properties();
 		info.put("model", jsonPath("aximodel"));
 		try (Connection connection = DriverManager.getConnection("jdbc:calcite:", info)) {
-			ResultSet tables = connection.getMetaData().getTables(null, null, null, null);
-			boolean b = tables.next();
+			final DatabaseMetaData metaData = connection.getMetaData();
+			ResultSet res = metaData.getTables(null, null, null, null);
+			boolean b = res.next();
 			assertTrue(b);
-			ResultSet res = connection.getMetaData().getColumns(null, null, "AXI", "datetime");
+			res = metaData.getColumns(null, null, "AXI", "datetime");
 			b = res.next();
 			assertTrue(b);
-			assertEquals(res.getInt("DATA_TYPE"), java.sql.Types.VARCHAR);
-			res = connection.getMetaData().getColumns(null, null, "AXI", "value");
+			assertEquals(res.getInt("DATA_TYPE"), Types.VARCHAR);
+			res = metaData.getColumns(null, null, "AXI", "value");
 			b = res.next();
 			assertTrue(b);
-			assertEquals(res.getInt("DATA_TYPE"), java.sql.Types.VARCHAR);
-			res = connection.getMetaData().getColumns(null, null, "AXI", "entity");
+			assertEquals(res.getInt("DATA_TYPE"), Types.VARCHAR);
+			res = metaData.getColumns(null, null, "AXI", "entity");
 			b = res.next();
 			assertTrue(b);
-			assertEquals(res.getInt("DATA_TYPE"), java.sql.Types.VARCHAR);
+			assertEquals(res.getInt("DATA_TYPE"), Types.VARCHAR);
 			Statement statement = connection.createStatement();
 			ResultSet resultSet = statement.executeQuery("select \"datetime\", \"value\", \"entity\" from \"AXI\"");
-			ResultSetMetaData metaData = resultSet.getMetaData();
+			ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
 			int count = 0;
 			while (resultSet.next()) {
 				for (int i = 1; i <= 3; i++) {
-					String label = metaData.getColumnLabel(i);
+					String label = resultSetMetaData.getColumnLabel(i);
 					if (logger.isTraceEnabled())
 						logger.trace(String.format("Label:%s\tValue: %s\t", label, resultSet.getString(i)));
 				}

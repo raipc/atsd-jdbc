@@ -44,7 +44,7 @@ public class IteratorData {
 	private final StatementContext context;
 	private final StringBuilder comments = new StringBuilder();
 	private StringBuilder content = new StringBuilder();
-	private int position = 0;
+	private int position;
 
 	public IteratorData(StatementContext context) {
 		this.context = context;
