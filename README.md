@@ -366,3 +366,78 @@ Catalog: 	ATSD
 Schema: 	Axibase
 
 ```
+
+## Integration with Spring framework
+
+We highly recommend use of [spring-data-jdbc-repository](https://github.com/nurkiewicz/spring-data-jdbc-repository) library to integrate with JDBC driver.
+You can find an example how to use it [here](https://github.com/axibase/atsd-jdbc-test/tree/master/src/main/java/com/axibase/tsd/driver/jdbc/spring).
+
+Key points of the [config file:](https://github.com/axibase/atsd-jdbc-test/blob/master/src/main/java/com/axibase/tsd/driver/jdbc/spring/AtsdRepositoryConfig.java)
+```java
+
+	@Configuration
+	public class AtsdRepositoryConfig {
+
+	@Bean
+	public SqlGenerator sqlGenerator() {
+		return new AtsdSqlGenerator();
+	}
+
+	@Bean
+	public DataSource dataSource() {
+		final HikariDataSource dataSource = new HikariDataSource();
+		dataSource.setJdbcUrl(url);
+		dataSource.setUsername(login);
+		dataSource.setPassword(password);
+		dataSource.setReadOnly(true);
+		return dataSource;
+	}
+
+	@Bean
+	public EntityValueDoubleRepository entityRepository() {
+		return new EntityValueDoubleRepository(table);
+	}
+
+}
+```
+
+Key points of the [repository file:](https://github.com/axibase/atsd-jdbc-test/blob/master/src/main/java/com/axibase/tsd/driver/jdbc/spring/EntityValueDoubleRepository.java)
+```java
+
+	@Repository
+	public class EntityValueDoubleRepository extends JdbcRepository<EntityValueDouble, Double> {
+
+	public EntityValueDoubleRepository(String table) {
+		super(ROW_MAPPER, new MissingRowUnmapper<EntityValueDouble>(), table);
+	}
+
+	public static final RowMapper<EntityValueDouble> ROW_MAPPER = new RowMapper<EntityValueDouble>() {
+		@Override
+		public EntityValueDouble mapRow(ResultSet rs, int rowNum) throws SQLException {
+			return new EntityValueDouble(rs.getString("entity"), rs.getLong("time"), rs.getDouble("value"));
+		}
+	};
+
+}
+```
+
+And the [test](https://github.com/axibase/atsd-jdbc-test/blob/master/src/test/java/com/axibase/tsd/driver/jdbc/spring/EntityValueDoubleRepositoryTest.java) to compare this apporach with JDBCTemplate
+```java
+
+	@Test
+	public void testFindAll() {
+		PageRequest page = new PageRequest(0, 100, Direction.DESC, "time", "value");
+		Page<EntityValueDouble> result = repository.findAll(page);
+		List<EntityValueDouble> list = result.getContent();
+		List<Map<String, Object>> map = jdbcTemplate.queryForList(
+				String.format("SELECT entity, time, value FROM %s ORDER BY time, value DESC LIMIT 100", table));
+		Iterator<Map<String, Object>> iterator = map.iterator();
+		while (iterator.hasNext()) {
+			Map<String, Object> next = iterator.next();
+			EntityValueDouble evd = new EntityValueDouble((String) next.get("entity"), (Long) next.get("time"),
+					(Double) next.get("value"));
+			assertTrue(list.contains(evd));
+		}
+	}
+
+```
