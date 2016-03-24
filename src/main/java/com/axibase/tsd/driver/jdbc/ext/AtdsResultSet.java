@@ -14,6 +14,7 @@
 */
 package com.axibase.tsd.driver.jdbc.ext;
 
+import java.math.BigDecimal;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
@@ -69,6 +70,16 @@ public class AtdsResultSet extends AvaticaResultSet {
 	@Override
 	public boolean previous() throws SQLException {
 		return super.previous();
+	}
+
+	@Override
+	public BigDecimal getBigDecimal(int columnIndex) throws SQLException {
+		return super.getBigDecimal(columnIndex, 0);
+	}
+
+	@Override
+	public BigDecimal getBigDecimal(String columnLabel) throws SQLException {
+		return super.getBigDecimal(columnLabel, 0);
 	}
 
 	@Override

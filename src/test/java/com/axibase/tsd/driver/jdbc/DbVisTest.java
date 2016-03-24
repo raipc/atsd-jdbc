@@ -26,8 +26,8 @@ import org.junit.Test;
 
 import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
 
-public class DbVizTest extends AtsdProperties {
-	private static final LoggingFacade logger = LoggingFacade.getLogger(DbVizTest.class);
+public class DbVisTest extends AtsdProperties {
+	private static final LoggingFacade logger = LoggingFacade.getLogger(DbVisTest.class);
 
 	@Test
 	public void checkDatabaseMetadata() throws ClassNotFoundException, SQLException {
