@@ -369,8 +369,7 @@ Schema: 	Axibase
 
 ## Integration with Spring framework
 
-We highly recommend use of [spring-data-jdbc-repository](https://github.com/nurkiewicz/spring-data-jdbc-repository) library to integrate with JDBC driver.
-You can find an example how to use it [here](https://github.com/axibase/atsd-jdbc-test/tree/master/src/main/java/com/axibase/tsd/driver/jdbc/spring).
+We recommend using of [Spring Data JDBC](https://github.com/nurkiewicz/spring-data-jdbc-repository) library to integrate with JDBC driver. You can find an example how to use it [here](https://github.com/axibase/atsd-jdbc-test/tree/master/src/main/java/com/axibase/tsd/driver/jdbc/spring).
 
 Key points of the [config file:](https://github.com/axibase/atsd-jdbc-test/blob/master/src/main/java/com/axibase/tsd/driver/jdbc/spring/AtsdRepositoryConfig.java)
 ```java
@@ -421,7 +420,7 @@ Key points of the [repository file:](https://github.com/axibase/atsd-jdbc-test/b
 }
 ```
 
-And the [test](https://github.com/axibase/atsd-jdbc-test/blob/master/src/test/java/com/axibase/tsd/driver/jdbc/spring/EntityValueDoubleRepositoryTest.java) to compare this apporach with JDBCTemplate
+At last there is an [unit test](https://github.com/axibase/atsd-jdbc-test/blob/master/src/test/java/com/axibase/tsd/driver/jdbc/spring/EntityValueDoubleRepositoryTest.java) to compare this approach with JDBCTemplate
 ```java
 
 	@Test
@@ -430,7 +429,7 @@ And the [test](https://github.com/axibase/atsd-jdbc-test/blob/master/src/test/ja
 		Page<EntityValueDouble> result = repository.findAll(page);
 		List<EntityValueDouble> list = result.getContent();
 		List<Map<String, Object>> map = jdbcTemplate.queryForList(
-				String.format("SELECT entity, time, value FROM %s ORDER BY time, value DESC LIMIT 100", table));
+			String.format("SELECT entity, time, value FROM %s ORDER BY time, value DESC LIMIT 100", table));
 		Iterator<Map<String, Object>> iterator = map.iterator();
 		while (iterator.hasNext()) {
 			Map<String, Object> next = iterator.next();
