@@ -1,5 +1,6 @@
 [![Build Status](https://secure.travis-ci.org/axibase/atsd-jdbc.png?branch=master)](https://travis-ci.org/axibase/atsd-jdbc)  [![Codacy Badge](https://api.codacy.com/project/badge/grade/4cdddfc67ef742818be7d81d8f53aebc)](https://www.codacy.com/app/alexey-reztsov/atsd-jdbc)
 [![Dependency Status](https://www.versioneye.com/user/projects/56e93b274e714c003625c322/badge.svg)](https://www.versioneye.com/user/projects) 
+[![License](https://img.shields.io/badge/License-Apache%202-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.axibase/atsd-jdbc/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.axibase/atsd-jdbc)
 
 # JDBC driver

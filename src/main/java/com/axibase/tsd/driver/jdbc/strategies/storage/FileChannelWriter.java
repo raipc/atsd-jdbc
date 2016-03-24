@@ -36,11 +36,10 @@ public class FileChannelWriter implements Callable<Long> {
 	private final AsynchronousFileChannel writeChannel;
 	private final StrategyStatus status;
 	private final ByteBuffer buffer = ByteBuffer.allocate(256 * 1024);
+	private Future<Integer> lastWrite;
 	private long position;
 	private long receivedBytes;
 	private long nextPart = PART_LENGTH;
-
-	private Future<Integer> lastWrite = null;
 
 	public FileChannelWriter(final ReadableByteChannel inputChannel, final AsynchronousFileChannel writeChannel,
 			final StrategyStatus status) {
