@@ -36,7 +36,6 @@ public class FileChannelWriter implements Callable<Long> {
 	private final AsynchronousFileChannel writeChannel;
 	private final StrategyStatus status;
 	private final ByteBuffer buffer = ByteBuffer.allocate(256 * 1024);
-	private Future<Integer> lastWrite;
 	private long position;
 	private long receivedBytes;
 	private long nextPart = PART_LENGTH;
@@ -57,7 +56,7 @@ public class FileChannelWriter implements Callable<Long> {
 		try {
 			while ((receivedBytes = inputChannel.read(buffer)) >= 0 || buffer.position() != 0) {
 				buffer.flip();
-				lastWrite = writeChannel.write(buffer, position);
+				Future<Integer> lastWrite = writeChannel.write(buffer, position);
 				position += receivedBytes;
 				if (position > nextPart) {
 					releaseFileLock(fileLock);
@@ -87,10 +86,10 @@ public class FileChannelWriter implements Callable<Long> {
 	}
 
 	private void releaseFileLock(final FileLock fileLock) throws IOException {
-		if(fileLock == null)
-			return;
-		fileLock.release();
-		fileLock.close();
+		if (fileLock != null) {
+			fileLock.release();
+			fileLock.close();
+		}
 	}
 
 	private FileLock getFileLock(long position) throws AtsdException {
@@ -112,7 +111,7 @@ public class FileChannelWriter implements Callable<Long> {
 
 	private void releaseLatch() {
 		final CountDownLatch syncLatch = status.getSyncLatch();
-		if(syncLatch.getCount() != 0)
+		if (syncLatch.getCount() != 0)
 			syncLatch.countDown();
 	}
 }

@@ -332,6 +332,36 @@
 			<groupId>org.apache.calcite.avatica</groupId>
 			<artifactId>avatica</artifactId>
 			<version>${avatica.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.apache.calcite.avatica</groupId>				
+					<artifactId>avatica-metrics</artifactId>
+				</exclusion>			
+				<exclusion>
+					<groupId>com.fasterxml.jackson.core</groupId>
+					<artifactId>jackson-annotations</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.fasterxml.jackson.core</groupId>				
+					<artifactId>jackson-core</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.fasterxml.jackson.core</groupId>				
+					<artifactId>jackson-databind</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.apache.httpcomponents</groupId>				
+					<artifactId>httpcore</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.apache.httpcomponents</groupId>				
+					<artifactId>httpclient</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.google.protobuf</groupId>	
+					<artifactId>protobuf-java</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
@@ -343,6 +373,16 @@
 			<artifactId>commons-codec</artifactId>
 			<version>1.10</version>
 		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-annotations</artifactId>
+			<version>2.7.3</version>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-core</artifactId>
+			<version>2.7.3</version>
+		</dependency>		
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>

@@ -94,7 +94,7 @@ public class IteratorData {
 		if (logger.isTraceEnabled())
 			logger.trace("[position] " + position);
 		if (line.startsWith(COMMENT_NEW_LINE) || comments.length() > 0) {
-			comments.append(new String(line));
+			comments.append(line);
 			return;
 		}
 		int commentStart = line.indexOf(COMMENT_NEXT_LINE);

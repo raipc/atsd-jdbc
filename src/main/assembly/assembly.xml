@@ -10,9 +10,6 @@
 	<includeBaseDirectory>false</includeBaseDirectory>
 	<dependencySets>
 		<dependencySet>
-  			<excludes>
-				<exclude>com.google.protobuf:protobuf-java</exclude>
-			</excludes>
 			<outputDirectory>/</outputDirectory>
 			<scope>runtime</scope>
 			<unpack>true</unpack>
@@ -25,7 +22,7 @@
         	</unpackOptions>
 			<useProjectArtifact>false</useProjectArtifact>
 			<useStrictFiltering>true</useStrictFiltering>
-			<useTransitiveDependencies>true</useTransitiveDependencies>
+			<useTransitiveDependencies>false</useTransitiveDependencies>
 			<useTransitiveFiltering>true</useTransitiveFiltering>
 		</dependencySet>
 	</dependencySets>
