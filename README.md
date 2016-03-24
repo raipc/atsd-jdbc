@@ -5,7 +5,7 @@
 
 # JDBC driver
 
-The driver is designed to provide a convenient way to access ATSD instance via SQL API. The internal communication happens by means of transferring CSV data via HTTP or HTTPS protocols. See the [SQL API Documentation](http://axibase.com/atsd/api/#sql) to find a description of the query format, a list of supported SQL functions, and other useful information.
+The driver is designed to provide a convenient way to access Axibase Time Series Database via SQL. The internal communication is implemented by means of transferring resultsets in CSV format via HTTP or HTTPS protocols. See the [SQL API Documentation](http://axibase.com/atsd/api/#sql) to find a description of the query format, a list of supported SQL functions, and other useful information.
 
 ## Compatibility
 
@@ -25,7 +25,7 @@ strategy | file, stream | `stream`
 
 ## Apache Maven
 
-You can find the project in the central repository.
+Add dependency to pom.xml.
 
 ```xml
 <dependency>
@@ -35,7 +35,7 @@ You can find the project in the central repository.
 </dependency>
 ```
 
-Alternatively, you can build a project yourself.
+Alternatively, you can build the project yourself.
 
 ```bash
 $ mvn clean install -DskipTests=true
@@ -43,7 +43,7 @@ $ mvn clean install -DskipTests=true
 
 ## Classpath
 
-If you do not use any build managers such as Gradle or Maven, you can get a JAR library from Maven Central: [Direct URL](http://search.maven.org/remotecontent?filepath=com/axibase/atsd-jdbc/1.2.1/atsd-jdbc-1.2.1.jar) and add it to the classpath of your application.
+If you do not use a build manager such as Maven, you can download a JAR library from Maven Central: [Direct URL](http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22com.axibase%22%20AND%20a%3A%22atsd-jdbc%22) and add it to the classpath of your application.
 
 ```
 * Unix: java -cp "atsd-jdbc-1.2.1.jar:lib/*" your.package.MainClass
@@ -52,18 +52,18 @@ If you do not use any build managers such as Gradle or Maven, you can get a JAR 
 
 ## Database Tools
 
-You can also use a universal database manager, for example [DbVisualizer](https://www.dbvis.com). Follow instructions in their user guide to create a custom driver based on JAR file from the link above.
+You can also use a universal database manager, for example [DbVisualizer](https://www.dbvis.com). Follow instructions in the manager's user guide to create a custom driver based on the JAR file from the link above.
 
 ## JDBC URL
 
-A prefix of the JDBC driver is "jdbc:axibase:atsd:". Next you should specify a URL where your ATSD instance is installed. And, if necessary, specify JDBC Connection properties listed above. By combining all three segments together you can get a full JDBC URL and use it to set a connection.
+ATSD JDBC driver prefix is "jdbc:axibase:atsd:". Following the prefix is the http/https URL of the ATSD SQL API endpoint. If necessary, add JDBC Connection properties listed above.
 
 ```
 Examples:
 
-jdbc:axibase:atsd:http://host.example.com/api/sql
-jdbc:axibase:atsd:http://host.example.com:4567/api/sql;strategy=stream
-jdbc:axibase:atsd:https://host.example.com/api/sql;trustServerCertificate=true;strategy=file
+jdbc:axibase:atsd:http://atsd_hostname:8088/api/sql
+jdbc:axibase:atsd:http://atsd_hostname:8088/api/sql;strategy=stream
+jdbc:axibase:atsd:https://atsd_hostname:8443/api/sql;trustServerCertificate=true;strategy=file
 ```
 
 ## License
@@ -215,10 +215,10 @@ The project is released under version 2.0 of the [Apache License](http://www.apa
 
 ## Usage
 
-First, make sure your ATSD instance is started and you have valid credentials to it. In general to create SQL statement you can use the usual Java approach:
+First, make sure your ATSD instance is started and you have valid credentials to access it. To execute a query, open a connection, create a SQL statement, execute the query and process the resultset:
 
 ```java
-
+        Class.forName("com.axibase.tsd.driver.jdbc.AtsdDriver");
 	Connection connection = DriverManager.getConnection("jdbc:axibase:atsd:" + 
 		<ATDS_URL>, <ATSD_LOGIN>, <ATSD_PASSWORD>);
 	Statement statement = connection.createStatement();
@@ -226,10 +226,10 @@ First, make sure your ATSD instance is started and you have valid credentials to
 
 ```
 
-You can the same approach to create a prepared statement:
+The same pattern applies to prepared statements:
 
 ```java
-
+        Class.forName("com.axibase.tsd.driver.jdbc.AtsdDriver");
 	Connection connection = DriverManager.getConnection("jdbc:axibase:atsd:" + 
 		<ATDS_URL>, <ATSD_LOGIN>, <ATSD_PASSWORD>);
 	PreparedStatement prepareStatement = connection.prepareStatement(<SQL_QUERY>);
@@ -238,13 +238,13 @@ You can the same approach to create a prepared statement:
 }
 ```
 
-Please note that the current version of the driver has limitations. Users do not have permissions to change the data source. It is possible to iterate over records one by one. No positioning is supported yet but this option may be added later. To check how the driver works, run the following example:
+To check how the driver works, run the following example:
 
 ```java
 
 	Class.forName("com.axibase.tsd.driver.jdbc.AtsdDriver");
 	
-	String url = "jdbc:axibase:atsd:https://10.102.0.6:8443/api/sql";
+	String url = "jdbc:axibase:atsd:https://10.102.0.6:8443/api/sql;trustServerCertificate=true";
 	String query = "SELECT entity, datetime, value, tags.mount_point, tags.file_system "
 		+ "FROM df.disk_used_percent WHERE entity = 'NURSWGHBS001' AND datetime > now - 1 * HOUR LIMIT 10";
 		
@@ -286,13 +286,13 @@ Results:
 
 ```
 
-The following example shows how to extract metadata from a database:
+The following example shows how to extract metadata from the ATSD database:
 
 ```java
 
 	Class.forName("com.axibase.tsd.driver.jdbc.AtsdDriver");
 	
-	String url = "jdbc:axibase:atsd:https://10.102.0.6:8443/api/sql";
+	String url = "jdbc:axibase:atsd:https://10.102.0.6:8443/api/sql;trustServerCertificate=true";
 	
 	try (Connection connection = DriverManager.getConnection(url, "axibase", "axibase");
 		Statement statement = connection.createStatement();) {
@@ -367,11 +367,12 @@ Schema: 	Axibase
 
 ```
 
-## Integration with Spring framework
+## Spring Framework Integration
 
-We recommend using of [Spring Data JDBC](https://github.com/nurkiewicz/spring-data-jdbc-repository) library to integrate with JDBC driver. You can find an example how to use it [here](https://github.com/axibase/atsd-jdbc-test/tree/master/src/main/java/com/axibase/tsd/driver/jdbc/spring).
+We recommend [Spring Data JDBC](https://github.com/nurkiewicz/spring-data-jdbc-repository) library to integrate ATSD JDBC driver. You can find an example on how to use it [here](https://github.com/axibase/atsd-jdbc-test/tree/master/src/main/java/com/axibase/tsd/driver/jdbc/spring).
 
-Key points of the [config file:](https://github.com/axibase/atsd-jdbc-test/blob/master/src/main/java/com/axibase/tsd/driver/jdbc/spring/AtsdRepositoryConfig.java)
+[config file](https://github.com/axibase/atsd-jdbc-test/blob/master/src/main/java/com/axibase/tsd/driver/jdbc/spring/AtsdRepositoryConfig.java) gist:
+
 ```java
 
 	@Configuration
@@ -400,7 +401,8 @@ Key points of the [config file:](https://github.com/axibase/atsd-jdbc-test/blob/
 }
 ```
 
-Key points of the [repository file:](https://github.com/axibase/atsd-jdbc-test/blob/master/src/main/java/com/axibase/tsd/driver/jdbc/spring/EntityValueDoubleRepository.java)
+[repository file](https://github.com/axibase/atsd-jdbc-test/blob/master/src/main/java/com/axibase/tsd/driver/jdbc/spring/EntityValueDoubleRepository.java) gist:
+
 ```java
 
 	@Repository
@@ -420,7 +422,9 @@ Key points of the [repository file:](https://github.com/axibase/atsd-jdbc-test/b
 }
 ```
 
-At last there is an [unit test](https://github.com/axibase/atsd-jdbc-test/blob/master/src/test/java/com/axibase/tsd/driver/jdbc/spring/EntityValueDoubleRepositoryTest.java) to compare this approach with JDBCTemplate
+Alternatively, here is a JDBCTemplate approach implemented in 
+[unit test](https://github.com/axibase/atsd-jdbc-test/blob/master/src/test/java/com/axibase/tsd/driver/jdbc/spring/EntityValueDoubleRepositoryTest.java):
+
 ```java
 
 	@Test
