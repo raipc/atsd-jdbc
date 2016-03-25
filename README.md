@@ -422,25 +422,20 @@ We recommend [Spring Data JDBC](https://github.com/nurkiewicz/spring-data-jdbc-r
 }
 ```
 
-Alternatively, here is a JDBCTemplate approach implemented in 
-[unit test](https://github.com/axibase/atsd-jdbc-test/blob/master/src/test/java/com/axibase/tsd/driver/jdbc/spring/EntityValueDoubleRepositoryTest.java):
+There is a sample how to use it with 
+[Spring Boot](https://github.com/axibase/atsd-jdbc-test/blob/master/src/main/java/com/axibase/tsd/driver/jdbc/spring/SampleDriverApplication.java):
 
 ```java
 
-	@Test
-	public void testFindAll() {
-		PageRequest page = new PageRequest(0, 100, Direction.DESC, "time", "value");
-		Page<EntityValueDouble> result = repository.findAll(page);
+	@Resource
+	private EntityValueDoubleRepository entityRepository;
+
+	@Override
+	public void run(String... args) throws Exception {
+		PageRequest page = new PageRequest(0, 1000, Direction.DESC, "time", "value");
+		Page<EntityValueDouble> result = entityRepository.findAll(page);
 		List<EntityValueDouble> list = result.getContent();
-		List<Map<String, Object>> map = jdbcTemplate.queryForList(
-			String.format("SELECT entity, time, value FROM %s ORDER BY time, value DESC LIMIT 100", table));
-		Iterator<Map<String, Object>> iterator = map.iterator();
-		while (iterator.hasNext()) {
-			Map<String, Object> next = iterator.next();
-			EntityValueDouble evd = new EntityValueDouble((String) next.get("entity"), (Long) next.get("time"),
-					(Double) next.get("value"));
-			assertTrue(list.contains(evd));
-		}
+		assert list != null && !list.isEmpty();
 	}
 
 ```
