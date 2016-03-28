@@ -23,9 +23,9 @@
 		</license>
 	</licenses>
 	<scm>
-		<connection>scm:git:git@github.com:axibase/atsd-jdbc.git</connection>
-		<developerConnection>scm:git:git@github.com:axibase/atsd-jdbc.git</developerConnection>
-		<url>https://github.com/axibase/atsd-jdbc.git</url>
+		<connection>scm:git:https://github.com/axibase/atsd-jdbc.git</connection>
+		<developerConnection>scm:git:https://gitreal@github.com/axibase/atsd-jdbc.git</developerConnection>
+		<url>http://github.com/axibase/atsd-jdbc.git</url>
 		<tag>HEAD</tag>
 	</scm>
 	<ciManagement>
@@ -174,13 +174,23 @@
 					<arguments>${releaseBuildArguments}</arguments>
 					<releaseProfiles>release</releaseProfiles>
 					<preparationGoals>clean</preparationGoals>
-					<goals>deploy</goals>
+					<goals>install</goals>
 					<autoVersionSubmodules>true</autoVersionSubmodules>
 					<tagNameFormat>RELEASE-@{project.version}</tagNameFormat>
 					<scmCommentPrefix>[release-build]</scmCommentPrefix>
 					<localCheckout>true</localCheckout>
 					<pushChanges>true</pushChanges>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-deploy-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>default-deploy</id>
+						<phase>none</phase>
+					</execution>
+				</executions>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
