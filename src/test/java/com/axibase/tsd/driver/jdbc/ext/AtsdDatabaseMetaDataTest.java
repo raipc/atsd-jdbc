@@ -104,7 +104,6 @@ public class AtsdDatabaseMetaDataTest extends AtsdProperties {
 	@Test
 	public void getDriverVersionProperties() throws SQLException {
 		String driverVersion = meta.getDriverVersion();
-		assertFalse(DriverConstants.JDBC_DRIVER_VERSION_DEFAULT.equals(driverVersion));
 		int driverMajorVersion = meta.getDriverMajorVersion();
 		int driverMinorVersion = meta.getDriverMinorVersion();
 		assertFalse(driverMajorVersion == 1 && driverMinorVersion == 0);
