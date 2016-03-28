@@ -23,7 +23,7 @@
 	</licenses>
 	<scm>
 		<connection>scm:git:https://github.com/axibase/atsd-jdbc.git</connection>
-		<developerConnection>scm:git:https://gitreal@github.com/axibase/atsd-jdbc.git</developerConnection>
+		<developerConnection>scm:git:https://github.com/axibase/atsd-jdbc.git</developerConnection>
 		<url>http://github.com/axibase/atsd-jdbc.git</url>
 		<tag>HEAD</tag>
 	</scm>

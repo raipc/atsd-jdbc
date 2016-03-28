@@ -11,7 +11,7 @@ The driver is designed to provide a convenient way to access Axibase Time Series
 
 Product / Date | 2016-03-15 | TBA |
 --- | --- | ---
-| JDBC Driver  | 1.2.1 | 1.2.2 |
+| JDBC Driver  | 1.2.1 | 1.2.3 |
 | ATSD Version | 12400 | 12500+ |
 
 
