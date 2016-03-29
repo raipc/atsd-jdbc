@@ -6,6 +6,11 @@
 	<name>ATSD JDBC driver</name>
 	<description>JDBC driver for SQL API using</description>
 	<url>http://axibase.com</url>
+	<parent>
+		<groupId>org.sonatype.oss</groupId>
+		<artifactId>oss-parent</artifactId>
+		<version>7</version>
+	</parent>
 	<inceptionYear>2016</inceptionYear>
 	<organization>
 		<name>Axibase</name>
@@ -45,6 +50,7 @@
 		<maven-compiler-plugin.version>3.5.1</maven-compiler-plugin.version>
 		<maven-dependency-plugin.version>2.10</maven-dependency-plugin.version>
 		<maven-jar-plugin.version>2.6</maven-jar-plugin.version>
+		<maven-release-plugin.version>2.5.3</maven-release-plugin.version>
 		<locale>en_US</locale>
 		<build.timestamp>${maven.build.timestamp}</build.timestamp>
 		<maven.build.timestamp.format>E dd-MM-yyyy HH:mm:ss z</maven.build.timestamp.format>
@@ -168,7 +174,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-release-plugin</artifactId>
-				<version>2.5.3</version>
 				<configuration>
 					<arguments>${releaseBuildArguments}</arguments>
 					<releaseProfiles>release</releaseProfiles>
@@ -180,16 +185,6 @@
 					<localCheckout>true</localCheckout>
 					<pushChanges>true</pushChanges>
 				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-deploy-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>default-deploy</id>
-						<phase>none</phase>
-					</execution>
-				</executions>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
