@@ -17,7 +17,7 @@ public interface DriverConstants {
 	static final String DRIVER_PROPERTIES = "META-INF/axibase-atsd-jdbc.properties";
 	static final String JDBC_COMPLIENT_KEY = "jdbc.compliant";
 	static final String RETRIES_NUMBER = "2";
-	static final String JDBC_DRIVER_VERSION_DEFAULT = "1.2.3";
+	static final String JDBC_DRIVER_VERSION_DEFAULT = "1.2.4";
 	static final int    DRIVER_VERSION_MAJOR_DEFAULT = 1;
 	static final int    DRIVER_VERSION_MINOR_DEFAULT = 2;
 
