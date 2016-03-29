@@ -9,10 +9,10 @@ The driver is designed to provide a convenient way to access Axibase Time Series
 
 ## Compatibility
 
-Product / Date | 2016-03-15 | 2016-03-29 |
---- | --- | ---
-| JDBC Driver  | 1.2.1 | 1.2.4  |
-| ATSD Version | 12400 | 12500+ |
+Product / Date | 2016-03-15 | 2016-03-29 | TBA
+--- | --- | --- | ---
+| JDBC Driver  | 1.2.1 | 1.2.6  | 1.3.x
+| ATSD Version | 12400 | 12500+ | 
 
 
 ## JDBC Connection Properties Supported by Driver
@@ -31,7 +31,7 @@ Add dependency to pom.xml.
 <dependency>
     <groupId>com.axibase</groupId>
     <artifactId>atsd-jdbc</artifactId>
-    <version>1.2.4</version>
+    <version>1.2.6</version>
 </dependency>
 ```
 
@@ -46,8 +46,8 @@ $ mvn clean install -DskipTests=true
 If you do not use a build manager such as Maven, you can download a JAR library from Maven Central: [Direct URL](http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22com.axibase%22%20AND%20a%3A%22atsd-jdbc%22) and add it to the classpath of your application.
 
 ```
-* Unix: java -cp "atsd-jdbc-1.2.4.jar:lib/*" your.package.MainClass
-* Windows java -cp "atsd-jdbc-1.2.4.jar;lib/*" your.package.MainClass
+* Unix: java -cp "atsd-jdbc-1.2.6.jar:lib/*" your.package.MainClass
+* Windows java -cp "atsd-jdbc-1.2.6.jar;lib/*" your.package.MainClass
 ```
 
 ## Database Tools
