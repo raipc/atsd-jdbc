@@ -178,7 +178,7 @@
 					<arguments>${releaseBuildArguments}</arguments>
 					<releaseProfiles>release</releaseProfiles>
 					<preparationGoals>clean</preparationGoals>
-					<goals>deploy</goals>
+					<goals>install</goals>
 					<autoVersionSubmodules>true</autoVersionSubmodules>
 					<tagNameFormat>RELEASE-@{project.version}</tagNameFormat>
 					<scmCommentPrefix>[release-build]</scmCommentPrefix>
