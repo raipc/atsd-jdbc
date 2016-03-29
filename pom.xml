@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.axibase</groupId>
 	<artifactId>atsd-jdbc</artifactId>
@@ -125,7 +126,7 @@
 			<plugin>
 				<groupId>pl.project13.maven</groupId>
 				<artifactId>git-commit-id-plugin</artifactId>
-				<version>2.2.0</version>
+				<version>2.2.1</version>
 			</plugin>
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
@@ -178,12 +179,23 @@
 					<arguments>${releaseBuildArguments}</arguments>
 					<releaseProfiles>release</releaseProfiles>
 					<preparationGoals>clean</preparationGoals>
-					<goals>install</goals>
+					<goals>deploy</goals>
 					<autoVersionSubmodules>true</autoVersionSubmodules>
 					<tagNameFormat>RELEASE-@{project.version}</tagNameFormat>
 					<scmCommentPrefix>[release-build]</scmCommentPrefix>
 					<localCheckout>true</localCheckout>
 					<pushChanges>true</pushChanges>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.sonatype.plugins</groupId>
+				<artifactId>nexus-staging-maven-plugin</artifactId>
+				<version>1.6.7</version>
+				<extensions>true</extensions>
+				<configuration>
+					<serverId>sonatype</serverId>
+					<nexusUrl>https://oss.sonatype.org/</nexusUrl>
+					<autoReleaseAfterClose>true</autoReleaseAfterClose>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -338,31 +350,31 @@
 			<version>${avatica.version}</version>
 			<exclusions>
 				<exclusion>
-					<groupId>org.apache.calcite.avatica</groupId>				
+					<groupId>org.apache.calcite.avatica</groupId>
 					<artifactId>avatica-metrics</artifactId>
-				</exclusion>			
+				</exclusion>
 				<exclusion>
 					<groupId>com.fasterxml.jackson.core</groupId>
 					<artifactId>jackson-annotations</artifactId>
 				</exclusion>
 				<exclusion>
-					<groupId>com.fasterxml.jackson.core</groupId>				
+					<groupId>com.fasterxml.jackson.core</groupId>
 					<artifactId>jackson-core</artifactId>
 				</exclusion>
 				<exclusion>
-					<groupId>com.fasterxml.jackson.core</groupId>				
+					<groupId>com.fasterxml.jackson.core</groupId>
 					<artifactId>jackson-databind</artifactId>
 				</exclusion>
 				<exclusion>
-					<groupId>org.apache.httpcomponents</groupId>				
+					<groupId>org.apache.httpcomponents</groupId>
 					<artifactId>httpcore</artifactId>
 				</exclusion>
 				<exclusion>
-					<groupId>org.apache.httpcomponents</groupId>				
+					<groupId>org.apache.httpcomponents</groupId>
 					<artifactId>httpclient</artifactId>
 				</exclusion>
 				<exclusion>
-					<groupId>com.google.protobuf</groupId>	
+					<groupId>com.google.protobuf</groupId>
 					<artifactId>protobuf-java</artifactId>
 				</exclusion>
 			</exclusions>
@@ -386,7 +398,7 @@
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-core</artifactId>
 			<version>2.7.3</version>
-		</dependency>		
+		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
