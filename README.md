@@ -1,27 +1,25 @@
 [![Build Status](https://secure.travis-ci.org/axibase/atsd-jdbc.png?branch=master)](https://travis-ci.org/axibase/atsd-jdbc)  [![Codacy Badge](https://api.codacy.com/project/badge/grade/4cdddfc67ef742818be7d81d8f53aebc)](https://www.codacy.com/app/alexey-reztsov/atsd-jdbc)
-[![Dependency Status](https://www.versioneye.com/user/projects/56e93b274e714c003625c322/badge.svg)](https://www.versioneye.com/user/projects) 
 [![License](https://img.shields.io/badge/License-Apache%202-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.axibase/atsd-jdbc/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.axibase/atsd-jdbc)
 
 # JDBC driver
 
-The driver is designed to provide a convenient way to access Axibase Time Series Database via SQL. The internal communication is implemented by means of transferring resultsets in CSV format via HTTP or HTTPS protocols. See the [SQL API Documentation](http://axibase.com/atsd/api/#sql) to find a description of the query format, a list of supported SQL functions, and other useful information.
+The driver is designed to provide a convenient way to access Axibase Time Series Database via SQL. The internal communication is implemented by means of transferring resultsets in CSV format via HTTP or HTTPS protocols. See the [SQL API Documentation](https://github.com/axibase/atsd-docs/tree/master/api/sql#overview) to find a description of the query format, a list of supported SQL functions, and other useful information.
 
 ## Compatibility
 
-Product / Date | 2016-03-15 | 2016-03-29 | TBA
---- | --- | --- | ---
-| JDBC Driver  | 1.2.1 | 1.2.6  | 1.3.x
+| **Product / Date** | **2016-03-15** | **2016-03-29** |
+| :--- | --- | --- |
+| JDBC Driver  | 1.2.1 | 1.2.6  |
 | ATSD Version | 12400 | 12500+ | 
 
 
 ## JDBC Connection Properties Supported by Driver
 
-Property Name | Valid Values | Default
---- | --- | ---
-trustServerCertificate | true, false | `false`
-strategy | file, stream | `stream`
-
+| **Property Name** | **Options** | **Default** |
+| :--- | --- | ---: |
+| trustServerCertificate | true, false | `false` |
+| strategy | file, stream | `stream` |
 
 ## Apache Maven
 
@@ -58,11 +56,8 @@ You can also use a universal database manager, for example [DbVisualizer](https:
 
 ATSD JDBC driver prefix is "jdbc:axibase:atsd:". Following the prefix is the http/https URL of the ATSD SQL API endpoint. If necessary, add JDBC Connection properties listed above.
 
-```
-Examples:
-
+```ls
 jdbc:axibase:atsd:http://atsd_hostname:8088/api/sql
-jdbc:axibase:atsd:http://atsd_hostname:8088/api/sql;strategy=stream
 jdbc:axibase:atsd:https://atsd_hostname:8443/api/sql;trustServerCertificate=true;strategy=file
 ```
 
@@ -76,20 +71,20 @@ The project is released under version 2.0 of the [Apache License](http://www.apa
 
 ## Supported Data Types
 
-| TYPE NAME | CASE SENSITIVE | DATA TYPE | PRECISION  |
-|:---------:|---------------:|----------:|-----------:|
-| DECIMAL | false | 3 | -1 |
-| DOUBLE | false | 8 | 52 |
-| FLOAT | false | 6 | 23 |
-| INTEGER | false | 4 | 10 |
-| LONG | false | -5 | 19 |
-| SHORT | false | 5 | 5 |
-| STRING | true  | 12 | 2147483647 |
-| TIMESTAMP | false | 93 | 23 |
+| **TYPE NAME** | **DATA TYPE** | **PRECISION**  |
+|:---------|----------:|-----------:|
+| DECIMAL | 3 | -1 |
+| DOUBLE | 8 | 52 |
+| FLOAT | 6 | 23 |
+| INTEGER | 4 | 10 |
+| LONG | -5 | 19 |
+| SHORT | 5 | 5 |
+| STRING | 12 | 2147483647 |
+| TIMESTAMP | 93 | 23 |
 
 ## Database Capabilities
 
-| Feature | Value |
+| **Feature** | **Value** |
 |:--------|:------|
 | All Procedures Are Callable |  false  |
 | All Tables Are Selectable |  false  |
@@ -238,7 +233,58 @@ The same pattern applies to prepared statements:
 }
 ```
 
-To check how the driver works, run the following example:
+## Basic Example
+
+```java
+import java.sql.*;
+
+
+public class TestQuery {
+
+    public static void main(String[] args) throws Exception {
+
+        Class.forName("com.axibase.tsd.driver.jdbc.AtsdDriver");
+        String userName = "axibase";
+        String password= "********";
+        String hostUrl = "https://10.102.0.6:8443";
+        String sqlUrl = "jdbc:axibase:atsd:" + hostUrl + "/api/sql;trustServerCertificate=true";
+
+        String query = "SELECT * FROM mpstat.cpu_busy WHERE datetime > now - 1 * HOUR LIMIT 5";
+        Connection connection = null;
+        try {
+            System.out.println("Connecting to " + sqlUrl);
+            connection = DriverManager.getConnection(sqlUrl, userName, password);
+            System.out.println("Connection established to " + sqlUrl);
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery(query);
+            System.out.println("Query complete.");
+            ResultSetMetaData metaData = resultSet.getMetaData();
+            int columnCount = metaData.getColumnCount();
+            int rowNumber = 1;
+            while (resultSet.next()) {
+                System.out.println("= row " + rowNumber++);
+                for (int colIndex = 1; colIndex <= columnCount; colIndex++) {
+                    System.out.println("  " + metaData.getColumnLabel(colIndex) + " = " + resultSet.getString(colIndex));
+                }
+            }
+
+            final SQLWarning warnings = resultSet.getWarnings();
+            if (warnings != null) {
+                warnings.printStackTrace();
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+           try {
+               connection.close();
+           } catch(Exception e){}
+        }
+    }
+}
+```
+
+## Additional Examples
 
 ```java
 
@@ -248,31 +294,38 @@ To check how the driver works, run the following example:
 	String query = "SELECT entity, datetime, value, tags.mount_point, tags.file_system "
 		+ "FROM df.disk_used_percent WHERE entity = 'NURSWGHBS001' AND datetime > now - 1 * HOUR LIMIT 10";
 		
-	try (Connection connection = DriverManager.getConnection(url, "axibase", "axibase");
-		Statement statement = connection.createStatement();
-		ResultSet resultSet = statement.executeQuery(query);) {
-		
-			int rowNumber = 1;
-			while (resultSet.next()) {
-				System.out.print(rowNumber++);
-				System.out.print("\tentity = " + resultSet.getString("entity"));
-				System.out.print("\tdatetime = " + resultSet.getTimestamp("datetime").toString());
-				System.out.print("\tvalue = " + resultSet.getString("value"));
-				System.out.print("\ttags.mount_point = " + resultSet.getString("tags.mount_point"));
-				System.out.println("\ttags.file_system = " + resultSet.getString("tags.file_system"));
-			}
-			
-			final SQLWarning warnings = resultSet.getWarnings();
-			if (warnings != null)
-				warnings.printStackTrace();
-	}
+	Connection conn = null;
+	try {
+	     connection = DriverManager.getConnection(sqlUrl, "axibase", "axibase");
+	     Statement statement = connection.createStatement();
+	     ResultSet resultSet = statement.executeQuery(query);
 	
+	    int rowNumber = 1;
+	    while (resultSet.next()) {
+	        System.out.print(rowNumber++);
+	        System.out.print("\tentity = " + resultSet.getString("entity"));
+	        System.out.print("\tdatetime = " + resultSet.getTimestamp("datetime").toString());
+	        System.out.print("\tvalue = " + resultSet.getString("value"));
+	        System.out.print("\ttags.mount_point = " + resultSet.getString("tags.mount_point"));
+	        System.out.println("\ttags.file_system = " + resultSet.getString("tags.file_system"));
+	    }
+	
+	    final SQLWarning warnings = resultSet.getWarnings();
+	    if (warnings != null) {
+	        warnings.printStackTrace();
+	    }
+	} catch (Exception e){
+	    e.printStackTrace();
+	} finally {
+	    try {
+	        connection.close();
+	    } catch(Exception e){}
+	}
 ```
 
 Results:
 
-```
-
+```ls
  1 entity = nurswghbs001 datetime = 2016-03-22 12:52:03.0 value = 28.8116 tags.mount_point = / tags.file_system = /dev/md2
  2 entity = nurswghbs001 datetime = 2016-03-22 12:52:04.0 value = 28.8116 tags.mount_point = / tags.file_system = /dev/md2
  3 entity = nurswghbs001 datetime = 2016-03-22 12:52:18.0 value = 28.8116 tags.mount_point = / tags.file_system = /dev/md2
@@ -283,7 +336,6 @@ Results:
  8 entity = nurswghbs001 datetime = 2016-03-22 12:52:49.0 value = 28.8117 tags.mount_point = / tags.file_system = /dev/md2
  9 entity = nurswghbs001 datetime = 2016-03-22 12:53:03.0 value = 28.8117 tags.mount_point = / tags.file_system = /dev/md2
 10 entity = nurswghbs001 datetime = 2016-03-22 12:53:04.0 value = 28.8117 tags.mount_point = / tags.file_system = /dev/md2
-
 ```
 
 The following example shows how to extract metadata from the ATSD database:
