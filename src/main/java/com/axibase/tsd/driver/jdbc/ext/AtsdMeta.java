@@ -298,21 +298,21 @@ public class AtsdMeta extends MetaImpl {
 		assert connection instanceof AtsdConnection;
 		final Properties info = ((AtsdConnection) connection).getInfo();
 		String username = info != null ? (String) info.get("user") : "";
-		final Iterable<Object> iterable = (Iterable<Object>) new ArrayList<Object>(
+		final Iterable<Object> iterable = new ArrayList<Object>(
 				Arrays.asList(new MetaSchema(DriverConstants.CATALOG_NAME, WordUtils.capitalize(username))));
 		return getResultSet(iterable, MetaSchema.class, "TABLE_SCHEM", "TABLE_CATALOG");
 	}
 
 	@Override
 	public MetaResultSet getCatalogs(ConnectionHandle ch) {
-		final Iterable<Object> iterable = (Iterable<Object>) new ArrayList<Object>(
+		final Iterable<Object> iterable = new ArrayList<Object>(
 				Arrays.asList(new MetaCatalog(DriverConstants.CATALOG_NAME)));
 		return getResultSet(iterable, MetaCatalog.class, "TABLE_CAT");
 	}
 
 	@Override
 	public MetaResultSet getTableTypes(ConnectionHandle ch) {
-		final Iterable<Object> iterable = (Iterable<Object>) new ArrayList<Object>(
+		final Iterable<Object> iterable = new ArrayList<Object>(
 				Arrays.asList(new MetaTableType("TABLE"), new MetaTableType("VIEW"), new MetaTableType("SYSTEM")));
 		return getResultSet(iterable, MetaTableType.class, "TABLE_TYPE");
 	}
@@ -328,7 +328,7 @@ public class AtsdMeta extends MetaImpl {
 		list.add(getTypeInfo("SHORT", Types.SMALLINT, false));
 		list.add(getTypeInfo("STRING", Types.VARCHAR, true));
 		list.add(getTypeInfo("TIMESTAMP", Types.TIMESTAMP, false));
-		return getResultSet((Iterable<Object>) list, MetaTypeInfo.class, "TYPE_NAME", "DATA_TYPE", "PRECISION",
+		return getResultSet(list, MetaTypeInfo.class, "TYPE_NAME", "DATA_TYPE", "PRECISION",
 				"LITERAL_PREFIX", "LITERAL_SUFFIX", "CREATE_PARAMS", "NULLABLE", "CASE_SENSITIVE", "SEARCHABLE",
 				"UNSIGNED_ATTRIBUTE", "FIXED_PREC_SCALE", "AUTO_INCREMENT", "LOCAL_TYPE_NAME", "MINIMUM_SCALE",
 				"MAXIMUM_SCALE", "NUM_PREC_RADIX");

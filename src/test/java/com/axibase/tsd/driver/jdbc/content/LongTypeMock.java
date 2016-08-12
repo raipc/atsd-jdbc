@@ -1,5 +1,6 @@
 package com.axibase.tsd.driver.jdbc.content;
 
+import static com.axibase.tsd.driver.jdbc.TestConstants.SELECT_ALL_CLAUSE;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;

@@ -29,7 +29,7 @@ import org.apache.calcite.avatica.AvaticaDatabaseMetaData;
 import org.apache.calcite.avatica.ConnectionConfig;
 import org.apache.commons.lang3.StringUtils;
 
-import com.axibase.tsd.driver.jdbc.DriverConstants;
+import static com.axibase.tsd.driver.jdbc.DriverConstants.*;
 import com.axibase.tsd.driver.jdbc.content.ContentDescription;
 import com.axibase.tsd.driver.jdbc.content.json.Version;
 import com.axibase.tsd.driver.jdbc.enums.LexerTokens;
@@ -42,7 +42,7 @@ import com.axibase.tsd.driver.jdbc.protocol.ProtocolFactory;
 import com.axibase.tsd.driver.jdbc.protocol.SdkProtocolImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class AtsdDatabaseMetaData extends AvaticaDatabaseMetaData implements DriverConstants {
+public class AtsdDatabaseMetaData extends AvaticaDatabaseMetaData {
 	private static final LoggingFacade logger = LoggingFacade.getLogger(AtsdDatabaseMetaData.class);
 	private static final ObjectMapper mapper = new ObjectMapper();
 	private static final ReservedWordsSQL2003[] FILTERED_KEYWORDS = ReservedWordsSQL2003.values();

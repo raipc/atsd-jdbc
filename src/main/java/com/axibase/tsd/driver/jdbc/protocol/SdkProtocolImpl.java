@@ -44,13 +44,13 @@ import javax.net.ssl.X509TrustManager;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 
-import com.axibase.tsd.driver.jdbc.DriverConstants;
+import static com.axibase.tsd.driver.jdbc.DriverConstants.*;
 import com.axibase.tsd.driver.jdbc.content.ContentDescription;
 import com.axibase.tsd.driver.jdbc.ext.AtsdException;
 import com.axibase.tsd.driver.jdbc.intf.IContentProtocol;
 import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
 
-public class SdkProtocolImpl implements DriverConstants, IContentProtocol {
+public class SdkProtocolImpl implements IContentProtocol {
 	private static final LoggingFacade logger = LoggingFacade.getLogger(SdkProtocolImpl.class);
 	private final ContentDescription cd;
 	private HttpURLConnection conn;

@@ -34,7 +34,7 @@ import org.apache.calcite.avatica.Meta.Signature;
 import org.apache.calcite.avatica.Meta.StatementType;
 import org.apache.commons.lang3.StringUtils;
 
-import com.axibase.tsd.driver.jdbc.DriverConstants;
+import static com.axibase.tsd.driver.jdbc.DriverConstants.*;
 import com.axibase.tsd.driver.jdbc.ext.AtsdException;
 import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
 import com.fasterxml.jackson.core.JsonParseException;
@@ -43,7 +43,7 @@ import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.MappingJsonFactory;
 
 @SuppressWarnings("unchecked")
-public class ContentMetadata implements DriverConstants {
+public class ContentMetadata {
 	private static final LoggingFacade logger = LoggingFacade.getLogger(ContentMetadata.class);
 
 	private final Signature sign;

@@ -25,10 +25,11 @@ import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.axibase.tsd.driver.jdbc.DriverConstants;
 import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
 
-public class ContentDescription implements DriverConstants {
+import static com.axibase.tsd.driver.jdbc.DriverConstants.*;
+
+public class ContentDescription {
 	private static final LoggingFacade logger = LoggingFacade.getLogger(ContentDescription.class);
 
 	private String host;

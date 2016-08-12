@@ -22,7 +22,9 @@ import org.junit.BeforeClass;
 import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
 import com.axibase.tsd.driver.jdbc.strategies.StrategyFactory;
 
-public class AtsdProperties implements TestConstants {
+import static com.axibase.tsd.driver.jdbc.TestConstants.*;
+
+public class AtsdProperties {
 	private static final LoggingFacade logger = LoggingFacade.getLogger(AtsdProperties.class);
 	protected static int RETRIES = 1;
 	protected static Boolean TRUST_URL;
@@ -37,12 +39,12 @@ public class AtsdProperties implements TestConstants {
 	public static void setUpBeforeClass() throws Exception {
 		String trustProp = System.getProperty("axibase.tsd.driver.jdbc.trust");
 		TRUST_URL = trustProp != null ? Boolean.valueOf(trustProp) : null;
-		LOGIN_NAME = System.getProperty("axibase.tsd.driver.jdbc.username", "login");
-		LOGIN_PASSWORD = System.getProperty("axibase.tsd.driver.jdbc.password", "pass");
-		HTTP_ATDS_URL = System.getProperty("axibase.tsd.driver.jdbc.url", "https://host.domain:1234/api/sql");
+		LOGIN_NAME = System.getProperty("axibase.tsd.driver.jdbc.username", "raipc");
+		LOGIN_PASSWORD = System.getProperty("axibase.tsd.driver.jdbc.password", "344737");
+		HTTP_ATDS_URL = System.getProperty("axibase.tsd.driver.jdbc.url", "https://localhost:8443/api/sql");
 		final StringBuilder sb = new StringBuilder(JDBC_ATDS_URL_PREFIX).append(HTTP_ATDS_URL);
 		if (TRUST_URL != null)
-			sb.append(TRUST_URL.booleanValue() ? TRUST_PARAMETER_IN_QUERY : UNTRUST_PARAMETER_IN_QUERY);
+			sb.append(TRUST_URL ? TRUST_PARAMETER_IN_QUERY : UNTRUST_PARAMETER_IN_QUERY);
 		READ_STRATEGY = System.getProperty("axibase.tsd.driver.jdbc.strategy");
 		if (READ_STRATEGY != null) {
 			if (TRUST_URL == null)
@@ -54,7 +56,7 @@ public class AtsdProperties implements TestConstants {
 		driver = new AtsdDriver();
 		Class.forName("com.axibase.tsd.driver.jdbc.AtsdDriver");
 		if (logger.isDebugEnabled())
-			logger.debug("System properies has been set");
+			logger.debug("System properties has been set");
 	}
 
 	@AfterClass

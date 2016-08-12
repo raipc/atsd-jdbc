@@ -34,7 +34,9 @@ import com.axibase.tsd.driver.jdbc.ext.AtsdFactory;
 import com.axibase.tsd.driver.jdbc.ext.AtsdMeta;
 import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
 
-public class AtsdDriver extends UnregisteredDriver implements DriverConstants {
+import static com.axibase.tsd.driver.jdbc.DriverConstants.*;
+
+public class AtsdDriver extends UnregisteredDriver {
 	private static final LoggingFacade logger = LoggingFacade.getLogger(AtsdDriver.class);
 
 	static {
