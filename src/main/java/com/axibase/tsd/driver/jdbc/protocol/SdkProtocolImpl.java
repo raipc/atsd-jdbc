@@ -52,6 +52,7 @@ import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
 
 public class SdkProtocolImpl implements IContentProtocol {
 	private static final LoggingFacade logger = LoggingFacade.getLogger(SdkProtocolImpl.class);
+	private static final int UNSUCCESSFUL_SQL_RESULT_CODE = 400;
 	private final ContentDescription cd;
 	private HttpURLConnection conn;
 
@@ -95,22 +96,28 @@ public class SdkProtocolImpl implements IContentProtocol {
 		setBaseProperties(method);
 		if (StringUtils.isEmpty(cd.getJsonScheme()))
 			processResponse(conn.getHeaderFields());
-		long cl = conn.getContentLengthLong();
+		long contentLength = conn.getContentLengthLong();
 		if (logger.isDebugEnabled()) {
-			logger.debug("[response] " + cl);
+			logger.debug("[response] " + contentLength);
 		}
-		cd.setContentLength(cl);
+		cd.setContentLength(contentLength);
 		if (isHead)
 			return null;
-		int code = conn.getResponseCode();
+		final boolean gzipped = COMPRESSION_ENCODING.equals(conn.getContentEncoding());
+		final int code = conn.getResponseCode();
+		InputStream body;
 		if (code != HttpsURLConnection.HTTP_OK) {
 			if (logger.isDebugEnabled())
 				logger.debug("Response code: " + code);
-			throw new AtsdException("HTTP code " + code);
+			if (code == UNSUCCESSFUL_SQL_RESULT_CODE) {
+				body = conn.getErrorStream();
+			} else {
+				throw new AtsdException("HTTP code " + code);
+			}
+		} else {
+			body = conn.getInputStream();
 		}
-		boolean gzipped = COMPRESSION_ENCODING.equals(conn.getContentEncoding());
-		final InputStream is = conn.getInputStream();
-		return gzipped ? (InputStream) new GZIPInputStream(is) : is;
+		return gzipped ? new GZIPInputStream(body) : body;
 	}
 
 	private void setBaseProperties(String method) throws IOException {
@@ -120,7 +127,7 @@ public class SdkProtocolImpl implements IContentProtocol {
 		String login = cd.getLogin();
 		String password = cd.getPassword();
 		if (!StringUtils.isEmpty(login) && !StringUtils.isEmpty(password)) {
-			final String basicCreds = new StringBuilder(login).append(':').append(password).toString();
+			final String basicCreds = login + ':' + password;
 			final byte[] encoded = Base64.encodeBase64(basicCreds.getBytes());
 			final String authHeader = AUTHORIZATION_TYPE + new String(encoded);
 			conn.setRequestProperty(AUTHORIZATION_HEADER, authHeader);
@@ -129,7 +136,7 @@ public class SdkProtocolImpl implements IContentProtocol {
 		conn.setChunkedStreamingMode(100);
 		conn.setConnectTimeout(0);
 		conn.setDoInput(true);
-		conn.setDoOutput(isHead ? false : true);
+		conn.setDoOutput(!isHead);
 		conn.setInstanceFollowRedirects(true);
 		conn.setReadTimeout(0);
 		conn.setRequestMethod(method);
@@ -160,13 +167,14 @@ public class SdkProtocolImpl implements IContentProtocol {
 
 	public void doTrustToCertificates(final HttpsURLConnection sslConnection) {
 		final TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
+			@Override
 			public X509Certificate[] getAcceptedIssuers() {
 				return null;
 			}
-
+			@Override
 			public void checkServerTrusted(X509Certificate[] certs, String authType) throws CertificateException {
 			}
-
+			@Override
 			public void checkClientTrusted(X509Certificate[] certs, String authType) throws CertificateException {
 			}
 		} };
@@ -190,6 +198,7 @@ public class SdkProtocolImpl implements IContentProtocol {
 		}
 		sslConnection.setSSLSocketFactory(sc.getSocketFactory());
 		final HostnameVerifier hostnameVerifier = new HostnameVerifier() {
+			@Override
 			public boolean verify(String urlHostName, SSLSession session) {
 				if (!urlHostName.equalsIgnoreCase(session.getPeerHost()) && logger.isDebugEnabled()) {
 					logger.debug("[doTrustToCertificates] URL host {} is different to SSLSession host {}", urlHostName,
