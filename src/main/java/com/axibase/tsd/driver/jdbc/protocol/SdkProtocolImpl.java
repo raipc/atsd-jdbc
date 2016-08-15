@@ -53,12 +53,12 @@ import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
 public class SdkProtocolImpl implements IContentProtocol {
 	private static final LoggingFacade logger = LoggingFacade.getLogger(SdkProtocolImpl.class);
 	private static final int UNSUCCESSFUL_SQL_RESULT_CODE = 400;
-	private final ContentDescription cd;
+	private final ContentDescription contentDescription;
 	private HttpURLConnection conn;
 
 	public SdkProtocolImpl(final ContentDescription cd)
 			throws IOException, KeyManagementException, MalformedURLException, NoSuchAlgorithmException {
-		this.cd = cd;
+		this.contentDescription = cd;
 	}
 
 	@Override
@@ -85,30 +85,36 @@ public class SdkProtocolImpl implements IContentProtocol {
 	public InputStream executeRequest(String method) throws AtsdException, IOException, GeneralSecurityException {
 		boolean isHead = method.equals(HEAD_METHOD);
 		boolean isPost = method.equals(POST_METHOD);
-		String postParams = cd.getPostParams();
-		String url = cd.getHost() + (isPost || StringUtils.isBlank(postParams) ? "" : '?' + postParams);
+		String postParams = contentDescription.getPostParams();
+		String url = contentDescription.getHost() + (isPost || StringUtils.isBlank(postParams) ? "" : '?' + postParams);
 		if (logger.isDebugEnabled()) {
 			logger.debug("[request] {} {}", method, url);
 		}
 		this.conn = getHttpURLConnection(url);
-		if (cd.isSsl())
+		if (contentDescription.isSsl()) {
 			doTrustToCertificates((HttpsURLConnection) this.conn);
+		}
 		setBaseProperties(method);
-		if (StringUtils.isEmpty(cd.getJsonScheme()))
+		if (StringUtils.isEmpty(contentDescription.getJsonScheme())) {
 			processResponse(conn.getHeaderFields());
+		}
 		long contentLength = conn.getContentLengthLong();
 		if (logger.isDebugEnabled()) {
 			logger.debug("[response] " + contentLength);
 		}
-		cd.setContentLength(contentLength);
+		contentDescription.setContentLength(contentLength);
 		if (isHead)
 			return null;
 		final boolean gzipped = COMPRESSION_ENCODING.equals(conn.getContentEncoding());
 		final int code = conn.getResponseCode();
 		InputStream body;
 		if (code != HttpsURLConnection.HTTP_OK) {
-			if (logger.isDebugEnabled())
+			if (logger.isDebugEnabled()) {
 				logger.debug("Response code: " + code);
+			}
+			if (code == HttpURLConnection.HTTP_UNAUTHORIZED) {
+				throw new AtsdException("Wrong credentials provided");
+			}
 			if (code == UNSUCCESSFUL_SQL_RESULT_CODE) {
 				body = conn.getErrorStream();
 			} else {
@@ -123,9 +129,9 @@ public class SdkProtocolImpl implements IContentProtocol {
 	private void setBaseProperties(String method) throws IOException {
 		boolean isHead = method.equals(HEAD_METHOD);
 		boolean isPost = method.equals(POST_METHOD);
-		String postParams = cd.getPostParams();
-		String login = cd.getLogin();
-		String password = cd.getPassword();
+		String postParams = contentDescription.getPostParams();
+		String login = contentDescription.getLogin();
+		String password = contentDescription.getPassword();
 		if (!StringUtils.isEmpty(login) && !StringUtils.isEmpty(password)) {
 			final String basicCreds = login + ':' + password;
 			final byte[] encoded = Base64.encodeBase64(basicCreds.getBytes());
@@ -151,12 +157,11 @@ public class SdkProtocolImpl implements IContentProtocol {
 			if (logger.isDebugEnabled()) {
 				logger.debug("[params] " + postParams);
 			}
-			OutputStream os = conn.getOutputStream();
-			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, Charset.defaultCharset().name()));
-			writer.write(postParams);
-			writer.flush();
-			writer.close();
-			os.close();
+			try (OutputStream os = conn.getOutputStream();
+				 BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, Charset.defaultCharset().name()))) {
+				writer.write(postParams);
+				writer.flush();
+			}
 		}
 	}
 
@@ -186,7 +191,7 @@ public class SdkProtocolImpl implements IContentProtocol {
 				logger.error(e.getMessage());
 			return;
 		}
-		final Boolean trusted = cd.isTrusted();
+		final Boolean trusted = contentDescription.isTrusted();
 		if (logger.isDebugEnabled())
 			logger.debug("[doTrustToCertificates] " + trusted);
 		try {
@@ -223,7 +228,7 @@ public class SdkProtocolImpl implements IContentProtocol {
 		String json = new String(Base64.decodeBase64(enc), Charset.defaultCharset());
 		if (logger.isTraceEnabled())
 			logger.trace("JSON schema: " + json);
-		cd.setJsonScheme(json);
+		contentDescription.setJsonScheme(json);
 	}
 
 	private void printHeaders(Map<String, List<String>> map) {

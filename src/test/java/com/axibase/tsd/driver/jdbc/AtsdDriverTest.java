@@ -1,5 +1,6 @@
 package com.axibase.tsd.driver.jdbc;
 
+import static com.axibase.tsd.driver.jdbc.TestConstants.JDBC_ATDS_URL_PREFIX;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -12,21 +13,27 @@ import org.apache.calcite.avatica.DriverVersion;
 import org.apache.calcite.avatica.Meta;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import com.axibase.tsd.driver.jdbc.ext.AtsdConnection;
 
 @RunWith(PowerMockRunner.class)
+@PowerMockIgnore({"javax.net.ssl.*"})
 @PrepareForTest(AtsdDriver.class)
-public class AtsdDriverTest {
-	private static final String HTTP_HOST_API_SQL = "http://host/api/sql";
-	private static final String JDBC_URL = DriverConstants.CONNECT_URL_PREFIX + HTTP_HOST_API_SQL;
+public class AtsdDriverTest extends AtsdProperties {
 	private AtsdDriver driver;
 	private AvaticaConnection conn;
+
+	@Rule
+	public ExpectedException exception = ExpectedException.none();
+
 
 	@Before
 	public void setUp() throws Exception {
@@ -58,8 +65,28 @@ public class AtsdDriverTest {
 
 	@Test
 	public void testConnectStringProperties() throws Exception {
-		Connection connection = driver.connect(JDBC_URL, new Properties());
+		Properties properties = new Properties();
+		properties.setProperty("user", LOGIN_NAME);
+		properties.setProperty("password", LOGIN_PASSWORD);
+		Connection connection = driver.connect(JDBC_ATDS_URL, properties);
 		assertNotNull(connection);
+		connection.close();
+	}
+
+	@Test
+	public void testConnectWithoutCredentials() throws Exception {
+		exception.expect(SQLException.class);
+		exception.expectMessage("Wrong credentials provided");
+		Connection connection = driver.connect(JDBC_ATDS_URL, new Properties());
+		connection.close();
+	}
+
+	@Test
+	public void testConnectToWrongUrl() throws Exception {
+		exception.expect(SQLException.class);
+		exception.expectMessage("Unknown host specified");
+		Connection connection = driver.connect(JDBC_ATDS_URL_PREFIX + "https://unknown:443/api/sql", new Properties());
+		connection.close();
 	}
 
 	@Test

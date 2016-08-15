@@ -16,6 +16,7 @@ package com.axibase.tsd.driver.jdbc.ext;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.UnknownHostException;
 import java.security.GeneralSecurityException;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -53,7 +54,7 @@ public class AtsdDatabaseMetaData extends AvaticaDatabaseMetaData {
 		super(connection);
 	}
 
-	public void init(AvaticaConnection connection) {
+	public void init(AvaticaConnection connection) throws SQLException {
 		final ConnectionConfig config = connection.config();
 		assert config != null;
 		final Properties info = ((AtsdConnection) connection).getInfo();
@@ -75,7 +76,7 @@ public class AtsdDatabaseMetaData extends AvaticaDatabaseMetaData {
 		initVersions(host, user, pass, params);
 	}
 
-	private void initVersions(final String host, String user, String pass, String[] params) {
+	private void initVersions(final String host, String user, String pass, String[] params) throws SQLException {
 		final ContentDescription cd = new ContentDescription(host, "", user, pass, params);
 		final IContentProtocol protocol = ProtocolFactory.create(SdkProtocolImpl.class, cd);
 		try {
@@ -89,9 +90,14 @@ public class AtsdDatabaseMetaData extends AvaticaDatabaseMetaData {
 				logger.debug("[initVersions] edition: " + edition);
 				logger.debug("[initVersions] revision: " + revision);
 			}
+		} catch (UnknownHostException e) {
+			if (logger.isDebugEnabled())
+				logger.debug(e.getMessage());
+			throw new SQLException("Unknown host specified", e);
 		} catch (final AtsdException | GeneralSecurityException | IOException e) {
 			if (logger.isDebugEnabled())
 				logger.debug(e.getMessage());
+			throw new SQLException(e);
 		}
 	}
 
