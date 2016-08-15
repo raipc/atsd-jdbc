@@ -38,7 +38,7 @@ public class LongTypeMock extends AtsdProperties {
 
 	@Before
 	public void setUp() throws Exception {
-		final ContentDescription cd = new ContentDescription(HTTP_ATDS_URL, SELECT_ALL_CLAUSE + TML_TABLE, LOGIN_NAME,
+		final ContentDescription cd = new ContentDescription(HTTP_ATSD_URL, SELECT_ALL_CLAUSE + TML_TABLE, LOGIN_NAME,
 				LOGIN_PASSWORD, null);
 		cd.setJsonScheme(getSchema());
 		this.protocolImpl = PowerMockito.spy(new SdkProtocolImpl(cd));

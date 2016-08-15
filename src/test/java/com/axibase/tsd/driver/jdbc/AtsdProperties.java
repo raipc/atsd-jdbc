@@ -28,8 +28,8 @@ public class AtsdProperties {
 	private static final LoggingFacade logger = LoggingFacade.getLogger(AtsdProperties.class);
 	protected static int RETRIES = 1;
 	protected static Boolean TRUST_URL;
-	protected static String HTTP_ATDS_URL;
-	protected static String JDBC_ATDS_URL;
+	protected static String HTTP_ATSD_URL;
+	protected static String JDBC_ATSD_URL;
 	protected static String LOGIN_NAME;
 	protected static String LOGIN_PASSWORD;
 	protected static String READ_STRATEGY;
@@ -41,8 +41,8 @@ public class AtsdProperties {
 		TRUST_URL = trustProp != null ? Boolean.valueOf(trustProp) : null;
 		LOGIN_NAME = System.getProperty("axibase.tsd.driver.jdbc.username");
 		LOGIN_PASSWORD = System.getProperty("axibase.tsd.driver.jdbc.password");
-		HTTP_ATDS_URL = System.getProperty("axibase.tsd.driver.jdbc.url");
-		final StringBuilder sb = new StringBuilder(JDBC_ATDS_URL_PREFIX).append(HTTP_ATDS_URL);
+		HTTP_ATSD_URL = System.getProperty("axibase.tsd.driver.jdbc.url");
+		final StringBuilder sb = new StringBuilder(JDBC_ATSD_URL_PREFIX).append(HTTP_ATSD_URL);
 		if (TRUST_URL != null)
 			sb.append(TRUST_URL ? TRUST_PARAMETER_IN_QUERY : UNTRUST_PARAMETER_IN_QUERY);
 		READ_STRATEGY = System.getProperty("axibase.tsd.driver.jdbc.strategy");
@@ -52,7 +52,7 @@ public class AtsdProperties {
 			sb.append(READ_STRATEGY.equalsIgnoreCase(StrategyFactory.FILE_STRATEGY) ? STRATEGY_FILE_PARAMETER
 					: STRATEGY_STREAM_PARAMETER);
 		}
-		JDBC_ATDS_URL = sb.toString();
+		JDBC_ATSD_URL = sb.toString();
 		driver = new AtsdDriver();
 		Class.forName("com.axibase.tsd.driver.jdbc.AtsdDriver");
 		if (logger.isDebugEnabled())

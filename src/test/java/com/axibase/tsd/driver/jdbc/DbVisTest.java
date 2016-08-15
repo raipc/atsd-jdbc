@@ -32,7 +32,7 @@ public class DbVisTest extends AtsdProperties {
 	@Test
 	public void checkDatabaseMetadata() throws ClassNotFoundException, SQLException {
 		Class.forName("com.axibase.tsd.driver.jdbc.AtsdDriver");
-		try (Connection connection = DriverManager.getConnection(JDBC_ATDS_URL, LOGIN_NAME, LOGIN_PASSWORD);) {
+		try (Connection connection = DriverManager.getConnection(JDBC_ATSD_URL, LOGIN_NAME, LOGIN_PASSWORD);) {
 			assertNotNull(connection);
 			if (logger.isDebugEnabled())
 				logger.debug(connection.toString());

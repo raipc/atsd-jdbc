@@ -1,6 +1,6 @@
 package com.axibase.tsd.driver.jdbc;
 
-import static com.axibase.tsd.driver.jdbc.TestConstants.JDBC_ATDS_URL_PREFIX;
+import static com.axibase.tsd.driver.jdbc.TestConstants.JDBC_ATSD_URL_PREFIX;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -68,7 +68,7 @@ public class AtsdDriverTest extends AtsdProperties {
 		Properties properties = new Properties();
 		properties.setProperty("user", LOGIN_NAME);
 		properties.setProperty("password", LOGIN_PASSWORD);
-		Connection connection = driver.connect(JDBC_ATDS_URL, properties);
+		Connection connection = driver.connect(JDBC_ATSD_URL, properties);
 		assertNotNull(connection);
 		connection.close();
 	}
@@ -77,7 +77,7 @@ public class AtsdDriverTest extends AtsdProperties {
 	public void testConnectWithoutCredentials() throws Exception {
 		exception.expect(SQLException.class);
 		exception.expectMessage("Wrong credentials provided");
-		Connection connection = driver.connect(JDBC_ATDS_URL, new Properties());
+		Connection connection = driver.connect(JDBC_ATSD_URL, new Properties());
 		connection.close();
 	}
 
@@ -85,7 +85,7 @@ public class AtsdDriverTest extends AtsdProperties {
 	public void testConnectToWrongUrl() throws Exception {
 		exception.expect(SQLException.class);
 		exception.expectMessage("Unknown host specified");
-		Connection connection = driver.connect(JDBC_ATDS_URL_PREFIX + "https://unknown:443/api/sql", new Properties());
+		Connection connection = driver.connect(JDBC_ATSD_URL_PREFIX + "https://unknown:443/api/sql", new Properties());
 		connection.close();
 	}
 

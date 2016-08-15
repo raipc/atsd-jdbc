@@ -49,7 +49,7 @@ public class DriverTest extends AtsdProperties {
 	@Test
 	public void testDriver() {
 		try {
-			driver = (AtsdDriver) DriverManager.getDriver(JDBC_ATDS_URL);
+			driver = (AtsdDriver) DriverManager.getDriver(JDBC_ATSD_URL);
 		} catch (SQLException e) {
 			fail(e.getMessage());
 		}
@@ -61,7 +61,7 @@ public class DriverTest extends AtsdProperties {
 	public void testGetConnection() {
 		Connection connection = null;
 		try {
-			connection = DriverManager.getConnection(JDBC_ATDS_URL, LOGIN_NAME, LOGIN_PASSWORD);
+			connection = DriverManager.getConnection(JDBC_ATSD_URL, LOGIN_NAME, LOGIN_PASSWORD);
 		} catch (SQLException e) {
 			fail(e.getMessage());
 		}
@@ -77,7 +77,7 @@ public class DriverTest extends AtsdProperties {
 	public void testGetConnectionSecure() {
 		Connection connection = null;
 		try {
-			connection = DriverManager.getConnection(JDBC_ATDS_URL, LOGIN_NAME, LOGIN_PASSWORD);
+			connection = DriverManager.getConnection(JDBC_ATSD_URL, LOGIN_NAME, LOGIN_PASSWORD);
 		} catch (SQLException e) {
 			fail(e.getMessage());
 		}
@@ -94,7 +94,7 @@ public class DriverTest extends AtsdProperties {
 	public final void testCreateMeta() {
 		Connection connection = null;
 		try {
-			connection = DriverManager.getConnection(JDBC_ATDS_URL, LOGIN_NAME, LOGIN_PASSWORD);
+			connection = DriverManager.getConnection(JDBC_ATSD_URL, LOGIN_NAME, LOGIN_PASSWORD);
 		} catch (SQLException e) {
 			fail(e.getMessage());
 		}
@@ -113,8 +113,8 @@ public class DriverTest extends AtsdProperties {
 	public final void testAcceptsURL() {
 		try {
 			assertFalse(driver.acceptsURL(""));
-			assertFalse(driver.acceptsURL(JDBC_ATDS_URL.toUpperCase()));
-			assertTrue(driver.acceptsURL(JDBC_ATDS_URL));
+			assertFalse(driver.acceptsURL(JDBC_ATSD_URL.toUpperCase()));
+			assertTrue(driver.acceptsURL(JDBC_ATSD_URL));
 		} catch (SQLException e) {
 			fail(e.getMessage());
 		}

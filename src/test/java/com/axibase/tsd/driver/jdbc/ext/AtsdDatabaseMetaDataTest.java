@@ -11,7 +11,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.axibase.tsd.driver.jdbc.AtsdProperties;
-import com.axibase.tsd.driver.jdbc.DriverConstants;
 import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
 
 public class AtsdDatabaseMetaDataTest extends AtsdProperties {
@@ -21,7 +20,7 @@ public class AtsdDatabaseMetaDataTest extends AtsdProperties {
 
 	@Before
 	public void setUp() throws Exception {
-		connection = (AvaticaConnection) DriverManager.getConnection(JDBC_ATDS_URL, LOGIN_NAME, LOGIN_PASSWORD);
+		connection = (AvaticaConnection) DriverManager.getConnection(JDBC_ATSD_URL, LOGIN_NAME, LOGIN_PASSWORD);
 		assertNotNull(connection);
 		meta = new AtsdDatabaseMetaData(connection);
 	}
