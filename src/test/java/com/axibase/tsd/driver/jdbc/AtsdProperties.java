@@ -39,9 +39,9 @@ public class AtsdProperties {
 	public static void setUpBeforeClass() throws Exception {
 		String trustProp = System.getProperty("axibase.tsd.driver.jdbc.trust");
 		TRUST_URL = trustProp != null ? Boolean.valueOf(trustProp) : null;
-		LOGIN_NAME = System.getProperty("axibase.tsd.driver.jdbc.username", "raipc");
-		LOGIN_PASSWORD = System.getProperty("axibase.tsd.driver.jdbc.password", "344737");
-		HTTP_ATDS_URL = System.getProperty("axibase.tsd.driver.jdbc.url", "https://localhost:8443/api/sql");
+		LOGIN_NAME = System.getProperty("axibase.tsd.driver.jdbc.username");
+		LOGIN_PASSWORD = System.getProperty("axibase.tsd.driver.jdbc.password");
+		HTTP_ATDS_URL = System.getProperty("axibase.tsd.driver.jdbc.url");
 		final StringBuilder sb = new StringBuilder(JDBC_ATDS_URL_PREFIX).append(HTTP_ATDS_URL);
 		if (TRUST_URL != null)
 			sb.append(TRUST_URL ? TRUST_PARAMETER_IN_QUERY : UNTRUST_PARAMETER_IN_QUERY);
