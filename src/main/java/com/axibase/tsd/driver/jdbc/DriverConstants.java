@@ -23,10 +23,12 @@ public final class DriverConstants {
 
 	public static final String FORMAT_PARAM_NAME = "outputFormat";
 	public static final String FORMAT_PARAM_VALUE = "csv";
+	public static final String METADATA_FORMAT_PARAM_NAME = "metadataFormat";
+	public static final String METADATA_FORMAT_PARAM_VALUE = "HEADER";
+	public static final String LIMIT_PARAM_NAME = "limit";
 	public static final String PARAM_SEPARATOR = ";";
 	public static final String PROTOCOL_SEPARATOR = "://";
 	public static final String Q_PARAM_NAME = "q";
-	public static final String QUERY_PARAM_NAME = "%s=%s&%s=%s";
 	public static final String REVISION_LINE = "Revision";
 	public static final String STRATEGY_PARAM_NAME = "strategy=";
 	public static final String TRUST_PARAM_TRUE = "trustServerCertificate=true";

@@ -31,8 +31,8 @@ public class DataProvider implements IDataProvider {
 	private static final LoggingFacade logger = LoggingFacade.getLogger(DataProvider.class);
 	private static final String WHERE_CLAUSE = " WHERE ";
 	private static final String PARAM_SEPARATOR = ";";
-	private final ContentDescription cd;
-	private final IContentProtocol tp;
+	private final ContentDescription contentDescription;
+	private final IContentProtocol contentProtocol;
 	private final StatementContext context;
 	private IStoreStrategy strategy;
 
@@ -46,15 +46,15 @@ public class DataProvider implements IDataProvider {
 			logger.trace("Host: " + parts[0]);
 			logger.trace("Params: " + params.length);
 		}
-		this.cd = new ContentDescription(parts[0], q, login, password, params);
-		this.tp = ProtocolFactory.create(SdkProtocolImpl.class, cd);
+		this.contentDescription = new ContentDescription(parts[0], q, login, password, params);
+		this.contentProtocol = ProtocolFactory.create(SdkProtocolImpl.class, contentDescription);
 		this.context = context;
 		this.strategy = defineStrategy();
 	}
 
 	@Override
 	public ContentDescription getContentDescription() {
-		return this.cd;
+		return this.contentDescription;
 	}
 
 	@Override
@@ -64,7 +64,8 @@ public class DataProvider implements IDataProvider {
 
 	@Override
 	public void fetchData(long maxLimit) throws AtsdException, GeneralSecurityException, IOException {
-		final InputStream is = tp.readContent();
+		contentDescription.setMaxRowsCount(maxLimit);
+		final InputStream is = contentProtocol.readContent();
 		this.strategy = defineStrategy();
 		if (this.strategy != null)
 			this.strategy.store(is);
@@ -74,9 +75,9 @@ public class DataProvider implements IDataProvider {
 	public void checkScheme(final String original) throws AtsdException, GeneralSecurityException, IOException {
 		final int wherePart = original.indexOf(WHERE_CLAUSE);
 		String beforeWhere = wherePart == -1 ? original : original.substring(0, wherePart);
-		cd.setQuery(beforeWhere);
-		tp.getContentSchema();
-		cd.setQuery(original);
+		contentDescription.setQuery(beforeWhere);
+		contentProtocol.getContentSchema();
+		contentDescription.setQuery(original);
 	}
 
 	@Override
@@ -86,7 +87,7 @@ public class DataProvider implements IDataProvider {
 	}
 
 	private IStoreStrategy defineStrategy() {
-		return StrategyFactory.create(StrategyFactory.findClassByName(this.cd.getStrategyName()), this.context);
+		return StrategyFactory.create(StrategyFactory.findClassByName(this.contentDescription.getStrategyName()), this.context);
 	}
 
 }

@@ -108,20 +108,19 @@ public class AtsdMeta extends MetaImpl {
 	}
 
 	@Override
-	public ExecuteResult execute(StatementHandle h, List<TypedValue> parameterValues, long maxRowCount)
+	public ExecuteResult execute(StatementHandle statementHandle, List<TypedValue> parameterValues, long maxRowCount)
 			throws NoSuchStatementException {
 		if (log.isTraceEnabled()) {
 			log.trace("[execute] maxRowCount: {} parameters: {} handle: {}", maxRowCount, parameterValues.size(),
-					h.toString());
+					statementHandle.toString());
 		}
-		final IDataProvider provider = providerCache.get(h.id);
+		final IDataProvider provider = providerCache.get(statementHandle.id);
 		assert provider != null;
-		String query = new String(h.signature.sql);
+		final String query = statementHandle.signature.sql;
 		if (query.contains("?")) {
 			final Iterator<TypedValue> iterator = parameterValues.iterator();
 			final StringBuilder sb = new StringBuilder();
 			final String[] parts = query.split("\\?", -1);
-			assert parts.length == parameterValues.size() + 1;
 			if (parts.length != parameterValues.size() + 1) {
 				throw new IndexOutOfBoundsException(
 						String.format("Number of specified values [%d] is not match to number of occurences [%d]",
@@ -133,7 +132,7 @@ public class AtsdMeta extends MetaImpl {
 					break;
 				final TypedValue next = iterator.next();
 				if (next.value instanceof Number)
-					sb.append((Number) next.value);
+					sb.append(next.value);
 				else if (next.value instanceof String)
 					sb.append('\'').append((String) next.value).append('\'');
 				else if (next.value instanceof java.sql.Date) {
@@ -149,18 +148,18 @@ public class AtsdMeta extends MetaImpl {
 			provider.getContentDescription().setQuery(sb.toString());
 		}
 		try {
-			provider.fetchData(-1);
-			final ContentMetadata contentMetadata = findMetadata(query, h.connectionId, h.id);
+			provider.fetchData(maxRowCount);
+			final ContentMetadata contentMetadata = findMetadata(query, statementHandle.connectionId, statementHandle.id);
 			return new ExecuteResult(contentMetadata.getList());
 		} catch (final AtsdException | GeneralSecurityException | IOException e) {
 			if (log.isDebugEnabled())
 				log.debug("[execute] " + e.getMessage());
-			throw new NoSuchStatementException(h);
+			throw new NoSuchStatementException(statementHandle);
 		}
 	}
 
 	@Override
-	public ExecuteResult prepareAndExecute(final StatementHandle h, String query, long maxRowCount,
+	public ExecuteResult prepareAndExecute(final StatementHandle statementHandle, String query, long maxRowCount,
 			final PrepareCallback callback) throws NoSuchStatementException {
 		try {
 			lock.lockInterruptibly();
@@ -170,12 +169,12 @@ public class AtsdMeta extends MetaImpl {
 		}
 		if (log.isTraceEnabled()) {
 			log.trace("[prepareAndExecute] locked: {} maxRowCount: {} handle: {} query: {}", lock.getHoldCount(),
-					maxRowCount, h.toString(), query);
+					maxRowCount, statementHandle.toString(), query);
 		}
 		try {
-			final IDataProvider provider = initProvider(h.id, query);
+			final IDataProvider provider = initProvider(statementHandle.id, query);
 			provider.fetchData(maxRowCount);
-			final ContentMetadata contentMetadata = findMetadata(query, h.connectionId, h.id);
+			final ContentMetadata contentMetadata = findMetadata(query, statementHandle.connectionId, statementHandle.id);
 			synchronized (callback.getMonitor()) {
 				// callback.clear();
 				callback.assign(contentMetadata.getSign(), null, -1);
@@ -186,18 +185,18 @@ public class AtsdMeta extends MetaImpl {
 		} catch (final AtsdException | IOException | SQLException | GeneralSecurityException e) {
 			if (log.isDebugEnabled())
 				log.debug("[prepareAndExecute] " + e.getMessage());
-			throw new NoSuchStatementException(h);
+			throw new NoSuchStatementException(statementHandle);
 		}
 	}
 
 	@Override
-	public Frame fetch(final StatementHandle h, long loffset, int fetchMaxRowCount)
+	public Frame fetch(final StatementHandle statementHandle, long loffset, int fetchMaxRowCount)
 			throws NoSuchStatementException, MissingResultsException {
 		final int offset = (int) loffset;
 		if (log.isTraceEnabled()) {
 			log.trace("[fetch] fetchMaxRowCount: {} offset: {}", fetchMaxRowCount, offset);
 		}
-		IDataProvider provider = providerCache.get(h.id);
+		IDataProvider provider = providerCache.get(statementHandle.id);
 		assert provider != null;
 		final ContentDescription cd = provider.getContentDescription();
 		final IStoreStrategy strategy = provider.getStrategy();
@@ -205,26 +204,26 @@ public class AtsdMeta extends MetaImpl {
 			if (offset == 0) {
 				final String[] headers = strategy.openToRead();
 				if (headers == null || headers.length == 0)
-					throw new MissingResultsException(h);
+					throw new MissingResultsException(statementHandle);
 				cd.setHeaders(headers);
 			}
 			final List<String[]> subList = strategy.fetch(offset, fetchMaxRowCount);
-			final List<Object> rows = getFrame(h, fetchMaxRowCount, subList);
+			final List<Object> rows = getFrame(statementHandle, fetchMaxRowCount, subList);
 			return new Meta.Frame(loffset, rows.size() < fetchMaxRowCount, rows);
 		} catch (final AtsdException | IOException e) {
 			if (log.isDebugEnabled())
 				log.debug("[fetch] " + e.getMessage());
-			throw new MissingResultsException(h);
+			throw new MissingResultsException(statementHandle);
 		}
 
 	}
 
 	@Override
-	public void closeStatement(StatementHandle h) {
+	public void closeStatement(StatementHandle statementHandle) {
 		if (log.isDebugEnabled())
-			log.debug("[closeStatement] " + h.id + "->" + h.toString());
-		closeProviderCaches(h);
-		closeProvider(h);
+			log.debug("[closeStatement] " + statementHandle.id + "->" + statementHandle.toString());
+		closeProviderCaches(statementHandle);
+		closeProvider(statementHandle);
 		if (lock.isHeldByCurrentThread()) {
 			lock.unlock();
 			if (log.isTraceEnabled())
@@ -242,9 +241,9 @@ public class AtsdMeta extends MetaImpl {
 
 	}
 
-	private void closeProvider(StatementHandle h) {
+	private void closeProvider(StatementHandle statementHandle) {
 		if (providerCache != null && !providerCache.isEmpty()) {
-			final IDataProvider provider = providerCache.remove(h.id);
+			final IDataProvider provider = providerCache.remove(statementHandle.id);
 			if (provider != null)
 				try {
 					provider.close();
@@ -283,18 +282,18 @@ public class AtsdMeta extends MetaImpl {
 	}
 
 	@Override
-	public Map<DatabaseProperty, Object> getDatabaseProperties(ConnectionHandle ch) {
-		return super.getDatabaseProperties(ch);
+	public Map<DatabaseProperty, Object> getDatabaseProperties(ConnectionHandle connectionHandle) {
+		return super.getDatabaseProperties(connectionHandle);
 	}
 
 	@Override
-	public MetaResultSet getTables(ConnectionHandle ch, String catalog, Pat schemaPattern, Pat tableNamePattern,
+	public MetaResultSet getTables(ConnectionHandle connectionHandle, String catalog, Pat schemaPattern, Pat tableNamePattern,
 			List<String> typeList) {
-		return super.getTables(ch, catalog, schemaPattern, tableNamePattern, typeList);
+		return super.getTables(connectionHandle, catalog, schemaPattern, tableNamePattern, typeList);
 	}
 
 	@Override
-	public MetaResultSet getSchemas(ConnectionHandle ch, String catalog, Pat schemaPattern) {
+	public MetaResultSet getSchemas(ConnectionHandle connectionHandle, String catalog, Pat schemaPattern) {
 		assert connection instanceof AtsdConnection;
 		final Properties info = ((AtsdConnection) connection).getInfo();
 		String username = info != null ? (String) info.get("user") : "";

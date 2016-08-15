@@ -41,6 +41,7 @@ public class ContentDescription {
 	private String[] headers;
 	private String jsonScheme;
 	private String url;
+	private long maxRowsCount;
 
 	public ContentDescription(String host, String query, String login, String password, String[] params) {
 		this.host = host;
@@ -72,6 +73,15 @@ public class ContentDescription {
 
 	public void setQuery(String query) {
 		this.query = query;
+	}
+
+	private String getEncodedQuery() {
+		try {
+			return URLEncoder.encode(query, Charset.defaultCharset().name());
+		} catch (UnsupportedEncodingException e) {
+			logger.error(e.getMessage());
+			return query;
+		}
 	}
 
 	public String getLogin() {
@@ -114,27 +124,29 @@ public class ContentDescription {
 		this.contentLength = contentLength;
 	}
 
+	public void setMaxRowsCount(long maxRowsCount) {
+		this.maxRowsCount = maxRowsCount;
+	}
+
 	public String getPostParams() {
 		if (StringUtils.isEmpty(query)) {
 			return "";
 		}
-		String q;
-		try {
-			q = URLEncoder.encode(query, Charset.defaultCharset().name());
-		} catch (UnsupportedEncodingException e) {
-			logger.error(e.getMessage());
-			q = query;
-		}
-		return String.format(QUERY_PARAM_NAME, Q_PARAM_NAME, q, FORMAT_PARAM_NAME, FORMAT_PARAM_VALUE);
+		return Q_PARAM_NAME + '=' + getEncodedQuery() + '&' +
+				FORMAT_PARAM_NAME + '=' + FORMAT_PARAM_VALUE + '&' +
+				METADATA_FORMAT_PARAM_NAME + '=' + METADATA_FORMAT_PARAM_VALUE + '&' +
+				LIMIT_PARAM_NAME + '=' + maxRowsCount;
 	}
 
-	public Map<String, String> getPostParamsAsMap() {
+	public Map<String, String> getQueryParamsAsMap() {
 		if (StringUtils.isEmpty(query)) {
 			return Collections.emptyMap();
 		}
 		Map<String, String> map = new HashMap<>();
 		map.put(Q_PARAM_NAME, query);
 		map.put(FORMAT_PARAM_NAME, FORMAT_PARAM_VALUE);
+		map.put(METADATA_FORMAT_PARAM_NAME, METADATA_FORMAT_PARAM_VALUE);
+		map.put(LIMIT_PARAM_NAME, Long.toString(maxRowsCount));
 		return map;
 	}
 
@@ -143,13 +155,13 @@ public class ContentDescription {
 	}
 
 	public Boolean isTrusted() {
-		if (params == null || params.length == 0)
-			return null;
-		for (String param : params) {
-			if (TRUST_PARAM_TRUE.equalsIgnoreCase(param))
-				return true;
-			if (TRUST_PARAM_FALSE.equalsIgnoreCase(param))
-				return false;
+		if (params != null) {
+			for (String param : params) {
+				if (TRUST_PARAM_TRUE.equalsIgnoreCase(param))
+					return true;
+				if (TRUST_PARAM_FALSE.equalsIgnoreCase(param))
+					return false;
+			}
 		}
 		return null;
 	}
@@ -158,10 +170,10 @@ public class ContentDescription {
 		if (params == null || params.length == 0)
 			return null;
 		for (final String param : params) {
-			if (!param.toLowerCase(Locale.US).startsWith(STRATEGY_PARAM_NAME))
-				continue;
-			final String value = param.substring(STRATEGY_PARAM_NAME.length());
-			return StringUtils.isNoneEmpty(value) ? value : null;
+			if (param.toLowerCase(Locale.US).startsWith(STRATEGY_PARAM_NAME)) {
+				final String value = param.substring(STRATEGY_PARAM_NAME.length());
+				return StringUtils.isNoneEmpty(value) ? value : null;
+			}
 		}
 		return null;
 	}
