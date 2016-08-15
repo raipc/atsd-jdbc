@@ -74,17 +74,16 @@ public class ContentMetadata {
 
 	static List<ColumnMetaData> buildMetadataList(String json)
 			throws JsonParseException, MalformedURLException, IOException, AtsdException {
-		final Object jsonObject = getJsonScheme(json);
-		if (!(jsonObject instanceof Map))
+		final Map<String, Object> jsonObject = getJsonScheme(json);
+		if (jsonObject == null)
 			throw new AtsdException("Wrong metadata content");
-		final Map<String, Object> map = (Map<String, Object>) jsonObject;
-		final Map<String, Object> publisher = (Map<String, Object>) map.get(PUBLISHER_SECTION);
+		final Map<String, Object> publisher = (Map<String, Object>) jsonObject.get(PUBLISHER_SECTION);
 		if (publisher == null)
 			throw new AtsdException("Wrong metadata publisher");
-		String schema = (String) publisher.get(SCHEMA_NAME_PROPERTY);
+		final String schema = (String) publisher.get(SCHEMA_NAME_PROPERTY);
 		if (schema == null)
 			throw new AtsdException("Wrong metadata schema");
-		final Map<String, Object> tableSchema = (Map<String, Object>) map.get(TABLE_SCHEMA_SECTION);
+		final Map<String, Object> tableSchema = (Map<String, Object>) jsonObject.get(TABLE_SCHEMA_SECTION);
 		if (tableSchema == null)
 			throw new AtsdException("Wrong table schema");
 		final List<Object> columns = (List<Object>) tableSchema.get(COLUMNS_SCHEME);
@@ -110,10 +109,9 @@ public class ContentMetadata {
 		String datatype = (String) property.get(DATATYPE_PROPERTY);
 		Integer index = (Integer) property.get(INDEX_PROPERTY);
 		final ColumnMetaData.AvaticaType atype = getAvaticaType(datatype);
-		final ColumnMetaData cmd = new ColumnMetaData(index != null ? index.intValue() - 1 : ind, false, false, false,
+		return new ColumnMetaData(index != null ? index - 1 : ind, false, false, false,
 				false, 0, false, 10, name, title, schema, 1, 1, table, DEFAULT_CATALOG_NAME, atype, true, false,
 				false, atype.rep.clazz.getCanonicalName());
-		return cmd;
 	}
 
 	private static Map<String, Object> getJsonScheme(String json) throws IOException {
