@@ -147,11 +147,11 @@ public class SdkProtocolImpl implements IContentProtocol {
 		}
 		conn.setAllowUserInteraction(false);
 		conn.setChunkedStreamingMode(100);
-		conn.setConnectTimeout(0);
+		conn.setConnectTimeout(contentDescription.getConnectTimeout());
 		conn.setDoInput(true);
 		conn.setDoOutput(!isHead);
 		conn.setInstanceFollowRedirects(true);
-		conn.setReadTimeout(0);
+		conn.setReadTimeout(contentDescription.getReadTimeout());
 		conn.setRequestMethod(method);
 		conn.setRequestProperty(ACCEPT_ENCODING, isPost ? COMPRESSION_ENCODING : DEFAULT_ENCODING);
 		conn.setRequestProperty(CONNECTION_HEADER, KEEP_ALIVE);

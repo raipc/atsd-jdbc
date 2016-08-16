@@ -32,9 +32,11 @@ public final class DriverConstants {
 	public static final String PROTOCOL_SEPARATOR = "://";
 	public static final String Q_PARAM_NAME = "q";
 	public static final String REVISION_LINE = "Revision";
-	public static final String STRATEGY_PARAM_NAME = "strategy=";
-	public static final String TRUST_PARAM_TRUE = "trustServerCertificate=true";
-	public static final String TRUST_PARAM_FALSE = "trustServerCertificate=false";
+	public static final String STRATEGY_PARAM_NAME = "strategy";
+	public static final String TRUST_PARAM_NAME = "trustServerCertificate";
+	public static final String CONNECT_TIMEOUT_PARAM = "connectTimeout";
+	public static final String READ_TIMEOUT_PARAM = "readTimeout";
+	public static final int DEFAULT_TIMEOUT_VALUE = 0;
 	public static final String VERSION_ENDPOINT = "/version";
 	
 	public static final String COLUMNS_SCHEME = "columns";

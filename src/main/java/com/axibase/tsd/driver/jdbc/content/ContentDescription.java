@@ -35,7 +35,7 @@ public class ContentDescription {
 	private String host;
 	private String query;
 	private String login;
-	private String[] params;
+	private Map<String, String> paramsMap;
 	private String password;
 	private long contentLength;
 	private String[] headers;
@@ -48,7 +48,17 @@ public class ContentDescription {
 		this.query = query;
 		this.login = login;
 		this.password = password;
-		this.params = params;
+		final int size = params == null ? 0 : params.length;
+		this.paramsMap = new HashMap<>(size);
+		if (size > 0) {
+			for (String param : params) {
+				int delimiterPosition = param.indexOf('=');
+				if (delimiterPosition >= 0) {
+					paramsMap.put(param.substring(0, delimiterPosition),
+							param.substring(delimiterPosition + 1));
+				}
+			}
+		}
 	}
 
 	public String getHost() {
@@ -57,14 +67,6 @@ public class ContentDescription {
 
 	public void setHost(String host) {
 		this.host = host;
-	}
-
-	public String[] getParams() {
-		return params;
-	}
-
-	public void setParams(String[] params) {
-		this.params = params;
 	}
 
 	public String getQuery() {
@@ -155,27 +157,23 @@ public class ContentDescription {
 	}
 
 	public Boolean isTrusted() {
-		if (params != null) {
-			for (String param : params) {
-				if (TRUST_PARAM_TRUE.equalsIgnoreCase(param))
-					return true;
-				if (TRUST_PARAM_FALSE.equalsIgnoreCase(param))
-					return false;
-			}
-		}
-		return null;
+		final String trustedAsString = paramsMap.get(TRUST_PARAM_NAME);
+		return trustedAsString == null ? null : Boolean.valueOf(trustedAsString);
+	}
+
+	public int getConnectTimeout() {
+		final String timeoutAsString = paramsMap.get(CONNECT_TIMEOUT_PARAM);
+		return timeoutAsString == null ? DEFAULT_TIMEOUT_VALUE : Integer.valueOf(timeoutAsString);
+	}
+
+	public int getReadTimeout() {
+		final String timeoutAsString = paramsMap.get(READ_TIMEOUT_PARAM);
+		return timeoutAsString == null ? DEFAULT_TIMEOUT_VALUE : Integer.valueOf(timeoutAsString);
 	}
 
 	public String getStrategyName() {
-		if (params == null || params.length == 0)
-			return null;
-		for (final String param : params) {
-			if (param.toLowerCase(Locale.US).startsWith(STRATEGY_PARAM_NAME)) {
-				final String value = param.substring(STRATEGY_PARAM_NAME.length());
-				return StringUtils.isNoneEmpty(value) ? value : null;
-			}
-		}
-		return null;
+		final String strategy = paramsMap.get(STRATEGY_PARAM_NAME);
+		return StringUtils.isNoneEmpty(strategy) ? strategy : null;
 	}
 
 	@Override
