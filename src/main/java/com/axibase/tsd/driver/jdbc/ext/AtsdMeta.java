@@ -361,9 +361,9 @@ public class AtsdMeta extends MetaImpl {
 		final Properties info = ((AtsdConnection) connection).getInfo();
 		final StatementContext newContext = new StatementContext();
 		contextMap.put(id, newContext);
-		final IDataProvider dataProvider = new DataProvider(config.url(), sql,
-				info != null ? (String) info.get("user") : "", info != null ? (String) info.get("password") : "",
-				newContext);
+		final String login = info != null ? (String) info.get("user") : "";
+		final String password = info != null ? (String) info.get("password") : "";
+		final IDataProvider dataProvider = new DataProvider(config.url(), sql, login, password,	newContext);
 		providerCache.put(id, dataProvider);
 		return dataProvider;
 	}
