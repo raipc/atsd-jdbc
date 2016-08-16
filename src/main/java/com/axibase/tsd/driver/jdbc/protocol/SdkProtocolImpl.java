@@ -14,12 +14,7 @@
 */
 package com.axibase.tsd.driver.jdbc.protocol;
 
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -41,6 +36,8 @@ import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
+import com.axibase.tsd.driver.jdbc.DriverConstants;
+import com.axibase.tsd.driver.jdbc.enums.MetadataFormat;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 
@@ -73,13 +70,19 @@ public class SdkProtocolImpl implements IContentProtocol {
 
 	@Override
 	public InputStream readContent() throws AtsdException, GeneralSecurityException, IOException {
-		return executeRequest(POST_METHOD);
+		InputStream inputStream = executeRequest(POST_METHOD);
+		if (MetadataFormat.EMBED.name().equals(DriverConstants.METADATA_FORMAT_PARAM_VALUE)
+				&& StringUtils.isEmpty(contentDescription.getJsonScheme())) {
+			inputStream = retrieveJsonSchemeAndSubstituteStream(inputStream);
+		}
+		return inputStream;
 	}
 
 	@Override
 	public void close() throws Exception {
-		if (this.conn != null)
+		if (this.conn != null) {
 			this.conn.disconnect();
+		}
 	}
 
 	public InputStream executeRequest(String method) throws AtsdException, IOException, GeneralSecurityException {
@@ -95,16 +98,20 @@ public class SdkProtocolImpl implements IContentProtocol {
 			doTrustToCertificates((HttpsURLConnection) this.conn);
 		}
 		setBaseProperties(method);
-		if (StringUtils.isEmpty(contentDescription.getJsonScheme())) {
-			processResponse(conn.getHeaderFields());
+		if (MetadataFormat.HEADER.name().equals(DriverConstants.METADATA_FORMAT_PARAM_VALUE)
+				&& StringUtils.isEmpty(contentDescription.getJsonScheme())) {
+			retrieveJsonSchemeFromHeader(conn.getHeaderFields());
 		}
 		long contentLength = conn.getContentLengthLong();
 		if (logger.isDebugEnabled()) {
 			logger.debug("[response] " + contentLength);
 		}
 		contentDescription.setContentLength(contentLength);
-		if (isHead)
+
+		if (isHead) {
 			return null;
+		}
+
 		final boolean gzipped = COMPRESSION_ENCODING.equals(conn.getContentEncoding());
 		final int code = conn.getResponseCode();
 		InputStream body;
@@ -171,7 +178,7 @@ public class SdkProtocolImpl implements IContentProtocol {
 	}
 
 	public void doTrustToCertificates(final HttpsURLConnection sslConnection) {
-		final TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
+		final TrustManager[] trustAllCerts = new TrustManager[]{new X509TrustManager() {
 			@Override
 			public X509Certificate[] getAcceptedIssuers() {
 				return null;
@@ -182,23 +189,26 @@ public class SdkProtocolImpl implements IContentProtocol {
 			@Override
 			public void checkClientTrusted(X509Certificate[] certs, String authType) throws CertificateException {
 			}
-		} };
+		}};
 		final SSLContext sc;
 		try {
 			sc = SSLContext.getInstance(CONTEXT_INSTANCE_TYPE);
 		} catch (NoSuchAlgorithmException e) {
-			if (logger.isErrorEnabled())
+			if (logger.isErrorEnabled()) {
 				logger.error(e.getMessage());
+			}
 			return;
 		}
 		final Boolean trusted = contentDescription.isTrusted();
-		if (logger.isDebugEnabled())
+		if (logger.isDebugEnabled()) {
 			logger.debug("[doTrustToCertificates] " + trusted);
+		}
 		try {
 			sc.init(null, trusted != null && trusted ? trustAllCerts : null, new SecureRandom());
 		} catch (KeyManagementException e) {
-			if (logger.isErrorEnabled())
+			if (logger.isErrorEnabled()) {
 				logger.error(e.getMessage());
+			}
 			return;
 		}
 		sslConnection.setSSLSocketFactory(sc.getSocketFactory());
@@ -213,29 +223,76 @@ public class SdkProtocolImpl implements IContentProtocol {
 			}
 
 		};
-		if (trusted != null && trusted)
+		if (trusted != null && trusted) {
 			sslConnection.setHostnameVerifier(hostnameVerifier);
+		}
 	}
 
-	private void processResponse(Map<String, List<String>> map) throws UnsupportedEncodingException {
+	private void retrieveJsonSchemeFromHeader(Map<String, List<String>> map) throws UnsupportedEncodingException {
 		printHeaders(map);
 		List<String> list = map.get(SCHEME_HEADER);
 		String value = list != null && !list.isEmpty() ? list.get(0) : null;
-		if (value == null)
-			return;
-		assert value.startsWith(START_LINK) && value.endsWith(END_LINK);
-		final String enc = value.substring(START_LINK.length(), value.length() - END_LINK.length());
-		String json = new String(Base64.decodeBase64(enc), Charset.defaultCharset());
-		if (logger.isTraceEnabled())
-			logger.trace("JSON schema: " + json);
-		contentDescription.setJsonScheme(json);
+		if (value != null) {
+			assert value.startsWith(START_LINK) && value.endsWith(END_LINK);
+			final String enc = value.substring(START_LINK.length(), value.length() - END_LINK.length());
+			String json = new String(Base64.decodeBase64(enc), Charset.defaultCharset());
+			if (logger.isTraceEnabled()) {
+				logger.trace("JSON schema: " + json);
+			}
+			contentDescription.setJsonScheme(json);
+		}
 	}
 
+	private InputStream retrieveJsonSchemeAndSubstituteStream(InputStream inputStream) {
+		try (ByteArrayOutputStream result = new ByteArrayOutputStream()) {
+			assert inputStream.read() == (int)'#';
+			byte[] buffer = new byte[1024];
+			int length;
+			boolean headerNotProcessed = true;
+			byte lineFeed = (byte)'\n';
+			while ((length = inputStream.read(buffer)) != -1) {
+				if (headerNotProcessed) {
+					for (int i = 0; i < length; ++i) {
+						if (buffer[i] == lineFeed) {
+							result.write(buffer, 0, i);
+							final byte[] decoded = Base64.decodeBase64(result.toByteArray());
+							final String jsonScheme = new String(decoded, Charset.defaultCharset());
+							contentDescription.setJsonScheme(jsonScheme);
+							if (logger.isTraceEnabled()) {
+								logger.trace("JSON schema: " + jsonScheme);
+							}
+							result.reset();
+							final int newSize = length - i - 1;
+							if (newSize > 0) {
+								result.write(buffer, i + 1, newSize);
+							}
+							headerNotProcessed = false;
+							break;
+						}
+					}
+					if (headerNotProcessed) {
+						result.write(buffer, 0, length);
+					}
+				} else {
+					result.write(buffer, 0, length);
+				}
+			}
+			inputStream.close();
+			return new ByteArrayInputStream(result.toByteArray());
+		} catch (IOException e) {
+			if (logger.isErrorEnabled()) {
+				logger.error("Error while processing response body", e);
+			}
+			return inputStream;
+		}
+	}
+
+
 	private void printHeaders(Map<String, List<String>> map) {
-		if (!logger.isTraceEnabled())
-			return;
-		for (Map.Entry<String, List<String>> entry : map.entrySet()) {
-			logger.trace("Key: {} Value: {} ", entry.getKey(), entry.getValue());
+		if (logger.isTraceEnabled()) {
+			for (Map.Entry<String, List<String>> entry : map.entrySet()) {
+				logger.trace("Key: {} Value: {} ", entry.getKey(), entry.getValue());
+			}
 		}
 	}
 

@@ -1,5 +1,7 @@
 package com.axibase.tsd.driver.jdbc;
 
+import com.axibase.tsd.driver.jdbc.enums.MetadataFormat;
+
 public final class DriverConstants {
 	public static final String CATALOG_NAME = "ATSD";
 	public static final String CONNECT_URL_PREFIX = "jdbc:axibase:atsd:";
@@ -24,7 +26,7 @@ public final class DriverConstants {
 	public static final String FORMAT_PARAM_NAME = "outputFormat";
 	public static final String FORMAT_PARAM_VALUE = "csv";
 	public static final String METADATA_FORMAT_PARAM_NAME = "metadataFormat";
-	public static final String METADATA_FORMAT_PARAM_VALUE = "HEADER";
+	public static final String METADATA_FORMAT_PARAM_VALUE = MetadataFormat.EMBED.name();
 	public static final String LIMIT_PARAM_NAME = "limit";
 	public static final String PARAM_SEPARATOR = ";";
 	public static final String PROTOCOL_SEPARATOR = "://";
