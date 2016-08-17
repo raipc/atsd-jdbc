@@ -81,7 +81,7 @@ public class AtsdFactory implements AvaticaFactory {
 	public AvaticaResultSet newResultSet(AvaticaStatement statement, QueryState state, Meta.Signature signature,
 			TimeZone timeZone, Meta.Frame firstFrame) {
 		final ResultSetMetaData metaData = newResultSetMetaData(statement, signature);
-		return new AtdsResultSet(statement, state, signature, metaData, timeZone, firstFrame);
+		return new AtsdResultSet(statement, state, signature, metaData, timeZone, firstFrame);
 	}
 
 	@Override

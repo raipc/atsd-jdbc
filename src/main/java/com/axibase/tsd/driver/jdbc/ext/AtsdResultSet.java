@@ -30,14 +30,14 @@ import org.apache.calcite.avatica.QueryState;
 import com.axibase.tsd.driver.jdbc.content.StatementContext;
 import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
 
-public class AtdsResultSet extends AvaticaResultSet {
-	private static final LoggingFacade logger = LoggingFacade.getLogger(AtdsResultSet.class);
+public class AtsdResultSet extends AvaticaResultSet {
+	private static final LoggingFacade logger = LoggingFacade.getLogger(AtsdResultSet.class);
 	private final AtsdMeta meta;
 	private final Meta.StatementHandle handle;
 	private final StatementContext context;
 
-	public AtdsResultSet(AvaticaStatement statement, QueryState state, Signature signature,
-			ResultSetMetaData resultSetMetaData, TimeZone timeZone, Frame firstFrame) {
+	public AtsdResultSet(AvaticaStatement statement, QueryState state, Signature signature,
+						 ResultSetMetaData resultSetMetaData, TimeZone timeZone, Frame firstFrame) {
 		super(statement, state, signature, resultSetMetaData, timeZone, firstFrame);
 		final AtsdConnection connection = (AtsdConnection) statement.connection;
 		this.meta = (AtsdMeta) connection.getMeta();
