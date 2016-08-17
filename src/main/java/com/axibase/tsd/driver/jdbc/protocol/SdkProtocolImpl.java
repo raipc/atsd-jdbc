@@ -50,6 +50,7 @@ import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
 public class SdkProtocolImpl implements IContentProtocol {
 	private static final LoggingFacade logger = LoggingFacade.getLogger(SdkProtocolImpl.class);
 	private static final int UNSUCCESSFUL_SQL_RESULT_CODE = 400;
+	private static final int MILLIS = 1000;
 	private final ContentDescription contentDescription;
 	private HttpURLConnection conn;
 
@@ -152,12 +153,12 @@ public class SdkProtocolImpl implements IContentProtocol {
 		}
 		conn.setAllowUserInteraction(false);
 		conn.setChunkedStreamingMode(100);
-		conn.setConnectTimeout(contentDescription.getConnectTimeout());
+		conn.setConnectTimeout(contentDescription.getConnectTimeout() * MILLIS);
 		conn.setDoInput(true);
 		conn.setDoOutput(!isHead);
 		conn.setInstanceFollowRedirects(true);
-		int timeout = queryTimeout == 0 ? contentDescription.getReadTimeout() : queryTimeout * 1000;
-		conn.setReadTimeout(timeout);
+		int timeoutInSeconds = queryTimeout == 0 ? contentDescription.getReadTimeout() : queryTimeout;
+		conn.setReadTimeout(timeoutInSeconds * MILLIS);
 		conn.setRequestMethod(method);
 		conn.setRequestProperty(ACCEPT_ENCODING, isPost ? COMPRESSION_ENCODING : DEFAULT_ENCODING);
 		conn.setRequestProperty(CONNECTION_HEADER, KEEP_ALIVE);
