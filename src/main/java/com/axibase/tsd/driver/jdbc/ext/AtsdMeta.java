@@ -19,11 +19,7 @@ import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.security.GeneralSecurityException;
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.sql.Types;
+import java.sql.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -148,7 +144,7 @@ public class AtsdMeta extends MetaImpl {
 			provider.getContentDescription().setQuery(sb.toString());
 		}
 		try {
-			provider.fetchData(maxRowCount);
+			provider.fetchData(maxRowCount, 0);
 			final ContentMetadata contentMetadata = findMetadata(query, statementHandle.connectionId, statementHandle.id);
 			return new ExecuteResult(contentMetadata.getList());
 		} catch (final AtsdException | GeneralSecurityException | IOException e) {
@@ -173,7 +169,8 @@ public class AtsdMeta extends MetaImpl {
 		}
 		try {
 			final IDataProvider provider = initProvider(statementHandle.id, query);
-			provider.fetchData(maxRowCount);
+			final Statement statement = (Statement)callback.getMonitor();
+			provider.fetchData(maxRowCount, statement.getQueryTimeout());
 			final ContentMetadata contentMetadata = findMetadata(query, statementHandle.connectionId, statementHandle.id);
 			synchronized (callback.getMonitor()) {
 				// callback.clear();

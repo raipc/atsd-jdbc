@@ -63,12 +63,13 @@ public class DataProvider implements IDataProvider {
 	}
 
 	@Override
-	public void fetchData(long maxLimit) throws AtsdException, GeneralSecurityException, IOException {
+	public void fetchData(long maxLimit, int timeout) throws AtsdException, GeneralSecurityException, IOException {
 		contentDescription.setMaxRowsCount(maxLimit);
-		final InputStream is = contentProtocol.readContent();
+		final InputStream is = contentProtocol.readContent(timeout);
 		this.strategy = defineStrategy();
-		if (this.strategy != null)
+		if (this.strategy != null) {
 			this.strategy.store(is);
+		}
 	}
 
 	@Override
@@ -82,8 +83,9 @@ public class DataProvider implements IDataProvider {
 
 	@Override
 	public void close() throws Exception {
-		if (this.strategy != null)
+		if (this.strategy != null) {
 			this.strategy.close();
+		}
 	}
 
 	private IStoreStrategy defineStrategy() {

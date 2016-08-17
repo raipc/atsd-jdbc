@@ -60,22 +60,27 @@ public class SdkProtocolImpl implements IContentProtocol {
 
 	@Override
 	public void getContentSchema() throws AtsdException, GeneralSecurityException, IOException {
-		executeRequest(HEAD_METHOD);
+		executeRequest(HEAD_METHOD, 0);
 	}
 
 	@Override
 	public InputStream readInfo() throws AtsdException, GeneralSecurityException, IOException {
-		return executeRequest(GET_METHOD);
+		return executeRequest(GET_METHOD, 0);
 	}
 
 	@Override
-	public InputStream readContent() throws AtsdException, GeneralSecurityException, IOException {
-		InputStream inputStream = executeRequest(POST_METHOD);
+	public InputStream readContent(int timeout) throws AtsdException, GeneralSecurityException, IOException {
+		InputStream inputStream = executeRequest(POST_METHOD, timeout);
 		if (MetadataFormat.EMBED.name().equals(DriverConstants.METADATA_FORMAT_PARAM_VALUE)
 				&& StringUtils.isEmpty(contentDescription.getJsonScheme())) {
 			inputStream = retrieveJsonSchemeAndSubstituteStream(inputStream);
 		}
 		return inputStream;
+	}
+
+	@Override
+	public InputStream readContent() throws AtsdException, GeneralSecurityException, IOException {
+		return readContent(0);
 	}
 
 	@Override
@@ -85,7 +90,7 @@ public class SdkProtocolImpl implements IContentProtocol {
 		}
 	}
 
-	public InputStream executeRequest(String method) throws AtsdException, IOException, GeneralSecurityException {
+	private InputStream executeRequest(String method, int queryTimeout) throws AtsdException, IOException, GeneralSecurityException {
 		boolean isHead = method.equals(HEAD_METHOD);
 		boolean isPost = method.equals(POST_METHOD);
 		String postParams = contentDescription.getPostParams();
@@ -97,7 +102,7 @@ public class SdkProtocolImpl implements IContentProtocol {
 		if (contentDescription.isSsl()) {
 			doTrustToCertificates((HttpsURLConnection) this.conn);
 		}
-		setBaseProperties(method);
+		setBaseProperties(method, queryTimeout);
 		if (MetadataFormat.HEADER.name().equals(DriverConstants.METADATA_FORMAT_PARAM_VALUE)
 				&& StringUtils.isEmpty(contentDescription.getJsonScheme())) {
 			retrieveJsonSchemeFromHeader(conn.getHeaderFields());
@@ -133,7 +138,7 @@ public class SdkProtocolImpl implements IContentProtocol {
 		return gzipped ? new GZIPInputStream(body) : body;
 	}
 
-	private void setBaseProperties(String method) throws IOException {
+	private void setBaseProperties(String method, int queryTimeout) throws IOException {
 		boolean isHead = method.equals(HEAD_METHOD);
 		boolean isPost = method.equals(POST_METHOD);
 		String postParams = contentDescription.getPostParams();
@@ -151,7 +156,8 @@ public class SdkProtocolImpl implements IContentProtocol {
 		conn.setDoInput(true);
 		conn.setDoOutput(!isHead);
 		conn.setInstanceFollowRedirects(true);
-		conn.setReadTimeout(contentDescription.getReadTimeout());
+		int timeout = queryTimeout == 0 ? contentDescription.getReadTimeout() : queryTimeout * 1000;
+		conn.setReadTimeout(timeout);
 		conn.setRequestMethod(method);
 		conn.setRequestProperty(ACCEPT_ENCODING, isPost ? COMPRESSION_ENCODING : DEFAULT_ENCODING);
 		conn.setRequestProperty(CONNECTION_HEADER, KEEP_ALIVE);
