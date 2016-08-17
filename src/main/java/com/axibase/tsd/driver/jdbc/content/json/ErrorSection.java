@@ -31,22 +31,23 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
     "exception",
     "message"
 })
-public class ErrorSection {
+public class ErrorSection implements AtsdExceptionRepresentation {
 
     @JsonProperty("state")
     private String state;
     @JsonProperty("exception")
-    private List<ExceptionSection> exception = new ArrayList<ExceptionSection>();
+    private List<ExceptionSection> exception = new ArrayList<>();
     @JsonProperty("message")
     private String message;
     @JsonIgnore
-    private final Map<String, Object> additionalProperties = new HashMap<String, Object>();
+    private final Map<String, Object> additionalProperties = new HashMap<>();
 
     /**
      * 
      * @return
      *     The state
      */
+    @Override
     @JsonProperty("state")
     public String getState() {
         return state;
@@ -72,6 +73,7 @@ public class ErrorSection {
      * @return
      *     The exception
      */
+    @Override
     @JsonProperty("exception")
     public List<ExceptionSection> getException() {
         return exception;
@@ -97,6 +99,7 @@ public class ErrorSection {
      * @return
      *     The message
      */
+    @Override
     @JsonProperty("message")
     public String getMessage() {
         return message;
