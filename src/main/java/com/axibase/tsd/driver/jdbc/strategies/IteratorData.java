@@ -99,8 +99,8 @@ public class IteratorData {
 		}
 		int commentStart = line.indexOf(COMMENT_NEXT_LINE);
 		if (commentStart != -1) {
-			content.append(new String(line.substring(0, commentStart)));
-			comments.append(new String(line.substring(commentStart)));
+			content.append(line.substring(0, commentStart));
+			comments.append(line.substring(commentStart));
 		} else {
 			if (logger.isTraceEnabled())
 				logger.trace("[bufferOperations] " + line);
@@ -188,8 +188,7 @@ public class IteratorData {
 				sb.append(ch);
 			}
 		}
-		if (sb != null)
-			result.add(sb.toString());
+		result.add(sb.toString());
 		return result.toArray(new String[result.size()]);
 	}
 
