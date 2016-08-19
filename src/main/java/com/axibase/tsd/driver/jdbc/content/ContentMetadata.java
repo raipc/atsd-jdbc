@@ -20,10 +20,7 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.nio.charset.Charset;
 import java.sql.Types;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.apache.calcite.avatica.AvaticaParameter;
 import org.apache.calcite.avatica.ColumnMetaData;
@@ -171,7 +168,21 @@ public class ContentMetadata {
 			metaType = Types.VARCHAR;
 			rep = ColumnMetaData.Rep.STRING;
 		}
-		return new ColumnMetaData.AvaticaType(metaType, datatype, rep);
+		return new AtsdColumnType(metaType, datatype, rep);
+	}
+
+	private static class AtsdColumnType extends ColumnMetaData.AvaticaType {
+		private final String atsdTypeName;
+
+		public AtsdColumnType(int id, String name, Rep rep) {
+			super(id, rep.clazz.getSimpleName().toLowerCase(Locale.US), rep);
+			this.atsdTypeName = name;
+
+		}
+
+		public String getAtsdTypeName() {
+			return atsdTypeName;
+		}
 	}
 
 }
