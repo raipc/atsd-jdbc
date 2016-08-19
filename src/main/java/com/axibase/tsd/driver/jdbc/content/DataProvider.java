@@ -26,6 +26,7 @@ import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
 import com.axibase.tsd.driver.jdbc.protocol.ProtocolFactory;
 import com.axibase.tsd.driver.jdbc.protocol.SdkProtocolImpl;
 import com.axibase.tsd.driver.jdbc.strategies.StrategyFactory;
+import org.apache.commons.lang3.StringUtils;
 
 public class DataProvider implements IDataProvider {
 	private static final LoggingFacade logger = LoggingFacade.getLogger(DataProvider.class);
@@ -74,7 +75,7 @@ public class DataProvider implements IDataProvider {
 
 	@Override
 	public void checkScheme(final String original) throws AtsdException, GeneralSecurityException, IOException {
-		final int wherePart = original.indexOf(WHERE_CLAUSE);
+		final int wherePart = StringUtils.indexOfIgnoreCase(original, WHERE_CLAUSE);
 		String beforeWhere = wherePart == -1 ? original : original.substring(0, wherePart);
 		contentDescription.setQuery(beforeWhere);
 		contentProtocol.getContentSchema();

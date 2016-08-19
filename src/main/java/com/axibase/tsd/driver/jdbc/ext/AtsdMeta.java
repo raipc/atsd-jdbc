@@ -36,15 +36,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 
-import org.apache.calcite.avatica.AvaticaConnection;
-import org.apache.calcite.avatica.AvaticaUtils;
-import org.apache.calcite.avatica.ColumnMetaData;
-import org.apache.calcite.avatica.ConnectionConfig;
-import org.apache.calcite.avatica.Meta;
-import org.apache.calcite.avatica.MetaImpl;
-import org.apache.calcite.avatica.MissingResultsException;
-import org.apache.calcite.avatica.NoSuchStatementException;
-import org.apache.calcite.avatica.QueryState;
+import org.apache.calcite.avatica.*;
 import org.apache.calcite.avatica.remote.TypedValue;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.text.WordUtils;
@@ -119,7 +111,7 @@ public class AtsdMeta extends MetaImpl {
 			final String[] parts = query.split("\\?", -1);
 			if (parts.length != parameterValues.size() + 1) {
 				throw new IndexOutOfBoundsException(
-						String.format("Number of specified values [%d] is not match to number of occurences [%d]",
+						String.format("Number of specified values [%d] does not match to number of occurences [%d]",
 								parameterValues.size(), parts.length));
 			}
 			for (String part : parts) {
@@ -144,7 +136,8 @@ public class AtsdMeta extends MetaImpl {
 			provider.getContentDescription().setQuery(sb.toString());
 		}
 		try {
-			provider.fetchData(maxRowCount, 0);
+			final int timeout = getQueryTimeout(statementHandle.id);
+			provider.fetchData(maxRowCount, timeout);
 			final ContentMetadata contentMetadata = findMetadata(query, statementHandle.connectionId, statementHandle.id);
 			return new ExecuteResult(contentMetadata.getList());
 		} catch (final AtsdException | GeneralSecurityException | IOException e) {
@@ -152,6 +145,19 @@ public class AtsdMeta extends MetaImpl {
 				log.debug("[execute] " + e.getMessage());
 			throw new NoSuchStatementException(statementHandle);
 		}
+	}
+
+	private int getQueryTimeout(int statementHandleId) {
+		int timeout = 0;
+		final Statement statement = connection.statementMap.get(statementHandleId);
+		if (statement != null) {
+			try {
+				timeout = statement.getQueryTimeout();
+			} catch (SQLException e) {
+				timeout = 0;
+			}
+		}
+		return timeout;
 	}
 
 	@Override

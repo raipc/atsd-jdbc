@@ -77,7 +77,7 @@ public class ContentDescription {
 		this.query = query;
 	}
 
-	private String getEncodedQuery() {
+	public String getEncodedQuery() {
 		try {
 			return URLEncoder.encode(query, Charset.defaultCharset().name());
 		} catch (UnsupportedEncodingException e) {
