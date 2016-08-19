@@ -19,12 +19,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.nio.charset.Charset;
-import java.sql.Types;
 import java.util.*;
 
+import com.axibase.tsd.driver.jdbc.enums.AtsdType;
 import org.apache.calcite.avatica.AvaticaParameter;
 import org.apache.calcite.avatica.ColumnMetaData;
-import org.apache.calcite.avatica.ColumnMetaData.Rep;
 import org.apache.calcite.avatica.Meta.CursorFactory;
 import org.apache.calcite.avatica.Meta.MetaResultSet;
 import org.apache.calcite.avatica.Meta.Signature;
@@ -129,60 +128,8 @@ public class ContentMetadata {
 	}
 
 	private static ColumnMetaData.AvaticaType getAvaticaType(String datatype) {
-		int metaType;
-		final Rep rep;
-		switch (datatype) {
-		case STRING_DATA_TYPE:
-			metaType = Types.VARCHAR;
-			rep = ColumnMetaData.Rep.STRING;
-			break;
-		case SHORT_DATA_TYPE:
-			metaType = Types.SMALLINT;
-			rep = ColumnMetaData.Rep.SHORT;
-			break;
-		case INTEGER_DATA_TYPE:
-			metaType = Types.INTEGER;
-			rep = ColumnMetaData.Rep.INTEGER;
-			break;
-		case LONG_DATA_TYPE:
-			metaType = Types.BIGINT;
-			rep = ColumnMetaData.Rep.LONG;
-			break;
-		case DECIMAL_TYPE:
-			metaType = Types.DECIMAL;
-			rep = ColumnMetaData.Rep.OBJECT;
-			break;
-		case FLOAT_DATA_TYPE:
-			metaType = Types.FLOAT;
-			rep = ColumnMetaData.Rep.FLOAT;
-			break;
-		case DOUBLE_DATA_TYPE:
-			metaType = Types.DOUBLE;
-			rep = ColumnMetaData.Rep.DOUBLE;
-			break;
-		case TIME_STAMP_DATA_TYPE:
-			metaType = Types.TIMESTAMP;
-			rep = ColumnMetaData.Rep.JAVA_SQL_TIMESTAMP;
-			break;
-		default:
-			metaType = Types.VARCHAR;
-			rep = ColumnMetaData.Rep.STRING;
-		}
-		return new AtsdColumnType(metaType, datatype, rep);
-	}
-
-	private static class AtsdColumnType extends ColumnMetaData.AvaticaType {
-		private final String atsdTypeName;
-
-		public AtsdColumnType(int id, String name, Rep rep) {
-			super(id, rep.clazz.getSimpleName().toLowerCase(Locale.US), rep);
-			this.atsdTypeName = name;
-
-		}
-
-		public String getAtsdTypeName() {
-			return atsdTypeName;
-		}
+		final AtsdType type = AtsdType.getAtsdTypeByOriginalName(datatype);
+		return new ColumnMetaData.AvaticaType(type.sqlTypeCode, type.sqlType, type.avaticaType);
 	}
 
 }

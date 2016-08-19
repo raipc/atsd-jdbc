@@ -41,21 +41,13 @@ public final class DriverConstants {
 	
 	public static final String COLUMNS_SCHEME = "columns";
 	public static final String DATATYPE_PROPERTY = "datatype";
-	public static final String DECIMAL_TYPE = "decimal";
 	public static final String DEFAULT_CATALOG_NAME = "axiCatalog";
-	public static final String DOUBLE_DATA_TYPE = "double";
-	public static final String FLOAT_DATA_TYPE = "float";
 	public static final String INDEX_PROPERTY = "columnIndex";
-	public static final String INTEGER_DATA_TYPE = "integer";
-	public static final String LONG_DATA_TYPE = "long";
 	public static final String NAME_PROPERTY = "name";
 	public static final String PUBLISHER_SECTION = "dc:publisher";
 	public static final String SCHEMA_NAME_PROPERTY = "schema:name";
-	public static final String SHORT_DATA_TYPE = "short";
-	public static final String STRING_DATA_TYPE = "string";
 	public static final String TABLE_PROPERTY = "table";
 	public static final String TABLE_SCHEMA_SECTION = "tableSchema";
-	public static final String TIME_STAMP_DATA_TYPE = "xsd:dateTimeStamp";
 	public static final String TITLE_PROPERTY = "titles";
 	
 	public static final String ACCEPT_HEADER = "Accept";
