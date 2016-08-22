@@ -163,12 +163,12 @@ public class ContentDescription {
 
 	public int getConnectTimeout() {
 		final String timeoutAsString = paramsMap.get(CONNECT_TIMEOUT_PARAM);
-		return timeoutAsString == null ? DEFAULT_TIMEOUT_VALUE : Integer.parseInt(timeoutAsString);
+		return timeoutAsString == null ? DEFAULT_CONNECT_TIMEOUT_VALUE : Integer.parseInt(timeoutAsString);
 	}
 
 	public int getReadTimeout() {
 		final String timeoutAsString = paramsMap.get(READ_TIMEOUT_PARAM);
-		return timeoutAsString == null ? DEFAULT_TIMEOUT_VALUE : Integer.parseInt(timeoutAsString);
+		return timeoutAsString == null ? DEFAULT_READ_TIMEOUT_VALUE : Integer.parseInt(timeoutAsString);
 	}
 
 	public String getStrategyName() {
