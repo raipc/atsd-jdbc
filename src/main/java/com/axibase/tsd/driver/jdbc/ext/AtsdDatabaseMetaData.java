@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import com.axibase.tsd.driver.jdbc.util.EnumUtil;
 import org.apache.calcite.avatica.AvaticaConnection;
 import org.apache.calcite.avatica.AvaticaDatabaseMetaData;
 import org.apache.calcite.avatica.ConnectionConfig;
@@ -35,7 +36,6 @@ import com.axibase.tsd.driver.jdbc.content.ContentDescription;
 import com.axibase.tsd.driver.jdbc.content.json.Version;
 import com.axibase.tsd.driver.jdbc.enums.LexerTokens;
 import com.axibase.tsd.driver.jdbc.enums.NumericFunctions;
-import com.axibase.tsd.driver.jdbc.enums.ReservedWordsSQL2003;
 import com.axibase.tsd.driver.jdbc.enums.TimeDateEnums;
 import com.axibase.tsd.driver.jdbc.intf.IContentProtocol;
 import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
@@ -46,7 +46,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class AtsdDatabaseMetaData extends AvaticaDatabaseMetaData {
 	private static final LoggingFacade logger = LoggingFacade.getLogger(AtsdDatabaseMetaData.class);
 	private static final ObjectMapper mapper = new ObjectMapper();
-	private static final ReservedWordsSQL2003[] FILTERED_KEYWORDS = ReservedWordsSQL2003.values();
 	private String revision = "Unknown Revision";
 	private String edition = "Unknown Edition";
 
@@ -189,24 +188,20 @@ public class AtsdDatabaseMetaData extends AvaticaDatabaseMetaData {
 
 	@Override
 	public String getSQLKeywords() throws SQLException {
-		LexerTokens[] values = LexerTokens.values();
 		List<String> keywords = new ArrayList<>();
-		for (LexerTokens value : values) {
-			String name = value.name();
-			if (!filtered(name))
+		String name;
+		for (LexerTokens value : LexerTokens.values()) {
+			name = value.name();
+			if (!EnumUtil.isReservedSqlToken(name)) {
 				keywords.add(name);
+			}
 		}
 		return StringUtils.join(keywords, ',');
 	}
 
 	@Override
 	public String getNumericFunctions() throws SQLException {
-		NumericFunctions[] values = NumericFunctions.values();
-		List<String> keywords = new ArrayList<>();
-		for (NumericFunctions value : values) {
-			keywords.add(value.name());
-		}
-		return StringUtils.join(keywords, ',');
+		return StringUtils.join(NumericFunctions.values(), ',');
 	}
 
 	@Override
@@ -221,12 +216,7 @@ public class AtsdDatabaseMetaData extends AvaticaDatabaseMetaData {
 
 	@Override
 	public String getTimeDateFunctions() throws SQLException {
-		TimeDateEnums[] values = TimeDateEnums.values();
-		List<String> keywords = new ArrayList<>();
-		for (TimeDateEnums value : values) {
-			keywords.add(value.name());
-		}
-		return StringUtils.join(keywords, ',');
+		return StringUtils.join(TimeDateEnums.values(), ',');
 	}
 
 	@Override
@@ -431,15 +421,6 @@ public class AtsdDatabaseMetaData extends AvaticaDatabaseMetaData {
 
 	@Override
 	public boolean usesLocalFilePerTable() throws SQLException {
-		return false;
-	}
-
-	private boolean filtered(String name) {
-		for (ReservedWordsSQL2003 filter : FILTERED_KEYWORDS) {
-			if (!name.equals(filter.name()))
-				continue;
-			return true;
-		}
 		return false;
 	}
 

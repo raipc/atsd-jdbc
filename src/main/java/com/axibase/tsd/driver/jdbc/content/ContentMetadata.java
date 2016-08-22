@@ -22,6 +22,7 @@ import java.nio.charset.Charset;
 import java.util.*;
 
 import com.axibase.tsd.driver.jdbc.enums.AtsdType;
+import com.axibase.tsd.driver.jdbc.util.EnumUtil;
 import org.apache.calcite.avatica.AvaticaParameter;
 import org.apache.calcite.avatica.ColumnMetaData;
 import org.apache.calcite.avatica.Meta.CursorFactory;
@@ -41,6 +42,8 @@ import com.fasterxml.jackson.databind.MappingJsonFactory;
 @SuppressWarnings("unchecked")
 public class ContentMetadata {
 	private static final LoggingFacade logger = LoggingFacade.getLogger(ContentMetadata.class);
+	private static final int DEFAULT_STRING_DISPLAY_SIZE = 128 * 1024;
+	private static final int DEFAULT_DISPLAY_SIZE = 10;
 
 	private final Signature sign;
 	private final List<MetaResultSet> list;
@@ -105,8 +108,10 @@ public class ContentMetadata {
 		String datatype = (String) property.get(DATATYPE_PROPERTY);
 		Integer index = (Integer) property.get(INDEX_PROPERTY);
 		final ColumnMetaData.AvaticaType atype = getAvaticaType(datatype);
+		final int displaySize = atype.rep == ColumnMetaData.Rep.STRING ?
+				DEFAULT_STRING_DISPLAY_SIZE : DEFAULT_DISPLAY_SIZE;
 		return new ColumnMetaData(index != null ? index - 1 : ind, false, false, false,
-				false, 0, false, 10, name, title, schema, 1, 1, table, DEFAULT_CATALOG_NAME, atype, true, false,
+				false, 0, false, displaySize, name, title, schema, 1, 1, table, DEFAULT_CATALOG_NAME, atype, true, false,
 				false, atype.rep.clazz.getCanonicalName());
 	}
 
@@ -128,7 +133,7 @@ public class ContentMetadata {
 	}
 
 	private static ColumnMetaData.AvaticaType getAvaticaType(String datatype) {
-		final AtsdType type = AtsdType.getAtsdTypeByOriginalName(datatype);
+		final AtsdType type = EnumUtil.getAtsdTypeByOriginalName(datatype);
 		return new ColumnMetaData.AvaticaType(type.sqlTypeCode, type.sqlType, type.avaticaType);
 	}
 
