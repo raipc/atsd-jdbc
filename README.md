@@ -245,10 +245,10 @@ public class TestQuery {
 
     public static void main(String[] args) throws Exception {
 
-        Class.forName("com.axibase.tsd.driver.jdbc.AtsdDriver");
-        String userName = "axibase";
-        String password= "********";
-        String hostUrl = "https://10.102.0.6:8443";
+        Class.forName("com.axibase.tsd.driver.jdbc.AtsdDriver");        
+        String username = System.getProperty("atsd.user");
+        String password = System.getProperty("atsd.password");
+        String hostUrl = System.getProperty("atsd.host");
         String sqlUrl = "jdbc:axibase:atsd:" + hostUrl + "/api/sql;trustServerCertificate=true";
 
         String query = "SELECT * FROM mpstat.cpu_busy WHERE datetime > now - 1 * HOUR LIMIT 5";
@@ -291,38 +291,36 @@ public class TestQuery {
 ```java
 
 	Class.forName("com.axibase.tsd.driver.jdbc.AtsdDriver");
-	
-	String url = "jdbc:axibase:atsd:https://10.102.0.6:8443/api/sql;trustServerCertificate=true";
-	String query = "SELECT entity, datetime, value, tags.mount_point, tags.file_system "
-		+ "FROM df.disk_used_percent WHERE entity = 'NURSWGHBS001' AND datetime > now - 1 * HOUR LIMIT 10";
-		
-	Connection conn = null;
-	try {
-	     connection = DriverManager.getConnection(sqlUrl, "axibase", "axibase");
-	     Statement statement = connection.createStatement();
-	     ResultSet resultSet = statement.executeQuery(query);
-	
-	    int rowNumber = 1;
-	    while (resultSet.next()) {
-	        System.out.print(rowNumber++);
-	        System.out.print("\tentity = " + resultSet.getString("entity"));
-	        System.out.print("\tdatetime = " + resultSet.getTimestamp("datetime").toString());
-	        System.out.print("\tvalue = " + resultSet.getString("value"));
-	        System.out.print("\ttags.mount_point = " + resultSet.getString("tags.mount_point"));
-	        System.out.println("\ttags.file_system = " + resultSet.getString("tags.file_system"));
-	    }
-	
-	    final SQLWarning warnings = resultSet.getWarnings();
-	    if (warnings != null) {
-	        warnings.printStackTrace();
-	    }
-	} catch (Exception e){
-	    e.printStackTrace();
-	} finally {
-	    try {
-	        connection.close();
-	    } catch(Exception e){}
-	}
+    
+    String atsdHost = System.getProperty("atsd.host");
+    String username = System.getProperty("atsd.user");
+    String password = System.getProperty("atsd.password");
+    String url = "jdbc:axibase:atsd:" + atsdHost + "/api/sql;trustServerCertificate=true";
+    
+    String query = "SELECT entity, datetime, value, tags.mount_point, tags.file_system "
+            + "FROM df.disk_used_percent WHERE entity = 'NURSWGHBS001' AND datetime > now - 1 * HOUR LIMIT 10";
+
+    try (Connection conn = DriverManager.getConnection(url, username, password);
+         Statement statement = conn.createStatement();
+         ResultSet resultSet = statement.executeQuery(query)) {
+
+        int rowNumber = 1;
+        while (resultSet.next()) {
+            System.out.print(rowNumber++);
+            System.out.print("\tentity = " + resultSet.getString("entity"));
+            System.out.print("\tdatetime = " + resultSet.getTimestamp("datetime").toString());
+            System.out.print("\tvalue = " + resultSet.getString("value"));
+            System.out.print("\ttags.mount_point = " + resultSet.getString("tags.mount_point"));
+            System.out.println("\ttags.file_system = " + resultSet.getString("tags.file_system"));
+        }
+
+        final SQLWarning warnings = resultSet.getWarnings();
+        if (warnings != null) {
+            warnings.printStackTrace();
+        }
+    } catch (Exception e){
+        e.printStackTrace();
+    }
 ```
 
 Results:
@@ -345,50 +343,37 @@ The following example shows how to extract metadata from the ATSD database:
 ```java
 
 	Class.forName("com.axibase.tsd.driver.jdbc.AtsdDriver");
-	
-	String url = "jdbc:axibase:atsd:https://10.102.0.6:8443/api/sql;trustServerCertificate=true";
-	
-	try (Connection connection = DriverManager.getConnection(url, "axibase", "axibase");
-		Statement statement = connection.createStatement();) {
-		
-		DatabaseMetaData metaData = connection.getMetaData();
-		String databaseProductName = metaData.getDatabaseProductName();
-		String databaseProductVersion = metaData.getDatabaseProductVersion();
-		String driverName = metaData.getDriverName();
-		String driverVersion = metaData.getDriverVersion();
-		System.out.println("Product Name:   \t" + databaseProductName);
-		System.out.println("Product Version:\t" + databaseProductVersion);
-		System.out.println("Driver Name:    \t" + driverName);
-		System.out.println("Driver Version: \t" + driverVersion);
-		System.out.println("\nTypeInfo:");
-		
-		ResultSet rs = metaData.getTypeInfo();
-		while (rs.next()) {
-			String name = rs.getString("TYPE_NAME");
-			int type = rs.getInt("DATA_TYPE");
-			int precision = rs.getInt("PRECISION");
-			boolean isCS = rs.getBoolean("CASE_SENSITIVE");
-			System.out.println(String.format(
-				"\tName:%s \tCS: %s \tType: %s \tPrecision: %s", name, isCS, type, precision));
-		}
-		System.out.println("\nTableTypes:");
-		
-		rs = metaData.getTableTypes();
-		while (rs.next()) {
-			String type = rs.getString(1);
-			System.out.println('\t' + type);
-		}
-		rs = metaData.getCatalogs();
-		
-		while (rs.next()) {
-			String catalog = rs.getString(1);
-			System.out.println("\nCatalog: \t" + catalog);
-			ResultSet rs1 = metaData.getSchemas(catalog, null);
-			while (rs1.next()) {
-				String schema = rs1.getString(1);
-				System.out.println("Schema: \t" + schema);
+    String hostUrl = System.getProperty("atsd.host");
+	String userName = System.getProperty("atsd.user");
+	String password = System.getProperty("atsd.password");
+	String sqlUrl = "jdbc:axibase:atsd:" + hostUrl + "/api/sql;trustServerCertificate=true";
+
+	String query = "SELECT * FROM mpstat.cpu_busy WHERE datetime > now - 1 * HOUR LIMIT 5";
+
+	System.out.println("Connecting to " + sqlUrl);
+	try (Connection connection = DriverManager.getConnection(sqlUrl, userName, password)){
+		System.out.println("Connection established to " + sqlUrl);
+		try (Statement statement = connection.createStatement();
+			 ResultSet resultSet = statement.executeQuery(query)) {
+
+			System.out.println("Query complete.");
+			ResultSetMetaData metaData = resultSet.getMetaData();
+			int columnCount = metaData.getColumnCount();
+			int rowNumber = 1;
+			while (resultSet.next()) {
+				System.out.println("= row " + rowNumber++);
+				for (int colIndex = 1; colIndex <= columnCount; colIndex++) {
+					System.out.println("  " + metaData.getColumnLabel(colIndex) + " = " + resultSet.getString(colIndex));
+				}
+			}
+
+			final SQLWarning warnings = resultSet.getWarnings();
+			if (warnings != null) {
+				warnings.printStackTrace();
 			}
 		}
+	} catch (Exception e) {
+		e.printStackTrace();
 	}
 		
 ```
@@ -399,7 +384,7 @@ Results:
 Product Name:   	Axibase
 Product Version:	Axibase Time Series Database, <ATSD_EDITION>, Revision: <ATSD_REVISION_NUMBER>
 Driver Name:    	ATSD JDBC driver
-Driver Version: 	<DRIVER_VERSION>
+Driver Version: 	1.2.7
 
 TypeInfo:
 	Name: DECIMAL      	CS: false 	Type: 3    	Precision: -1
