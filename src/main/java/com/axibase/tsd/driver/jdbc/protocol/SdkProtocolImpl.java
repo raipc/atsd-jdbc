@@ -25,6 +25,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.GZIPInputStream;
@@ -39,6 +40,7 @@ import javax.net.ssl.X509TrustManager;
 import com.axibase.tsd.driver.jdbc.DriverConstants;
 import com.axibase.tsd.driver.jdbc.enums.MetadataFormat;
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import static com.axibase.tsd.driver.jdbc.DriverConstants.*;
@@ -51,6 +53,15 @@ public class SdkProtocolImpl implements IContentProtocol {
 	private static final LoggingFacade logger = LoggingFacade.getLogger(SdkProtocolImpl.class);
 	private static final int UNSUCCESSFUL_SQL_RESULT_CODE = 400;
 	private static final int MILLIS = 1000;
+	private static final byte[] ENCODED_JSON_SCHEME_BEGIN;
+	static {
+		final byte[] jsonSchemeBegin = "{\"@context\":".getBytes(Charset.defaultCharset());
+		final String encodedSchemeWithComment = "#" + Base64.encodeBase64String(jsonSchemeBegin);
+		ENCODED_JSON_SCHEME_BEGIN = encodedSchemeWithComment.getBytes(Charset.defaultCharset());
+	}
+	private static final byte LINEFEED = (byte)'\n';
+	private static final byte END_OF_INPUT = -1;
+
 	private final ContentDescription contentDescription;
 	private HttpURLConnection conn;
 
@@ -255,52 +266,6 @@ public class SdkProtocolImpl implements IContentProtocol {
 		}
 	}
 
-	private InputStream retrieveJsonSchemeAndSubstituteStream(InputStream inputStream) {
-		try (ByteArrayOutputStream result = new ByteArrayOutputStream()) {
-			int firstSymbol = inputStream.read();
-			assert firstSymbol == (int)'#';
-			byte[] buffer = new byte[1024];
-			int length;
-			boolean headerNotProcessed = true;
-			byte lineFeed = (byte)'\n';
-			while ((length = inputStream.read(buffer)) != -1) {
-				if (headerNotProcessed) {
-					for (int i = 0; i < length; ++i) {
-						if (buffer[i] == lineFeed) {
-							result.write(buffer, 0, i);
-							final byte[] decoded = Base64.decodeBase64(result.toByteArray());
-							final String jsonScheme = new String(decoded, Charset.defaultCharset());
-							contentDescription.setJsonScheme(jsonScheme);
-							if (logger.isTraceEnabled()) {
-								logger.trace("JSON schema: " + jsonScheme);
-							}
-							result.reset();
-							final int newSize = length - i - 1;
-							if (newSize > 0) {
-								result.write(buffer, i + 1, newSize);
-							}
-							headerNotProcessed = false;
-							break;
-						}
-					}
-					if (headerNotProcessed) {
-						result.write(buffer, 0, length);
-					}
-				} else {
-					result.write(buffer, 0, length);
-				}
-			}
-			inputStream.close();
-			return new ByteArrayInputStream(result.toByteArray());
-		} catch (IOException e) {
-			if (logger.isErrorEnabled()) {
-				logger.error("Error while processing response body", e);
-			}
-			return inputStream;
-		}
-	}
-
-
 	private void printHeaders(Map<String, List<String>> map) {
 		if (logger.isTraceEnabled()) {
 			for (Map.Entry<String, List<String>> entry : map.entrySet()) {
@@ -309,4 +274,52 @@ public class SdkProtocolImpl implements IContentProtocol {
 		}
 	}
 
+	private InputStream readJsonSchemeAndReturnRest(byte[] buffer, InputStream inputStream, ByteArrayOutputStream result) throws IOException {
+		int length;
+		while ((length = inputStream.read(buffer)) != END_OF_INPUT) {
+			final int index = ArrayUtils.indexOf(buffer, LINEFEED);
+			if (index < 0) {
+				result.write(buffer, 0, length);
+			} else {
+				result.write(buffer, 0, index);
+				final byte[] decoded = Base64.decodeBase64(result.toByteArray());
+				final String jsonScheme = new String(decoded, Charset.defaultCharset());
+				contentDescription.setJsonScheme(jsonScheme);
+				if (logger.isTraceEnabled()) {
+					logger.trace("JSON scheme: " + jsonScheme);
+				}
+				result.reset();
+				final int newSize = length - index - 1;
+				if (newSize > 0) {
+					return new ByteArrayInputStream(buffer, index + 1, newSize);
+				}
+			}
+		}
+		return new ByteArrayInputStream(result.toByteArray());
+	}
+
+	private InputStream retrieveJsonSchemeAndSubstituteStream(InputStream inputStream) {
+		try (ByteArrayOutputStream result = new ByteArrayOutputStream()) {
+			int length;
+			final int testHeaderLength = ENCODED_JSON_SCHEME_BEGIN.length;
+			byte[] testHeader = new byte[testHeaderLength];
+			length = inputStream.read(testHeader);
+			if (!Arrays.equals(testHeader, ENCODED_JSON_SCHEME_BEGIN)) {
+				result.write(testHeader, 0, testHeaderLength);
+				ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(result.toByteArray());
+				return new SequenceInputStream(byteArrayInputStream, inputStream);
+			}
+			result.write(testHeader, 1, length - 1);
+
+			final byte[] buffer = new byte[1024];
+			InputStream readAfterScheme = readJsonSchemeAndReturnRest(buffer, inputStream, result);
+			return new SequenceInputStream(readAfterScheme, inputStream);
+
+		} catch (IOException e) {
+			if (logger.isErrorEnabled()) {
+				logger.error("Error while processing response body", e);
+			}
+			return inputStream;
+		}
+	}
 }
