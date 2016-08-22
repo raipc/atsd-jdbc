@@ -36,7 +36,7 @@ public final class DriverConstants {
 	public static final String TRUST_PARAM_NAME = "trustServerCertificate";
 	public static final String CONNECT_TIMEOUT_PARAM = "connectTimeout";
 	public static final String READ_TIMEOUT_PARAM = "readTimeout";
-	public static final int DEFAULT_CONNECT_TIMEOUT_VALUE = 0;
+	public static final int DEFAULT_CONNECT_TIMEOUT_VALUE = 5;
 	public static final int DEFAULT_READ_TIMEOUT_VALUE = 0;
 	public static final String VERSION_ENDPOINT = "/version";
 	
