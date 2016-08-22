@@ -21,12 +21,10 @@ import java.sql.SQLException;
 import java.sql.SQLWarning;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import com.axibase.tsd.driver.jdbc.content.StatementContext;
-import com.axibase.tsd.driver.jdbc.content.json.Comments;
-import com.axibase.tsd.driver.jdbc.content.json.ErrorSection;
-import com.axibase.tsd.driver.jdbc.content.json.ExceptionSection;
-import com.axibase.tsd.driver.jdbc.content.json.WarningSection;
+import com.axibase.tsd.driver.jdbc.content.json.*;
 import com.axibase.tsd.driver.jdbc.ext.AtsdException;
 import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
 import com.fasterxml.jackson.core.JsonParseException;
@@ -35,8 +33,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class IteratorData {
 	private static final LoggingFacade logger = LoggingFacade.getLogger(IteratorData.class);
-	private static final String COMMENT_NEW_LINE = "#";
-	private static final String COMMENT_NEXT_LINE = '\n' + COMMENT_NEW_LINE;
+	private static final char COMMENT_NEW_LINE = '#';
+	private static final String COMMENT_NEXT_LINE = "\n" + COMMENT_NEW_LINE;
 	private static final char CSV_ESCAPE_SYMBOL = '\\';
 	private static final char CSV_QUOTE_SYMBOL = '"';
 	private static final char CSV_SEPARATOR_SYMBOL = ',';
@@ -67,12 +65,14 @@ public class IteratorData {
 	}
 
 	public String[] getNext(boolean stopping) {
-		if (content.length() == 0)
+		if (content.length() == 0) {
 			return null;
+		}
 		int crlf = content.indexOf("\n");
 		if (crlf == -1) {
-			if (!stopping)
+			if (!stopping) {
 				return null;
+			}
 			crlf = content.length();
 		}
 		final CharSequence subSequence = content.subSequence(0, crlf);
@@ -87,13 +87,14 @@ public class IteratorData {
 		buffer.get(tmp);
 		buffer.clear();
 		final String line = new String(tmp, Charset.defaultCharset());
-		if(position == 0 && (line.charAt(0) == '<' || line.charAt(0) == '{' )){
+		if (position == 0 && (line.charAt(0) == '<' || line.charAt(0) == '{')) {
 			throw new AtsdException("Unexpected answer format");
 		}
 		position += tmp.length;
-		if (logger.isTraceEnabled())
+		if (logger.isTraceEnabled()) {
 			logger.trace("[position] " + position);
-		if (line.startsWith(COMMENT_NEW_LINE) || comments.length() > 0) {
+		}
+		if (line.indexOf(COMMENT_NEW_LINE) == 0 || comments.length() > 0) {
 			comments.append(line);
 			return;
 		}
@@ -102,48 +103,58 @@ public class IteratorData {
 			content.append(line.substring(0, commentStart));
 			comments.append(line.substring(commentStart));
 		} else {
-			if (logger.isTraceEnabled())
+			if (logger.isTraceEnabled()) {
 				logger.trace("[bufferOperations] " + line);
+			}
 			content.append(line);
 		}
 	}
 
 	public void processComments() throws JsonParseException, JsonMappingException, IOException {
-		if (comments.length() == 0)
+		if (comments.length() == 0) {
 			return;
-		final String json = comments.toString().replace(COMMENT_NEW_LINE, "");
-		if (logger.isTraceEnabled())
+		}
+		final String json = Pattern.compile(String.valueOf(COMMENT_NEW_LINE)).matcher(comments).replaceAll("");
+		if (logger.isTraceEnabled()) {
 			logger.trace(json);
+		}
 		final ObjectMapper mapper = new ObjectMapper();
 		final Comments commentsObject = mapper.readValue(json, Comments.class);
-		final List<ErrorSection> errorSections = commentsObject.getErrors();
-		if (errorSections != null && !errorSections.isEmpty()) {
-			for (ErrorSection section : errorSections) {
-				SQLException sqle = new SQLException(section.getMessage(), section.getState());
-				final List<ExceptionSection> exceptions = section.getException();
-				List<StackTraceElement> list = new ArrayList<>(exceptions.size());
-				for (ExceptionSection exc : exceptions) {
-					list.add(new StackTraceElement(exc.getClassName(), exc.getMethodName(), exc.getFileName(),
-							exc.getLineNumber()));
-				}
-				sqle.setStackTrace(list.toArray(new StackTraceElement[list.size()]));
-				context.addException(sqle);
-			}
-		}
-		final List<WarningSection> warningSections = commentsObject.getWarnings();
-		if (warningSections != null && !warningSections.isEmpty()) {
-			for (WarningSection section : warningSections) {
+
+		fillErrors(commentsObject.getErrors());
+		fillWarnings(commentsObject.getWarnings());
+	}
+
+	private void fillWarnings(List<WarningSection> warningSections) {
+		if (warningSections != null) {
+			for (AtsdExceptionRepresentation section : warningSections) {
 				SQLWarning sqlw = new SQLWarning(section.getMessage(), section.getState());
-				final List<ExceptionSection> exceptions = section.getException();
-				List<StackTraceElement> list = new ArrayList<>(exceptions.size());
-				for (ExceptionSection exc : exceptions) {
-					list.add(new StackTraceElement(exc.getClassName(), exc.getMethodName(), exc.getFileName(),
-							exc.getLineNumber()));
-				}
+				List<StackTraceElement> list = getStackTrace(section);
 				sqlw.setStackTrace(list.toArray(new StackTraceElement[list.size()]));
 				context.addWarning(sqlw);
 			}
 		}
+	}
+
+	private void fillErrors(List<ErrorSection> errorSections) {
+		if (errorSections != null) {
+			for (ErrorSection section : errorSections) {
+				SQLException sqle = new SQLException(section.getMessage(), section.getState());
+				List<StackTraceElement> list = getStackTrace(section);
+				sqle.setStackTrace(list.toArray(new StackTraceElement[list.size()]));
+				context.addException(sqle);
+			}
+		}
+	}
+
+	private List<StackTraceElement> getStackTrace(AtsdExceptionRepresentation section) {
+		final List<ExceptionSection> exceptions = section.getException();
+		final List<StackTraceElement> list = new ArrayList<>(exceptions.size());
+		for (ExceptionSection exc : exceptions) {
+			list.add(new StackTraceElement(exc.getClassName(), exc.getMethodName(), exc.getFileName(),
+					exc.getLineNumber()));
+		}
+		return list;
 	}
 
 	private String[] splitLine(String line) {
@@ -157,35 +168,35 @@ public class IteratorData {
 			boolean expected = nonterminal && (opened || inside);
 			char charNext = nonterminal ? line.charAt(pos + 1) : '\u0000';
 			switch (ch) {
-			case CSV_ESCAPE_SYMBOL:
-				if (expected && isEscapeNext(charNext)) {
-					sb.append(charNext);
-					pos++;
-				}
-				break;
-			case CSV_QUOTE_SYMBOL:
-				if (expected && isQuoteNext(charNext)) {
-					sb.append(charNext);
-					pos++;
-				} else {
-					char charPrev = line.charAt(pos - 1);
-					if (nonterminal && pos > 2 && noSeparatorAround(charPrev, charNext)) {
-						sb.append(ch);
+				case CSV_ESCAPE_SYMBOL:
+					if (expected && isEscapeNext(charNext)) {
+						sb.append(charNext);
+						pos++;
 					}
-					opened = !opened;
-				}
-				inside = !inside;
-				break;
-			case CSV_SEPARATOR_SYMBOL:
-				if (!opened) {
-					inside = false;
-					result.add(sb.toString());
-					sb.setLength(0);
 					break;
-				}
-			default:
-				inside = true;
-				sb.append(ch);
+				case CSV_QUOTE_SYMBOL:
+					if (expected && isQuoteNext(charNext)) {
+						sb.append(charNext);
+						pos++;
+					} else {
+						char charPrev = line.charAt(pos - 1);
+						if (nonterminal && pos > 2 && noSeparatorAround(charPrev, charNext)) {
+							sb.append(ch);
+						}
+						opened = !opened;
+					}
+					inside = !inside;
+					break;
+				case CSV_SEPARATOR_SYMBOL:
+					if (!opened) {
+						inside = false;
+						result.add(sb.toString());
+						sb.setLength(0);
+						break;
+					}
+				default:
+					inside = true;
+					sb.append(ch);
 			}
 		}
 		result.add(sb.toString());
