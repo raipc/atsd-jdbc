@@ -31,6 +31,7 @@ import org.apache.commons.lang3.StringUtils;
 public class DataProvider implements IDataProvider {
 	private static final LoggingFacade logger = LoggingFacade.getLogger(DataProvider.class);
 	private static final String WHERE_CLAUSE = " WHERE ";
+	private static final String LIMIT_CLAUSE = " LIMIT ";
 	private static final String PARAM_SEPARATOR = ";";
 	private final ContentDescription contentDescription;
 	private final IContentProtocol contentProtocol;
@@ -75,9 +76,18 @@ public class DataProvider implements IDataProvider {
 
 	@Override
 	public void checkScheme(final String original) throws AtsdException, GeneralSecurityException, IOException {
-		final int wherePart = StringUtils.indexOfIgnoreCase(original, WHERE_CLAUSE);
-		String beforeWhere = wherePart == -1 ? original : original.substring(0, wherePart);
-		contentDescription.setQuery(beforeWhere);
+		int startOfCondition = StringUtils.indexOfIgnoreCase(original, WHERE_CLAUSE);
+		if (startOfCondition == -1) {
+			startOfCondition = StringUtils.indexOfIgnoreCase(original, LIMIT_CLAUSE);
+		}
+		StringBuilder query = new StringBuilder(original.length() + LIMIT_CLAUSE.length());
+		if (startOfCondition == -1) {
+			query.append(original);
+		} else {
+			query.append(original.substring(0, startOfCondition));
+		}
+		query.append(LIMIT_CLAUSE).append(1);
+		contentDescription.setQuery(query.toString());
 		contentProtocol.getContentSchema();
 		contentDescription.setQuery(original);
 	}
