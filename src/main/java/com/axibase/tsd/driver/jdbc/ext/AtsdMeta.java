@@ -76,8 +76,9 @@ public class AtsdMeta extends MetaImpl {
 		try {
 			lock.lockInterruptibly();
 		} catch (InterruptedException e) {
-			if (log.isDebugEnabled())
+			if (log.isDebugEnabled()) {
 				log.debug("[prepare] " + e.getMessage());
+			}
 		}
 		final int id = idGenerator.getAndIncrement();
 		if (log.isTraceEnabled()) {
@@ -87,8 +88,9 @@ public class AtsdMeta extends MetaImpl {
 			final ContentMetadata contentMetadata = findOrGenerateMetadata(query, connectionHandle, id);
 			return new StatementHandle(connectionHandle.id, id, contentMetadata.getSign());
 		} catch (final AtsdException | IOException e) {
-			if (log.isDebugEnabled())
+			if (log.isDebugEnabled()) {
 				log.debug("[prepare]" + e.getMessage());
+			}
 		}
 		return null;
 	}
@@ -100,8 +102,9 @@ public class AtsdMeta extends MetaImpl {
 		try {
 			contentMetadata = createDefaultMetadata(query, handle.id, generatedId);
 		} catch (IllegalArgumentException e) {
-			if (log.isDebugEnabled())
+			if (log.isDebugEnabled()) {
 				log.debug("Cannot retrieve scheme from SQL query: {}. Trying to fetch meta from ATSD", e.getMessage());
+			}
 			contentMetadata = prepareAtsdMetadata(query, handle, generatedId, provider);
 		}
 		return contentMetadata;
@@ -114,8 +117,9 @@ public class AtsdMeta extends MetaImpl {
 			provider.checkScheme(query);
 			contentMetadata = findMetadata(query, ch.id, generatedId);
 		} catch (GeneralSecurityException e) {
-			if (log.isDebugEnabled())
+			if (log.isDebugEnabled()) {
 				log.debug("[prepareAtsdMetadata]" + e.getMessage());
+			}
 		}
 		return contentMetadata;
 	}
@@ -146,14 +150,15 @@ public class AtsdMeta extends MetaImpl {
 			}
 			for (String part : parts) {
 				sb.append(part);
-				if (!iterator.hasNext())
+				if (!iterator.hasNext()) {
 					break;
+				}
 				final TypedValue next = iterator.next();
-				if (next.value instanceof Number)
+				if (next.value instanceof Number) {
 					sb.append(next.value);
-				else if (next.value instanceof String)
+				} else if (next.value instanceof String) {
 					sb.append('\'').append((String) next.value).append('\'');
-				else if (next.value instanceof java.sql.Date) {
+				} else if (next.value instanceof java.sql.Date) {
 					sb.append('\'').append(DATE_FORMATTER.get().format((java.sql.Date) next.value)).append('\'');
 				} else if (next.value instanceof java.sql.Time) {
 					sb.append('\'').append(TIME_FORMATTER.get().format((java.sql.Time) next.value)).append('\'');
@@ -161,8 +166,9 @@ public class AtsdMeta extends MetaImpl {
 					sb.append('\'').append(TIMESTAMP_FORMATTER.get().format((Timestamp) next.value)).append('\'');
 				}
 			}
-			if (log.isDebugEnabled())
+			if (log.isDebugEnabled()) {
 				log.debug("[execute] " + sb.toString());
+			}
 			provider.getContentDescription().setQuery(sb.toString());
 		}
 		try {
@@ -171,8 +177,9 @@ public class AtsdMeta extends MetaImpl {
 			final ContentMetadata contentMetadata = findMetadata(query, statementHandle.connectionId, statementHandle.id);
 			return new ExecuteResult(contentMetadata.getList());
 		} catch (final AtsdException | GeneralSecurityException | IOException e) {
-			if (log.isDebugEnabled())
+			if (log.isDebugEnabled()) {
 				log.debug("[execute] " + e.getMessage());
+			}
 			throw new NoSuchStatementException(statementHandle);
 		}
 	}
@@ -203,8 +210,9 @@ public class AtsdMeta extends MetaImpl {
 		try {
 			lock.lockInterruptibly();
 		} catch (InterruptedException e) {
-			if (log.isDebugEnabled())
+			if (log.isDebugEnabled()) {
 				log.debug("[prepareAndExecute] " + e.getMessage());
+			}
 		}
 		if (log.isTraceEnabled()) {
 			log.trace("[prepareAndExecute] locked: {} maxRowCount: {} handle: {} query: {}", lock.getHoldCount(),
@@ -223,8 +231,9 @@ public class AtsdMeta extends MetaImpl {
 			callback.execute();
 			return result;
 		} catch (final AtsdException | IOException | SQLException | GeneralSecurityException e) {
-			if (log.isDebugEnabled())
+			if (log.isDebugEnabled()) {
 				log.debug("[prepareAndExecute] " + e.getMessage());
+			}
 			throw new NoSuchStatementException(statementHandle);
 		}
 	}
@@ -253,16 +262,18 @@ public class AtsdMeta extends MetaImpl {
 		try {
 			if (offset == 0) {
 				final String[] headers = strategy.openToRead();
-				if (headers == null || headers.length == 0)
+				if (headers == null || headers.length == 0) {
 					throw new MissingResultsException(statementHandle);
+				}
 				cd.setHeaders(headers);
 			}
 			final List<String[]> subList = strategy.fetch(offset, fetchMaxRowCount);
 			final List<Object> rows = getFrame(statementHandle, fetchMaxRowCount, subList);
 			return new Meta.Frame(loffset, rows.size() < fetchMaxRowCount, rows);
 		} catch (final AtsdException | IOException e) {
-			if (log.isDebugEnabled())
+			if (log.isDebugEnabled()) {
 				log.debug("[fetch] " + e.getMessage());
+			}
 			throw new MissingResultsException(statementHandle);
 		}
 
@@ -270,37 +281,44 @@ public class AtsdMeta extends MetaImpl {
 
 	@Override
 	public void closeStatement(StatementHandle statementHandle) {
-		if (log.isDebugEnabled())
+		if (log.isDebugEnabled()) {
 			log.debug("[closeStatement] " + statementHandle.id + "->" + statementHandle.toString());
+		}
 		closeProviderCaches(statementHandle);
 		closeProvider(statementHandle);
 		if (lock.isHeldByCurrentThread()) {
 			lock.unlock();
-			if (log.isTraceEnabled())
+			if (log.isTraceEnabled()) {
 				log.trace("[unlocked]");
+			}
 		}
-		if (log.isTraceEnabled())
+		if (log.isTraceEnabled()) {
 			log.trace("[closedStatement]");
+		}
 	}
 
 	private void closeProviderCaches(StatementHandle h) {
-		if (metaCache != null && !metaCache.isEmpty())
+		if (metaCache != null && !metaCache.isEmpty()) {
 			metaCache.remove(h.id);
-		if (contextMap != null && !contextMap.isEmpty())
+		}
+		if (contextMap != null && !contextMap.isEmpty()) {
 			contextMap.remove(h.id);
+		}
 
 	}
 
 	private void closeProvider(StatementHandle statementHandle) {
 		if (providerCache != null && !providerCache.isEmpty()) {
 			final IDataProvider provider = providerCache.remove(statementHandle.id);
-			if (provider != null)
+			if (provider != null) {
 				try {
 					provider.close();
 				} catch (final Exception e) {
-					if (log.isDebugEnabled())
+					if (log.isDebugEnabled()) {
 						log.debug("[closeStatement] " + e.getMessage());
+					}
 				}
+			}
 		}
 	}
 
@@ -308,26 +326,32 @@ public class AtsdMeta extends MetaImpl {
 		closeCaches();
 		if (lock.isHeldByCurrentThread()) {
 			lock.unlock();
-			if (log.isTraceEnabled())
+			if (log.isTraceEnabled()) {
 				log.trace("[unlocked]");
+			}
 		}
-		if (log.isTraceEnabled())
+		if (log.isTraceEnabled()) {
 			log.trace("[closed]");
+		}
 	}
 
 	private void closeCaches() {
-		if (metaCache != null && !metaCache.isEmpty())
+		if (metaCache != null && !metaCache.isEmpty()) {
 			metaCache.clear();
-		if (contextMap != null && !contextMap.isEmpty())
+		}
+		if (contextMap != null && !contextMap.isEmpty()) {
 			contextMap.clear();
-		if (providerCache != null && !providerCache.isEmpty())
+		}
+		if (providerCache != null && !providerCache.isEmpty()) {
 			providerCache.clear();
+		}
 	}
 
 	@Override
 	public boolean syncResults(StatementHandle sh, QueryState state, long offset) throws NoSuchStatementException {
-		if (log.isDebugEnabled())
+		if (log.isDebugEnabled()) {
 			log.debug("[syncResults] " + offset);
+		}
 		return false;
 	}
 
@@ -338,7 +362,7 @@ public class AtsdMeta extends MetaImpl {
 
 	@Override
 	public MetaResultSet getTables(ConnectionHandle connectionHandle, String catalog, Pat schemaPattern, Pat tableNamePattern,
-			List<String> typeList) {
+								   List<String> typeList) {
 		return super.getTables(connectionHandle, catalog, schemaPattern, tableNamePattern, typeList);
 	}
 
@@ -395,7 +419,7 @@ public class AtsdMeta extends MetaImpl {
 			fields.add(field);
 			fieldNames.add(name);
 		}
-		return createResultSet(Collections.<String, Object> emptyMap(), columns,
+		return createResultSet(Collections.<String, Object>emptyMap(), columns,
 				CursorFactory.record(clazz, fields, fieldNames), new Frame(0, true, iterable));
 	}
 
@@ -408,7 +432,7 @@ public class AtsdMeta extends MetaImpl {
 		contextMap.put(id, newContext);
 		final String login = info != null ? (String) info.get("user") : "";
 		final String password = info != null ? (String) info.get("password") : "";
-		final IDataProvider dataProvider = new DataProvider(config.url(), sql, login, password,	newContext);
+		final IDataProvider dataProvider = new DataProvider(config.url(), sql, login, password, newContext);
 		providerCache.put(id, dataProvider);
 		return dataProvider;
 	}
@@ -447,8 +471,9 @@ public class AtsdMeta extends MetaImpl {
 				break;
 			}
 			if (sarray.length != headers.length) {
-				if (log.isDebugEnabled())
+				if (log.isDebugEnabled()) {
 					log.debug("[getFrame] array length discrepancy: " + Arrays.toString(sarray));
+				}
 				continue;
 			}
 			rows.add(getFrameRow(metadataList, sarray));
@@ -460,8 +485,9 @@ public class AtsdMeta extends MetaImpl {
 		final List<Object> row = new ArrayList<>();
 		for (int i = 0; i < sarray.length; i++) {
 			for (ColumnMetaData columnMetaData : metadataList) {
-				if (i != columnMetaData.ordinal)
+				if (i != columnMetaData.ordinal) {
 					continue;
+				}
 				if (StringUtils.isEmpty(sarray[i])) {
 					row.add(columnMetaData.type.id == Types.VARCHAR ? sarray[i] : null);
 					continue;
@@ -614,14 +640,16 @@ public class AtsdMeta extends MetaImpl {
 
 	@Override
 	public void commit(ConnectionHandle ch) {
-		if (log.isDebugEnabled())
+		if (log.isDebugEnabled()) {
 			log.debug("[commit] " + ch.id + "->" + ch.toString());
+		}
 	}
 
 	@Override
 	public void rollback(ConnectionHandle ch) {
-		if (log.isDebugEnabled())
+		if (log.isDebugEnabled()) {
 			log.debug("[rollback] " + ch.id + "->" + ch.toString());
+		}
 	}
 
 }
