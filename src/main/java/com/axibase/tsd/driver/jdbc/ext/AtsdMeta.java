@@ -120,13 +120,13 @@ public class AtsdMeta extends MetaImpl {
 		return contentMetadata;
 	}
 
-	//	@Override
+	@Override
 	public ExecuteResult execute(StatementHandle statementHandle, List<TypedValue> parameterValues, long maxRowsCount)
 			throws NoSuchStatementException {
 		return execute(statementHandle, parameterValues, (int) (maxRowsCount));
 	}
 
-	//	@Override
+	@Override
 	public ExecuteResult execute(StatementHandle statementHandle, List<TypedValue> parameterValues, int maxRowsInFirstFrame) throws NoSuchStatementException {
 		if (log.isTraceEnabled()) {
 			log.trace("[execute] maxRowsInFirstFrame: {} parameters: {} handle: {}", maxRowsInFirstFrame, parameterValues.size(),
@@ -196,7 +196,7 @@ public class AtsdMeta extends MetaImpl {
 		return prepareAndExecute(statementHandle, query, maxRowCount, 0, callback);
 	}
 
-	//	@Override
+	@Override
 	public ExecuteResult prepareAndExecute(StatementHandle statementHandle, String query, long maxRowCount,
 										   int maxRowsInFrame, PrepareCallback callback) throws NoSuchStatementException {
 		long limit = maxRowCount < 0 ? 0 : maxRowCount;
@@ -229,15 +229,15 @@ public class AtsdMeta extends MetaImpl {
 		}
 	}
 
-////	@Override
-//	public ExecuteBatchResult prepareAndExecuteBatch(StatementHandle statementHandle, List<String> list) throws NoSuchStatementException {
-//		throw new UnsupportedOperationException("Batch not yet implemented");
-//	}
-//
-////	@Override
-//	public ExecuteBatchResult executeBatch(StatementHandle statementHandle, List<List<TypedValue>> list) throws NoSuchStatementException {
-//		throw new UnsupportedOperationException("Batch not yet implemented");
-//	}
+	@Override
+	public ExecuteBatchResult prepareAndExecuteBatch(StatementHandle statementHandle, List<String> list) throws NoSuchStatementException {
+		throw new UnsupportedOperationException("Batch not yet implemented");
+	}
+
+	@Override
+	public ExecuteBatchResult executeBatch(StatementHandle statementHandle, List<List<TypedValue>> list) throws NoSuchStatementException {
+		throw new UnsupportedOperationException("Batch not yet implemented");
+	}
 
 	@Override
 	public Frame fetch(final StatementHandle statementHandle, long loffset, int fetchMaxRowCount)
