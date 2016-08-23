@@ -36,7 +36,7 @@ import com.axibase.tsd.driver.jdbc.content.ContentDescription;
 import com.axibase.tsd.driver.jdbc.content.json.Version;
 import com.axibase.tsd.driver.jdbc.enums.LexerTokens;
 import com.axibase.tsd.driver.jdbc.enums.NumericFunctions;
-import com.axibase.tsd.driver.jdbc.enums.TimeDateEnums;
+import com.axibase.tsd.driver.jdbc.enums.TimeDateConstants;
 import com.axibase.tsd.driver.jdbc.intf.IContentProtocol;
 import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
 import com.axibase.tsd.driver.jdbc.protocol.ProtocolFactory;
@@ -216,7 +216,7 @@ public class AtsdDatabaseMetaData extends AvaticaDatabaseMetaData {
 
 	@Override
 	public String getTimeDateFunctions() throws SQLException {
-		return StringUtils.join(TimeDateEnums.values(), ',');
+		return StringUtils.join(TimeDateConstants.values(), ',');
 	}
 
 	@Override

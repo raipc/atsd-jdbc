@@ -37,6 +37,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 
 import com.axibase.tsd.driver.jdbc.enums.AtsdType;
+import com.axibase.tsd.driver.jdbc.enums.TimeDateConstants;
 import org.apache.calcite.avatica.*;
 import org.apache.calcite.avatica.remote.TypedValue;
 import org.apache.commons.lang3.StringUtils;
@@ -164,6 +165,8 @@ public class AtsdMeta extends MetaImpl {
 					sb.append('\'').append(TIME_FORMATTER.get().format((java.sql.Time) next.value)).append('\'');
 				} else if (next.value instanceof Timestamp) {
 					sb.append('\'').append(TIMESTAMP_FORMATTER.get().format((Timestamp) next.value)).append('\'');
+				} else if (next.value instanceof TimeDateConstants) {
+					sb.append(next.value.toString().toLowerCase(Locale.US));
 				}
 			}
 			if (log.isDebugEnabled()) {

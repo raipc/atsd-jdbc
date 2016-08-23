@@ -1,6 +1,6 @@
 package com.axibase.tsd.driver.jdbc.enums;
 
-public enum TimeDateEnums {
+public enum TimeDateConstants {
 	CALENDAR,
     DATE,
 	DATE_FORMAT,

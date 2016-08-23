@@ -29,12 +29,10 @@ import java.sql.SQLException;
 import java.sql.SQLXML;
 import java.sql.Time;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ConcurrentSkipListMap;
 
+import com.axibase.tsd.driver.jdbc.enums.TimeDateConstants;
 import org.apache.calcite.avatica.AvaticaConnection;
 import org.apache.calcite.avatica.AvaticaPreparedStatement;
 import org.apache.calcite.avatica.ColumnMetaData;
@@ -93,42 +91,42 @@ public class AtsdPreparedStatement extends AvaticaPreparedStatement {
 
 	@Override
 	public void setBoolean(int parameterIndex, boolean value) throws SQLException {
-		parameters.put(parameterIndex, TypedValue.ofSerial(ColumnMetaData.Rep.BOOLEAN, null));
+		parameters.put(parameterIndex, TypedValue.ofSerial(ColumnMetaData.Rep.BOOLEAN, value));
 	}
 
 	@Override
 	public void setByte(int parameterIndex, byte value) throws SQLException {
-		parameters.put(parameterIndex, TypedValue.ofSerial(ColumnMetaData.Rep.BYTE, null));
+		parameters.put(parameterIndex, TypedValue.ofSerial(ColumnMetaData.Rep.BYTE, value));
 	}
 
 	@Override
 	public void setShort(int parameterIndex, short value) throws SQLException {
-		parameters.put(parameterIndex, TypedValue.ofSerial(ColumnMetaData.Rep.SHORT, null));
+		parameters.put(parameterIndex, TypedValue.ofSerial(ColumnMetaData.Rep.SHORT, value));
 	}
 
 	@Override
 	public void setInt(int parameterIndex, int value) throws SQLException {
-		parameters.put(parameterIndex, TypedValue.ofSerial(ColumnMetaData.Rep.INTEGER, null));
+		parameters.put(parameterIndex, TypedValue.ofSerial(ColumnMetaData.Rep.INTEGER, value));
 	}
 
 	@Override
 	public void setLong(int parameterIndex, long value) throws SQLException {
-		parameters.put(parameterIndex, TypedValue.ofSerial(ColumnMetaData.Rep.LONG, null));
+		parameters.put(parameterIndex, TypedValue.ofSerial(ColumnMetaData.Rep.LONG, value));
 	}
 
 	@Override
 	public void setFloat(int parameterIndex, float value) throws SQLException {
-		parameters.put(parameterIndex, TypedValue.ofSerial(ColumnMetaData.Rep.FLOAT, null));
+		parameters.put(parameterIndex, TypedValue.ofSerial(ColumnMetaData.Rep.FLOAT, value));
 	}
 
 	@Override
 	public void setDouble(int parameterIndex, double value) throws SQLException {
-		parameters.put(parameterIndex, TypedValue.ofSerial(ColumnMetaData.Rep.DOUBLE, null));
+		parameters.put(parameterIndex, TypedValue.ofSerial(ColumnMetaData.Rep.DOUBLE, value));
 	}
 
 	@Override
 	public void setBigDecimal(int parameterIndex, BigDecimal value) throws SQLException {
-		parameters.put(parameterIndex, TypedValue.ofSerial(ColumnMetaData.Rep.OBJECT, null));
+		parameters.put(parameterIndex, TypedValue.ofSerial(ColumnMetaData.Rep.OBJECT, value));
 	}
 
 	@Override
@@ -309,6 +307,15 @@ public class AtsdPreparedStatement extends AvaticaPreparedStatement {
 
 	public void setNClob(int parameterIndex, Reader reader) throws SQLException {
 		throw new UnsupportedOperationException();
+	}
+
+	public void setDateTimeConstant(int parameterIndex, String value) throws SQLException {
+		try {
+			TimeDateConstants constant = TimeDateConstants.valueOf(value.toUpperCase(Locale.US));
+			setObject(parameterIndex, constant);
+		} catch (IllegalArgumentException e) {
+			throw new IllegalArgumentException("Given string is not a valid time constant", e);
+		}
 	}
 
 }
