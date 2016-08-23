@@ -39,7 +39,7 @@ public final class DriverConstants {
 	public static final int DEFAULT_CONNECT_TIMEOUT_VALUE = 5;
 	public static final int DEFAULT_READ_TIMEOUT_VALUE = 0;
 	public static final String VERSION_ENDPOINT = "/version";
-	
+	public static final String DEFAULT_SCHEMA = "Axibase Time-Series Database";
 	public static final String COLUMNS_SCHEME = "columns";
 	public static final String DATATYPE_PROPERTY = "datatype";
 	public static final String DEFAULT_CATALOG_NAME = "axiCatalog";

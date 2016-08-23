@@ -36,6 +36,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 
+import com.axibase.tsd.driver.jdbc.enums.AtsdType;
 import org.apache.calcite.avatica.*;
 import org.apache.calcite.avatica.remote.TypedValue;
 import org.apache.commons.lang3.StringUtils;
@@ -52,7 +53,6 @@ import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
 
 public class AtsdMeta extends MetaImpl {
 	private static final LoggingFacade log = LoggingFacade.getLogger(AtsdMeta.class);
-	private static final int TIMESTAMP_LENGTH = "2016-01-01T00:00:00.000".length();
 	private final AtomicInteger idGenerator = new AtomicInteger(1);
 	private final Map<Integer, ContentMetadata> metaCache = new ConcurrentHashMap<>();
 	private final Map<Integer, IDataProvider> providerCache = new ConcurrentHashMap<>();
@@ -72,7 +72,7 @@ public class AtsdMeta extends MetaImpl {
 	}
 
 	@Override
-	public StatementHandle prepare(ConnectionHandle ch, String query, long maxRowCount) {
+	public StatementHandle prepare(ConnectionHandle connectionHandle, String query, long maxRowCount) {
 		try {
 			lock.lockInterruptibly();
 		} catch (InterruptedException e) {
@@ -84,22 +84,52 @@ public class AtsdMeta extends MetaImpl {
 			log.trace("[prepare] locked: {} handle: {} query: {}", lock.getHoldCount(), id, query);
 		}
 		try {
-			final IDataProvider provider = initProvider(id, query);
-			provider.checkScheme(query);
-			final ContentMetadata contentMetadata = findMetadata(query, ch.id, id);
-			return new StatementHandle(ch.id, id, contentMetadata.getSign());
-		} catch (final AtsdException | GeneralSecurityException | IOException e) {
+			final ContentMetadata contentMetadata = findOrGenerateMetadata(query, connectionHandle, id);
+			return new StatementHandle(connectionHandle.id, id, contentMetadata.getSign());
+		} catch (final AtsdException | IOException e) {
 			if (log.isDebugEnabled())
 				log.debug("[prepare]" + e.getMessage());
 		}
 		return null;
 	}
 
-	@Override
-	public ExecuteResult execute(StatementHandle statementHandle, List<TypedValue> parameterValues, long maxRowCount)
+	private ContentMetadata findOrGenerateMetadata(String query, ConnectionHandle handle, int generatedId)
+			throws IOException, AtsdException {
+		final IDataProvider provider = initProvider(generatedId, query);
+		ContentMetadata contentMetadata;
+		try {
+			contentMetadata = createDefaultMetadata(query, handle.id, generatedId);
+		} catch (IllegalArgumentException e) {
+			if (log.isDebugEnabled())
+				log.debug("Cannot retrieve scheme from SQL query: {}. Trying to fetch meta from ATSD", e.getMessage());
+			contentMetadata = prepareAtsdMetadata(query, handle, generatedId, provider);
+		}
+		return contentMetadata;
+	}
+
+	private ContentMetadata prepareAtsdMetadata(String query, ConnectionHandle ch, int generatedId, IDataProvider provider)
+			throws IOException, AtsdException {
+		ContentMetadata contentMetadata = null;
+		try {
+			provider.checkScheme(query);
+			contentMetadata = findMetadata(query, ch.id, generatedId);
+		} catch (GeneralSecurityException e) {
+			if (log.isDebugEnabled())
+				log.debug("[prepareAtsdMetadata]" + e.getMessage());
+		}
+		return contentMetadata;
+	}
+
+	//	@Override
+	public ExecuteResult execute(StatementHandle statementHandle, List<TypedValue> parameterValues, long maxRowsCount)
 			throws NoSuchStatementException {
+		return execute(statementHandle, parameterValues, (int) (maxRowsCount));
+	}
+
+	//	@Override
+	public ExecuteResult execute(StatementHandle statementHandle, List<TypedValue> parameterValues, int maxRowsInFirstFrame) throws NoSuchStatementException {
 		if (log.isTraceEnabled()) {
-			log.trace("[execute] maxRowCount: {} parameters: {} handle: {}", maxRowCount, parameterValues.size(),
+			log.trace("[execute] maxRowsInFirstFrame: {} parameters: {} handle: {}", maxRowsInFirstFrame, parameterValues.size(),
 					statementHandle.toString());
 		}
 		final IDataProvider provider = providerCache.get(statementHandle.id);
@@ -137,7 +167,7 @@ public class AtsdMeta extends MetaImpl {
 		}
 		try {
 			final int timeout = getQueryTimeout(statementHandle.id);
-			provider.fetchData(maxRowCount, timeout);
+			provider.fetchData(maxRowsInFirstFrame, timeout);
 			final ContentMetadata contentMetadata = findMetadata(query, statementHandle.connectionId, statementHandle.id);
 			return new ExecuteResult(contentMetadata.getList());
 		} catch (final AtsdException | GeneralSecurityException | IOException e) {
@@ -161,8 +191,15 @@ public class AtsdMeta extends MetaImpl {
 	}
 
 	@Override
-	public ExecuteResult prepareAndExecute(final StatementHandle statementHandle, String query, long maxRowCount,
-			final PrepareCallback callback) throws NoSuchStatementException {
+	public ExecuteResult prepareAndExecute(StatementHandle statementHandle, String query, long maxRowCount,
+										   PrepareCallback callback) throws NoSuchStatementException {
+		return prepareAndExecute(statementHandle, query, maxRowCount, 0, callback);
+	}
+
+	//	@Override
+	public ExecuteResult prepareAndExecute(StatementHandle statementHandle, String query, long maxRowCount,
+										   int maxRowsInFrame, PrepareCallback callback) throws NoSuchStatementException {
+		long limit = maxRowCount < 0 ? 0 : maxRowCount;
 		try {
 			lock.lockInterruptibly();
 		} catch (InterruptedException e) {
@@ -171,12 +208,12 @@ public class AtsdMeta extends MetaImpl {
 		}
 		if (log.isTraceEnabled()) {
 			log.trace("[prepareAndExecute] locked: {} maxRowCount: {} handle: {} query: {}", lock.getHoldCount(),
-					maxRowCount, statementHandle.toString(), query);
+					limit, statementHandle.toString(), query);
 		}
 		try {
 			final IDataProvider provider = initProvider(statementHandle.id, query);
-			final Statement statement = (Statement)callback.getMonitor();
-			provider.fetchData(maxRowCount, statement.getQueryTimeout());
+			final Statement statement = (Statement) callback.getMonitor();
+			provider.fetchData(limit, statement.getQueryTimeout());
 			final ContentMetadata contentMetadata = findMetadata(query, statementHandle.connectionId, statementHandle.id);
 			synchronized (callback.getMonitor()) {
 				// callback.clear();
@@ -191,6 +228,16 @@ public class AtsdMeta extends MetaImpl {
 			throw new NoSuchStatementException(statementHandle);
 		}
 	}
+
+////	@Override
+//	public ExecuteBatchResult prepareAndExecuteBatch(StatementHandle statementHandle, List<String> list) throws NoSuchStatementException {
+//		throw new UnsupportedOperationException("Batch not yet implemented");
+//	}
+//
+////	@Override
+//	public ExecuteBatchResult executeBatch(StatementHandle statementHandle, List<List<TypedValue>> list) throws NoSuchStatementException {
+//		throw new UnsupportedOperationException("Batch not yet implemented");
+//	}
 
 	@Override
 	public Frame fetch(final StatementHandle statementHandle, long loffset, int fetchMaxRowCount)
@@ -321,15 +368,10 @@ public class AtsdMeta extends MetaImpl {
 
 	@Override
 	public MetaResultSet getTypeInfo(ConnectionHandle ch) {
-		final List<Object> list = new ArrayList<Object>();
-		list.add(getTypeInfo("DECIMAL", Types.DECIMAL, false));
-		list.add(getTypeInfo("DOUBLE", Types.DOUBLE, false));
-		list.add(getTypeInfo("FLOAT", Types.FLOAT, false));
-		list.add(getTypeInfo("INTEGER", Types.INTEGER, false));
-		list.add(getTypeInfo("LONG", Types.BIGINT, false));
-		list.add(getTypeInfo("SHORT", Types.SMALLINT, false));
-		list.add(getTypeInfo("STRING", Types.VARCHAR, true));
-		list.add(getTypeInfo("TIMESTAMP", Types.TIMESTAMP, false));
+		final List<Object> list = new ArrayList<>();
+		for (AtsdType type : AtsdType.values()) {
+			list.add(getTypeInfo(type.originalType, type.sqlTypeCode, type == AtsdType.STRING_DATA_TYPE, type.maxPrecision));
+		}
 		return getResultSet(list, MetaTypeInfo.class, "TYPE_NAME", "DATA_TYPE", "PRECISION",
 				"LITERAL_PREFIX", "LITERAL_SUFFIX", "CREATE_PARAMS", "NULLABLE", "CASE_SENSITIVE", "SEARCHABLE",
 				"UNSIGNED_ATTRIBUTE", "FIXED_PREC_SCALE", "AUTO_INCREMENT", "LOCAL_TYPE_NAME", "MINIMUM_SCALE",
@@ -383,6 +425,16 @@ public class AtsdMeta extends MetaImpl {
 		return contentMetadata;
 	}
 
+	private ContentMetadata createDefaultMetadata(String sql, String connectionId, int statementId)
+			throws AtsdException, IOException {
+		ContentMetadata contentMetadata = metaCache.get(statementId);
+		if (contentMetadata == null) {
+			contentMetadata = ContentMetadata.newDefaultMetaData(sql, connectionId, statementId);
+			metaCache.put(statementId, contentMetadata);
+		}
+		return contentMetadata;
+	}
+
 	private List<Object> getFrame(final StatementHandle h, int fetchMaxRowCount, final List<String[]> subList) {
 		IDataProvider provider = providerCache.get(h.id);
 		assert provider != null;
@@ -415,81 +467,89 @@ public class AtsdMeta extends MetaImpl {
 					continue;
 				}
 				switch (columnMetaData.type.id) {
-				case Types.SMALLINT:
-					Short s = null;
-					try {
-						s = Short.valueOf(sarray[i]);
-					} catch (final NumberFormatException nfe) {
-						if (log.isDebugEnabled())
-							log.debug("[getFrame] short type mismatched: {} on {} position", Arrays.toString(sarray),
-									i);
-					}
-					row.add(s);
-					break;
-				case Types.INTEGER:
-					Integer n = null;
-					try {
-						n = Integer.valueOf(sarray[i]);
-					} catch (final NumberFormatException nfe) {
-						if (log.isDebugEnabled())
-							log.debug("[getFrame] int type mismatched: {} on {} position", Arrays.toString(sarray), i);
-					}
-					row.add(n);
-					break;
-				case Types.BIGINT:
-					Long l = null;
-					try {
-						l = Long.valueOf(sarray[i]);
-					} catch (final NumberFormatException nfe) {
-						if (log.isDebugEnabled())
-							log.debug("[getFrame] long type mismatched: {} on {} position", Arrays.toString(sarray), i);
-					}
-					row.add(l);
-					break;
-				case Types.FLOAT:
-				case Types.DOUBLE:
-					Double d = null;
-					try {
-						d = Double.valueOf(sarray[i]);
-					} catch (final NumberFormatException nfe) {
-						if (log.isDebugEnabled())
-							log.debug("[getFrame] double type mismatched: {} on {} position", Arrays.toString(sarray),
-									i);
-					}
-					row.add(d);
-					break;
-				case Types.DECIMAL:
-					BigDecimal bd = null;
-					try {
-						bd = new BigDecimal(sarray[i]);
-					} catch (final NumberFormatException nfe) {
-						if (log.isDebugEnabled())
-							log.debug("[getFrame] decimal type mismatched: {} on {} position", Arrays.toString(sarray),
-									i);
-					}
-					row.add(bd);
-					break;
-				case Types.TIMESTAMP:
-					Timestamp ts = null;
-					try {
-						Date dt = TIMESTAMP_FORMATTER.get().parse(sarray[i]);
-						ts = new Timestamp(dt.getTime());
-					} catch (final ParseException e) {
-						if (log.isDebugEnabled())
-							log.debug("[getFrame] " + e.getMessage());
+					case Types.SMALLINT:
+						Short s = null;
 						try {
-							Date dt = TIMESTAMP_SHORT_FORMATTER.get().parse(sarray[i]);
-							ts = new Timestamp(dt.getTime());
-						} catch (ParseException e1) {
-							if (log.isDebugEnabled())
-								log.debug("[getFrame] " + e1.getMessage());
+							s = Short.valueOf(sarray[i]);
+						} catch (final NumberFormatException nfe) {
+							if (log.isDebugEnabled()) {
+								log.debug("[getFrame] short type mismatched: {} on {} position", Arrays.toString(sarray),
+										i);
+							}
 						}
-					}
-					row.add(ts);
-					break;
-				case Types.VARCHAR:
-				default:
-					row.add(sarray[i]);
+						row.add(s);
+						break;
+					case Types.INTEGER:
+						Integer n = null;
+						try {
+							n = Integer.valueOf(sarray[i]);
+						} catch (final NumberFormatException nfe) {
+							if (log.isDebugEnabled()) {
+								log.debug("[getFrame] int type mismatched: {} on {} position", Arrays.toString(sarray), i);
+							}
+						}
+						row.add(n);
+						break;
+					case Types.BIGINT:
+						Long l = null;
+						try {
+							l = Long.valueOf(sarray[i]);
+						} catch (final NumberFormatException nfe) {
+							if (log.isDebugEnabled()) {
+								log.debug("[getFrame] long type mismatched: {} on {} position", Arrays.toString(sarray), i);
+							}
+						}
+						row.add(l);
+						break;
+					case Types.FLOAT:
+						// SQL FLOAT is up to 8 byte hence keep in Double
+					case Types.DOUBLE:
+						Double d = null;
+						try {
+							d = Double.valueOf(sarray[i]);
+						} catch (final NumberFormatException nfe) {
+							if (log.isDebugEnabled()) {
+								log.debug("[getFrame] double type mismatched: {} on {} position", Arrays.toString(sarray),
+										i);
+							}
+						}
+						row.add(d);
+						break;
+					case Types.DECIMAL:
+						BigDecimal bd = null;
+						try {
+							bd = new BigDecimal(sarray[i]);
+						} catch (final NumberFormatException nfe) {
+							if (log.isDebugEnabled()) {
+								log.debug("[getFrame] decimal type mismatched: {} on {} position", Arrays.toString(sarray),
+										i);
+							}
+						}
+						row.add(bd);
+						break;
+					case Types.TIMESTAMP:
+						Timestamp ts = null;
+						try {
+							Date dt = TIMESTAMP_FORMATTER.get().parse(sarray[i]);
+							ts = new Timestamp(dt.getTime());
+						} catch (final ParseException e) {
+							if (log.isDebugEnabled()) {
+								log.debug("[getFrame] " + e.getMessage());
+							}
+							try {
+								Date dt = TIMESTAMP_SHORT_FORMATTER.get().parse(sarray[i]);
+								ts = new Timestamp(dt.getTime());
+							} catch (ParseException e1) {
+								if (log.isDebugEnabled()) {
+									log.debug("[getFrame] " + e1.getMessage());
+								}
+							}
+						}
+						row.add(ts);
+						break;
+					case Types.VARCHAR:
+					default:
+						row.add(sarray[i]);
 				}
 				break;
 			}
@@ -533,41 +593,20 @@ public class AtsdMeta extends MetaImpl {
 		}
 	};
 
-	private static MetaTypeInfo getTypeInfo(String name, int type, boolean isCaseSensitive) {
-		return new MetaTypeInfo(name, type, getMaxPrecision(type), getLiteral(type, true), getLiteral(type, false),
+	private static MetaTypeInfo getTypeInfo(String name, int type, boolean isCaseSensitive, int maxPrecision) {
+		return new MetaTypeInfo(name, type, maxPrecision, getLiteral(type, true), getLiteral(type, false),
 				DatabaseMetaData.typeNullable, isCaseSensitive, DatabaseMetaData.typeSearchable, false, false, false, 0,
 				0, 10);
 	}
 
 	public static String getLiteral(int type, boolean isPrefix) {
 		switch (type) {
-		case Types.VARCHAR:
-			return "'";
-		case Types.TIMESTAMP:
-			return isPrefix ? "TIMESTAMP '" : "'";
-		default:
-			return null;
-		}
-	}
-
-	public static int getMaxPrecision(int type) {
-		switch (type) {
-		case Types.VARCHAR:
-			return 2147483647;
-		case Types.TIMESTAMP:
-			return TIMESTAMP_LENGTH;
-		case Types.SMALLINT:
-			return 5;
-		case Types.INTEGER:
-			return 10;
-		case Types.BIGINT:
-			return 19;
-		case Types.FLOAT:
-			return 23;
-		case Types.DOUBLE:
-			return 52;
-		default:
-			return -1;
+			case Types.VARCHAR:
+				return "'";
+			case Types.TIMESTAMP:
+				return isPrefix ? "TIMESTAMP '" : "'";
+			default:
+				return null;
 		}
 	}
 

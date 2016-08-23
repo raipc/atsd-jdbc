@@ -22,6 +22,7 @@ import java.nio.charset.Charset;
 import java.util.*;
 
 import com.axibase.tsd.driver.jdbc.enums.AtsdType;
+import com.axibase.tsd.driver.jdbc.util.ContentMetadataGuessUtil;
 import com.axibase.tsd.driver.jdbc.util.EnumUtil;
 import org.apache.calcite.avatica.AvaticaParameter;
 import org.apache.calcite.avatica.ColumnMetaData;
@@ -38,6 +39,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.MappingJsonFactory;
+import org.apache.commons.lang3.tuple.Pair;
 
 @SuppressWarnings("unchecked")
 public class ContentMetadata {
@@ -58,6 +60,21 @@ public class ContentMetadata {
 		list = Collections.unmodifiableList(
 				Collections.singletonList(MetaResultSet.create(connectionId, statementId, false, sign, null)));
 	}
+
+	private ContentMetadata(String sql, String connectionId, int statementId)
+			throws AtsdException, IOException {
+		metadataList = generateDefaultColumnMetaDataList(sql);
+		sign = new Signature(metadataList, sql, Collections.<AvaticaParameter>emptyList(), null, CursorFactory.LIST,
+				StatementType.SELECT);
+		list = Collections.unmodifiableList(
+				Collections.singletonList(MetaResultSet.create(connectionId, statementId, false, sign, null)));
+	}
+
+	public static ContentMetadata newDefaultMetaData(String query, String connectionId, int statementId)
+			throws IOException, AtsdException {
+		return new ContentMetadata(query, connectionId, statementId);
+	}
+
 
 	public Signature getSign() {
 		return sign;
@@ -100,25 +117,59 @@ public class ContentMetadata {
 		return Collections.unmodifiableList(metadataList);
 	}
 
+	private static List<ColumnMetaData> generateDefaultColumnMetaDataList(String query) {
+		Pair<String, String[]> nameAndFields = ContentMetadataGuessUtil.findTableNameAndFields(query);
+		final String tableName = nameAndFields.getLeft();
+		final String[] fieldNames = nameAndFields.getRight();
+
+		List<ColumnMetaData> result = new ArrayList<>(fieldNames.length);
+		int columnCount = fieldNames.length;
+		for (int i = 0; i < columnCount; ++i) {
+			result.add(generateDefaultColumnMetadata(i, fieldNames[i], tableName));
+		}
+		return Collections.unmodifiableList(result);
+	}
+
+	private static ColumnMetaData generateDefaultColumnMetadata(int index, String name, String table) {
+		final AtsdType defaultType = EnumUtil.getAtsdTypeByColumnName(name);
+		if (defaultType == null) {
+			throw new IllegalArgumentException("Found non-expected column name: " + name);
+		}
+		final String datatype = defaultType.originalType;
+		final ColumnMetaData.AvaticaType atype = getAvaticaType(datatype);
+		return new ColumnMetaDataBuilder()
+				.withColumnIndex(index)
+				.withSchema(DEFAULT_SCHEMA)
+				.withTable(table)
+				.withName(name)
+				.withTitle(name)
+				.withAtype(atype)
+				.build();
+	}
+
 	private static ColumnMetaData getColumnMetaData(String schema, int ind, final Object obj) {
 		final Map<String, Object> property = (Map<String, Object>) obj;
+		final Integer index = (Integer) property.get(INDEX_PROPERTY);
+		final int columnIndex = index != null ? index - 1 : ind;
 		String name = (String) property.get(NAME_PROPERTY);
 		String title = (String) property.get(TITLE_PROPERTY);
 		String table = (String) property.get(TABLE_PROPERTY);
 		String datatype = (String) property.get(DATATYPE_PROPERTY);
-		Integer index = (Integer) property.get(INDEX_PROPERTY);
 		final ColumnMetaData.AvaticaType atype = getAvaticaType(datatype);
-		final int displaySize = atype.rep == ColumnMetaData.Rep.STRING ?
-				DEFAULT_STRING_DISPLAY_SIZE : DEFAULT_DISPLAY_SIZE;
-		return new ColumnMetaData(index != null ? index - 1 : ind, false, false, false,
-				false, 0, false, displaySize, name, title, schema, 1, 1, table, DEFAULT_CATALOG_NAME, atype, true, false,
-				false, atype.rep.clazz.getCanonicalName());
+		return new ColumnMetaDataBuilder()
+				.withColumnIndex(columnIndex)
+				.withSchema(schema)
+				.withTable(table)
+				.withName(name)
+				.withTitle(title)
+				.withAtype(atype)
+				.build();
 	}
 
 	private static Map<String, Object> getJsonScheme(String json) throws IOException {
 		final MappingJsonFactory jsonFactory = new MappingJsonFactory();
-		try (final InputStream is = new ByteArrayInputStream(json.getBytes(Charset.defaultCharset()));
-				JsonParser parser = jsonFactory.createParser(is)) {
+		try (final InputStream inputStream = new ByteArrayInputStream(json.getBytes(Charset.defaultCharset()));
+			 final JsonParser parser = jsonFactory.createParser(inputStream)) {
 			final JsonToken token = parser.nextToken();
 			Class<?> type;
 			if (token == JsonToken.START_OBJECT) {
@@ -135,6 +186,54 @@ public class ContentMetadata {
 	private static ColumnMetaData.AvaticaType getAvaticaType(String datatype) {
 		final AtsdType type = EnumUtil.getAtsdTypeByOriginalName(datatype);
 		return new ColumnMetaData.AvaticaType(type.sqlTypeCode, type.sqlType, type.avaticaType);
+	}
+
+	private static class ColumnMetaDataBuilder {
+		private String name;
+		private String title;
+		private String table;
+		private ColumnMetaData.AvaticaType atype;
+
+		private int columnIndex;
+		private String schema;
+
+		public ColumnMetaDataBuilder withName(String name) {
+			this.name = name;
+			return this;
+		}
+
+		public ColumnMetaDataBuilder withTitle(String title) {
+			this.title = title;
+			return this;
+		}
+
+		public ColumnMetaDataBuilder withTable(String table) {
+			this.table = table;
+			return this;
+		}
+
+		public ColumnMetaDataBuilder withAtype(ColumnMetaData.AvaticaType atype) {
+			this.atype = atype;
+			return this;
+		}
+
+		public ColumnMetaDataBuilder withColumnIndex(int columnIndex) {
+			this.columnIndex = columnIndex;
+			return this;
+		}
+
+		public ColumnMetaDataBuilder withSchema(String schema) {
+			this.schema = schema;
+			return this;
+		}
+
+		public ColumnMetaData build() {
+			final int displaySize = atype.rep == ColumnMetaData.Rep.STRING ?
+					DEFAULT_STRING_DISPLAY_SIZE : DEFAULT_DISPLAY_SIZE;
+			return new ColumnMetaData(columnIndex, false, false, false,
+					false, 0, false, displaySize, name, title, schema, 1, 1, table, DEFAULT_CATALOG_NAME, atype,
+					true, false, false, atype.rep.clazz.getCanonicalName());
+		}
 	}
 
 }

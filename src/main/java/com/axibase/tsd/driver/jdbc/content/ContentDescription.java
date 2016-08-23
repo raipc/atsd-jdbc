@@ -140,6 +140,15 @@ public class ContentDescription {
 				LIMIT_PARAM_NAME + '=' + maxRowsCount;
 	}
 
+	public String getPostParamsForMetadata() {
+		if (StringUtils.isEmpty(query)) {
+			return "";
+		}
+		return Q_PARAM_NAME + '=' + getEncodedQuery() + '&' +
+				FORMAT_PARAM_NAME + '=' + FORMAT_PARAM_VALUE + '&' +
+				METADATA_FORMAT_PARAM_NAME + '=' + METADATA_FORMAT_PARAM_VALUE;
+	}
+
 	public Map<String, String> getQueryParamsAsMap() {
 		if (StringUtils.isEmpty(query)) {
 			return Collections.emptyMap();

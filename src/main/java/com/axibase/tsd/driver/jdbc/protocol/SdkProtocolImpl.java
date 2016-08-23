@@ -106,7 +106,7 @@ public class SdkProtocolImpl implements IContentProtocol {
 		boolean isPost = method.equals(POST_METHOD);
 		String postParams;
 		if (onlyScheme) {
-			postParams = "q=" + contentDescription.getEncodedQuery() + "&" + "metadataFormat=EMBED";
+			postParams = contentDescription.getPostParamsForMetadata();
 		} else {
 			postParams = contentDescription.getPostParams();
 		}
