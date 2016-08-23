@@ -86,7 +86,7 @@ public class DataProvider implements IDataProvider {
 		} else {
 			query.append(original.substring(0, startOfCondition));
 		}
-		query.append(LIMIT_CLAUSE).append(0);
+		query.append(LIMIT_CLAUSE).append(1);
 		contentDescription.setQuery(query.toString());
 		contentProtocol.getContentSchema();
 		contentDescription.setQuery(original);
