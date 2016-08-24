@@ -87,7 +87,7 @@ public class AtsdMeta extends MetaImpl {
 		}
 		try {
 			initProvider(id, query);
-			Signature signature = new Signature(null, query,Collections.<AvaticaParameter>emptyList(), null,
+			Signature signature = new Signature(null, query, Collections.<AvaticaParameter>emptyList(), null,
 					CursorFactory.LIST, StatementType.SELECT);
 			return new StatementHandle(connectionHandle.id, id, signature);
 		} catch (IOException e) {

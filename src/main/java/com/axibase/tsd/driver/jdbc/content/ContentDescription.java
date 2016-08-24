@@ -165,9 +165,9 @@ public class ContentDescription {
 		return host.toLowerCase(Locale.US).startsWith("https://");
 	}
 
-	public Boolean isTrusted() {
+	public boolean isTrusted() {
 		final String trustedAsString = paramsMap.get(TRUST_PARAM_NAME);
-		return trustedAsString == null ? null : Boolean.valueOf(trustedAsString);
+		return trustedAsString == null ? DEFAULT_TRUST_SERVER_CERTIFICATE : Boolean.valueOf(trustedAsString);
 	}
 
 	public int getConnectTimeout() {

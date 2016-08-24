@@ -54,6 +54,29 @@ public class SdkProtocolImpl implements IContentProtocol {
 	private static final int UNSUCCESSFUL_SQL_RESULT_CODE = 400;
 	private static final int MILLIS = 1000;
 	private static final byte[] ENCODED_JSON_SCHEME_BEGIN;
+	private static final TrustManager[] DUMMY_TRUST_MANAGER = new TrustManager[]{new X509TrustManager() {
+		@Override
+		public X509Certificate[] getAcceptedIssuers() {
+			return null;
+		}
+		@Override
+		public void checkServerTrusted(X509Certificate[] certs, String authType) throws CertificateException {
+		}
+		@Override
+		public void checkClientTrusted(X509Certificate[] certs, String authType) throws CertificateException {
+		}
+	}};
+	private static final HostnameVerifier DUMMY_HOSTNAME_VERIFIER = new HostnameVerifier() {
+		@Override
+		public boolean verify(String urlHostName, SSLSession session) {
+			if (!urlHostName.equalsIgnoreCase(session.getPeerHost()) && logger.isDebugEnabled()) {
+				logger.debug("[doTrustToCertificates] URL host {} is different to SSLSession host {}", urlHostName,
+						session.getPeerHost());
+			}
+			return true;
+		}
+	};
+
 	static {
 		final byte[] jsonSchemeBegin = "{\"@context\":".getBytes(Charset.defaultCharset());
 		final String encodedSchemeWithComment = "#" + Base64.encodeBase64String(jsonSchemeBegin);
@@ -190,24 +213,13 @@ public class SdkProtocolImpl implements IContentProtocol {
 		}
 	}
 
-	public HttpURLConnection getHttpURLConnection(String uri) throws IOException {
+	private static HttpURLConnection getHttpURLConnection(String uri) throws IOException {
 		final URL url = new URL(uri);
 		return (HttpURLConnection) url.openConnection();
 	}
 
-	public void doTrustToCertificates(final HttpsURLConnection sslConnection) {
-		final TrustManager[] trustAllCerts = new TrustManager[]{new X509TrustManager() {
-			@Override
-			public X509Certificate[] getAcceptedIssuers() {
-				return null;
-			}
-			@Override
-			public void checkServerTrusted(X509Certificate[] certs, String authType) throws CertificateException {
-			}
-			@Override
-			public void checkClientTrusted(X509Certificate[] certs, String authType) throws CertificateException {
-			}
-		}};
+	private  void doTrustToCertificates(final HttpsURLConnection sslConnection) {
+
 		final SSLContext sc;
 		try {
 			sc = SSLContext.getInstance(CONTEXT_INSTANCE_TYPE);
@@ -217,12 +229,12 @@ public class SdkProtocolImpl implements IContentProtocol {
 			}
 			return;
 		}
-		final Boolean trusted = contentDescription.isTrusted();
+		final boolean trusted = contentDescription.isTrusted();
 		if (logger.isDebugEnabled()) {
 			logger.debug("[doTrustToCertificates] " + trusted);
 		}
 		try {
-			sc.init(null, trusted != null && trusted ? trustAllCerts : null, new SecureRandom());
+			sc.init(null, trusted ? DUMMY_TRUST_MANAGER : null, new SecureRandom());
 		} catch (KeyManagementException e) {
 			if (logger.isErrorEnabled()) {
 				logger.error(e.getMessage());
@@ -230,19 +242,9 @@ public class SdkProtocolImpl implements IContentProtocol {
 			return;
 		}
 		sslConnection.setSSLSocketFactory(sc.getSocketFactory());
-		final HostnameVerifier hostnameVerifier = new HostnameVerifier() {
-			@Override
-			public boolean verify(String urlHostName, SSLSession session) {
-				if (!urlHostName.equalsIgnoreCase(session.getPeerHost()) && logger.isDebugEnabled()) {
-					logger.debug("[doTrustToCertificates] URL host {} is different to SSLSession host {}", urlHostName,
-							session.getPeerHost());
-				}
-				return true;
-			}
 
-		};
-		if (trusted != null && trusted) {
-			sslConnection.setHostnameVerifier(hostnameVerifier);
+		if (trusted) {
+			sslConnection.setHostnameVerifier(DUMMY_HOSTNAME_VERIFIER);
 		}
 	}
 

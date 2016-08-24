@@ -34,6 +34,7 @@ public final class DriverConstants {
 	public static final String REVISION_LINE = "Revision";
 	public static final String STRATEGY_PARAM_NAME = "strategy";
 	public static final String TRUST_PARAM_NAME = "trustServerCertificate";
+	public static final boolean DEFAULT_TRUST_SERVER_CERTIFICATE = false;
 	public static final String CONNECT_TIMEOUT_PARAM = "connectTimeout";
 	public static final String READ_TIMEOUT_PARAM = "readTimeout";
 	public static final int DEFAULT_CONNECT_TIMEOUT_VALUE = 5;
