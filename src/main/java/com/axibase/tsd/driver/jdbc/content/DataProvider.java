@@ -26,7 +26,6 @@ import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
 import com.axibase.tsd.driver.jdbc.protocol.ProtocolFactory;
 import com.axibase.tsd.driver.jdbc.protocol.SdkProtocolImpl;
 import com.axibase.tsd.driver.jdbc.strategies.StrategyFactory;
-import org.apache.commons.lang3.StringUtils;
 
 public class DataProvider implements IDataProvider {
 	private static final LoggingFacade logger = LoggingFacade.getLogger(DataProvider.class);
@@ -72,24 +71,6 @@ public class DataProvider implements IDataProvider {
 		if (this.strategy != null) {
 			this.strategy.store(is);
 		}
-	}
-
-	@Override
-	public void checkScheme(final String original) throws AtsdException, GeneralSecurityException, IOException {
-		int startOfCondition = StringUtils.indexOfIgnoreCase(original, WHERE_CLAUSE);
-		if (startOfCondition == -1) {
-			startOfCondition = StringUtils.indexOfIgnoreCase(original, LIMIT_CLAUSE);
-		}
-		StringBuilder query = new StringBuilder(original.length() + LIMIT_CLAUSE.length());
-		if (startOfCondition == -1) {
-			query.append(original);
-		} else {
-			query.append(original.substring(0, startOfCondition));
-		}
-		query.append(LIMIT_CLAUSE).append(1);
-		contentDescription.setQuery(query.toString());
-		contentProtocol.getContentSchema();
-		contentDescription.setQuery(original);
 	}
 
 	@Override

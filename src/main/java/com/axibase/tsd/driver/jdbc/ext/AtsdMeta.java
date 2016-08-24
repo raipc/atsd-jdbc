@@ -86,43 +86,16 @@ public class AtsdMeta extends MetaImpl {
 			log.trace("[prepare] locked: {} handle: {} query: {}", lock.getHoldCount(), id, query);
 		}
 		try {
-			final ContentMetadata contentMetadata = findOrGenerateMetadata(query, connectionHandle, id);
-			return new StatementHandle(connectionHandle.id, id, contentMetadata.getSign());
-		} catch (final AtsdException | IOException e) {
+			initProvider(id, query);
+			Signature signature = new Signature(null, query,Collections.<AvaticaParameter>emptyList(), null,
+					CursorFactory.LIST, StatementType.SELECT);
+			return new StatementHandle(connectionHandle.id, id, signature);
+		} catch (IOException e) {
 			if (log.isDebugEnabled()) {
 				log.debug("[prepare]" + e.getMessage());
 			}
 		}
 		return null;
-	}
-
-	private ContentMetadata findOrGenerateMetadata(String query, ConnectionHandle handle, int generatedId)
-			throws IOException, AtsdException {
-		final IDataProvider provider = initProvider(generatedId, query);
-		ContentMetadata contentMetadata;
-		try {
-			contentMetadata = createDefaultMetadata(query, handle.id, generatedId);
-		} catch (IllegalArgumentException e) {
-			if (log.isDebugEnabled()) {
-				log.debug("Cannot retrieve scheme from SQL query: {}. Trying to fetch meta from ATSD", e.getMessage());
-			}
-			contentMetadata = prepareAtsdMetadata(query, handle, generatedId, provider);
-		}
-		return contentMetadata;
-	}
-
-	private ContentMetadata prepareAtsdMetadata(String query, ConnectionHandle ch, int generatedId, IDataProvider provider)
-			throws IOException, AtsdException {
-		ContentMetadata contentMetadata = null;
-		try {
-			provider.checkScheme(query);
-			contentMetadata = findMetadata(query, ch.id, generatedId);
-		} catch (GeneralSecurityException e) {
-			if (log.isDebugEnabled()) {
-				log.debug("[prepareAtsdMetadata]" + e.getMessage());
-			}
-		}
-		return contentMetadata;
 	}
 
 	@Override
@@ -137,9 +110,16 @@ public class AtsdMeta extends MetaImpl {
 			log.trace("[execute] maxRowsInFirstFrame: {} parameters: {} handle: {}", maxRowsInFirstFrame, parameterValues.size(),
 					statementHandle.toString());
 		}
-		final IDataProvider provider = providerCache.get(statementHandle.id);
-		assert provider != null;
 		final String query = statementHandle.signature.sql;
+		IDataProvider provider = null;
+		try {
+			provider = initProvider(statementHandle.id, query);
+		} catch (IOException e) {
+			if (log.isDebugEnabled()) {
+				log.debug("[execute]" + e.getMessage());
+			}
+		}
+		assert provider != null;
 		if (query.contains("?")) {
 			final Iterator<TypedValue> iterator = parameterValues.iterator();
 			final StringBuilder sb = new StringBuilder();
@@ -447,16 +427,6 @@ public class AtsdMeta extends MetaImpl {
 			IDataProvider provider = providerCache.get(statementId);
 			final String jsonScheme = provider != null ? provider.getContentDescription().getJsonScheme() : "";
 			contentMetadata = new ContentMetadata(jsonScheme, sql, connectionId, statementId);
-			metaCache.put(statementId, contentMetadata);
-		}
-		return contentMetadata;
-	}
-
-	private ContentMetadata createDefaultMetadata(String sql, String connectionId, int statementId)
-			throws AtsdException, IOException {
-		ContentMetadata contentMetadata = metaCache.get(statementId);
-		if (contentMetadata == null) {
-			contentMetadata = ContentMetadata.newDefaultMetaData(sql, connectionId, statementId);
 			metaCache.put(statementId, contentMetadata);
 		}
 		return contentMetadata;

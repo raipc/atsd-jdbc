@@ -22,8 +22,6 @@ import com.axibase.tsd.driver.jdbc.ext.AtsdException;
 
 public interface IContentProtocol extends AutoCloseable {
 
-	void getContentSchema() throws AtsdException, GeneralSecurityException, IOException;
-
 	InputStream readInfo() throws AtsdException, GeneralSecurityException, IOException;
 	
 	InputStream readContent() throws AtsdException, GeneralSecurityException, IOException;

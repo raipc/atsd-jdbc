@@ -22,8 +22,6 @@ import com.axibase.tsd.driver.jdbc.ext.AtsdException;
 
 public interface IDataProvider extends AutoCloseable {
 
-	void checkScheme(String original) throws AtsdException, GeneralSecurityException, IOException;
-
 	ContentDescription getContentDescription();
 
 	IStoreStrategy getStrategy();

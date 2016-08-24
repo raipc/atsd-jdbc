@@ -71,11 +71,6 @@ public class SdkProtocolImpl implements IContentProtocol {
 	}
 
 	@Override
-	public void getContentSchema() throws AtsdException, GeneralSecurityException, IOException {
-		retrieveJsonSchemeAndSubstituteStream(executeRequest(POST_METHOD, 0, true));
-	}
-
-	@Override
 	public InputStream readInfo() throws AtsdException, GeneralSecurityException, IOException {
 		return executeRequest(GET_METHOD, 0, false);
 	}
