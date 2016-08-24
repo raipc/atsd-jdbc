@@ -18,14 +18,12 @@ import java.math.BigDecimal;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
+import java.sql.Types;
 import java.util.TimeZone;
 
-import org.apache.calcite.avatica.AvaticaResultSet;
-import org.apache.calcite.avatica.AvaticaStatement;
-import org.apache.calcite.avatica.Meta;
+import org.apache.calcite.avatica.*;
 import org.apache.calcite.avatica.Meta.Frame;
 import org.apache.calcite.avatica.Meta.Signature;
-import org.apache.calcite.avatica.QueryState;
 
 import com.axibase.tsd.driver.jdbc.content.StatementContext;
 import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
@@ -80,6 +78,23 @@ public class AtsdResultSet extends AvaticaResultSet {
 	@Override
 	public BigDecimal getBigDecimal(String columnLabel) throws SQLException {
 		return super.getBigDecimal(columnLabel, 0);
+	}
+
+	@Override
+	public float getFloat(int columnIndex) throws SQLException {
+		// casting needed as Avatica stores sql FLOAT in java.lang.Double
+		return (float)getDouble(columnIndex);
+	}
+
+	@Override
+	public Object getObject(int columnIndex) throws SQLException {
+		Object result = super.getObject(columnIndex);
+		final ColumnMetaData metaData = columnMetaDataList.get(columnIndex - 1);
+		if (metaData.type.id == Types.FLOAT && result != null) {
+			double primitiveDouble = (double)result;
+			return (float)primitiveDouble;
+		}
+		return result;
 	}
 
 	@Override
