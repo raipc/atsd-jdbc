@@ -44,14 +44,15 @@ import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
 
 public class AtsdPreparedStatement extends AvaticaPreparedStatement {
 	private static final LoggingFacade logger = LoggingFacade.getLogger(AtsdPreparedStatement.class);
-	
+
 	private final ConcurrentSkipListMap<Integer, TypedValue> parameters = new ConcurrentSkipListMap<>();
 
 	protected AtsdPreparedStatement(AvaticaConnection connection, StatementHandle h, Signature signature,
-			int resultSetType, int resultSetConcurrency, int resultSetHoldability) throws SQLException {
+									int resultSetType, int resultSetConcurrency, int resultSetHoldability) throws SQLException {
 		super(connection, h, signature, resultSetType, resultSetConcurrency, resultSetHoldability);
-		if (logger.isTraceEnabled())
+		if (logger.isTraceEnabled()) {
 			logger.trace("[new] " + this.handle.id);
+		}
 	}
 
 	@Override
@@ -62,28 +63,32 @@ public class AtsdPreparedStatement extends AvaticaPreparedStatement {
 
 	@Override
 	protected List<TypedValue> getParameterValues() {
-		if(parameters.size() == 0)
-			return Collections.<TypedValue>emptyList();
-		if (parameters.lastKey() != parameters.size())
+		if (parameters.size() == 0) {
+			return Collections.emptyList();
+		}
+		if (parameters.lastKey() != parameters.size()) {
 			throw new IndexOutOfBoundsException(
 					String.format("Number of specified parameters [%d] is lower than the last key [%d]",
 							parameters.size(), parameters.lastKey()));
-		final List<TypedValue> list = new ArrayList<>();
-		list.addAll(parameters.values());
-		if(logger.isDebugEnabled())
-		for(TypedValue tv : list)
-			logger.debug("[TypedValue] " + tv.value);
+		}
+		final List<TypedValue> list = new ArrayList<>(parameters.values());
+		if (logger.isDebugEnabled()) {
+			for (TypedValue tv : list) {
+				logger.debug("[TypedValue] " + tv.value);
+			}
+		}
 		return list;
 	}
 
 	@Override
 	public synchronized void close() throws SQLException {
 		super.close();
-		if (logger.isTraceEnabled())
+		if (logger.isTraceEnabled()) {
 			logger.trace("[close] " + this.handle.id);
+		}
 	}
 
-	
+
 	@Override
 	public void setNull(int parameterIndex, int sqlType) throws SQLException {
 		parameters.put(parameterIndex, TypedValue.ofSerial(ColumnMetaData.Rep.OBJECT, null));
