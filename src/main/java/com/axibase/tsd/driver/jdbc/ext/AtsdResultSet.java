@@ -41,8 +41,9 @@ public class AtsdResultSet extends AvaticaResultSet {
 		this.meta = (AtsdMeta) connection.getMeta();
 		this.handle = statement.handle;
 		this.context = meta.getContextFromMap(statement.handle);
-		if (logger.isTraceEnabled())
+		if (logger.isTraceEnabled()) {
 			logger.trace("[ctor] " + this.handle.id);
+		}
 	}
 
 	@Override
@@ -83,7 +84,7 @@ public class AtsdResultSet extends AvaticaResultSet {
 	@Override
 	public float getFloat(int columnIndex) throws SQLException {
 		// casting needed as Avatica stores sql FLOAT in java.lang.Double
-		return (float)getDouble(columnIndex);
+		return (float) getDouble(columnIndex);
 	}
 
 	@Override
@@ -91,8 +92,8 @@ public class AtsdResultSet extends AvaticaResultSet {
 		Object result = super.getObject(columnIndex);
 		final ColumnMetaData metaData = columnMetaDataList.get(columnIndex - 1);
 		if (metaData.type.id == Types.FLOAT && result != null) {
-			double primitiveDouble = (double)result;
-			return (float)primitiveDouble;
+			double primitiveDouble = (double) result;
+			return (float) primitiveDouble;
 		}
 		return result;
 	}
@@ -100,8 +101,9 @@ public class AtsdResultSet extends AvaticaResultSet {
 	@Override
 	public boolean next() throws SQLException {
 		final boolean next = super.next();
-		if (!next)
+		if (!next) {
 			meta.closeStatement(handle);
+		}
 		if (!next && context != null && context.getException() != null) {
 			throw context.getException();
 		}
@@ -113,9 +115,17 @@ public class AtsdResultSet extends AvaticaResultSet {
 		super.close();
 		context.setWarning(null);
 		context.setException(null);
-		if (logger.isTraceEnabled())
+		if (logger.isTraceEnabled()) {
 			logger.trace("[closed]");
+		}
 
+	}
+
+	@Override
+	protected void cancel() {
+		if (logger.isTraceEnabled()) {
+			logger.trace("[cancel] stub");
+		}
 	}
 
 }
