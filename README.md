@@ -222,31 +222,40 @@ The project is released under version 2.0 of the [Apache License](http://www.apa
 
 ## Usage
 
-To execute a query, load the driver class, open a connection, create a SQL statement, execute the query and process the resultset:
+To execute a query, load the driver class, open a connection, create an SQL statement, execute the query and process the resultset:
 
 ```java
-        Class.forName("com.axibase.tsd.driver.jdbc.AtsdDriver");
-	Connection connection = DriverManager.getConnection("jdbc:axibase:atsd:" + 
-		<ATDS_URL>, <ATSD_LOGIN>, <ATSD_PASSWORD>);
-	Statement statement = connection.createStatement();
-	ResultSet resultSet = statement.executeQuery(<SQL_QUERY>);
-
+Class.forName("com.axibase.tsd.driver.jdbc.AtsdDriver");
+Connection connection = DriverManager.getConnection("jdbc:axibase:atsd:" + 
+    <ATDS_URL>, <ATSD_LOGIN>, <ATSD_PASSWORD>);
+Statement statement = connection.createStatement();
+ResultSet resultSet = statement.executeQuery(<SQL_QUERY>);
 ```
 
 The same pattern applies to prepared statements:
 
 ```java
-        Class.forName("com.axibase.tsd.driver.jdbc.AtsdDriver");
-	Connection connection = DriverManager.getConnection("jdbc:axibase:atsd:" + 
-		<ATDS_URL>, <ATSD_LOGIN>, <ATSD_PASSWORD>);
-	PreparedStatement prepareStatement = connection.prepareStatement(<SQL_QUERY>);
-	/*
-		Set placeholder parameters, if any
-	*/
-	prepareStatement.setString(1, "nurswgvml007");
-	ResultSet resultSet = prepareStatement.executeQuery();
+Class.forName("com.axibase.tsd.driver.jdbc.AtsdDriver");
+Connection connection = DriverManager.getConnection("jdbc:axibase:atsd:" + 
+    <ATDS_URL>, <ATSD_LOGIN>, <ATSD_PASSWORD>);
+PreparedStatement prepareStatement = connection.prepareStatement(<SQL_QUERY>);
+/*
+    Set placeholder parameters, if any
+*/
+prepareStatement.setString(1, "nurswgvml007");
+ResultSet resultSet = prepareStatement.executeQuery();
+```
 
-}
+## EndTime expressions (since v1.2.9)
+To use endTime expression in prepared statements you can invoke method `setTimeExpression`. It may throw `IllegalArgumentException` if expression cannot be validated.
+
+```java
+
+String query = "select datetime, value, tags.*, entity from df.disk_used where datetime < ? limit 50;";
+try (Connection connection = DriverManager.getConnection(connectionString, user, password);
+     PreparedStatement pstatement = connection.prepareStatement(query)) {
+    AtsdPreparedStatement statement = (AtsdPreparedStatement) pstatement;
+    statement.setTimeExpression(1, "current_day - 1 * week + 2 * day");
 ```
 
 ## Basic Example
