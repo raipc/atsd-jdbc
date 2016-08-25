@@ -19,7 +19,7 @@ public final class DriverConstants {
 	public static final String DRIVER_PROPERTIES = "META-INF/axibase-atsd-jdbc.properties";
 	public static final String JDBC_COMPLIENT_KEY = "jdbc.compliant";
 	public static final String RETRIES_NUMBER = "1";
-	public static final String JDBC_DRIVER_VERSION_DEFAULT = "1.2.7";
+	public static final String JDBC_DRIVER_VERSION_DEFAULT = "1.2.8";
 	public static final int    DRIVER_VERSION_MAJOR_DEFAULT = 1;
 	public static final int    DRIVER_VERSION_MINOR_DEFAULT = 2;
 
