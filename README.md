@@ -343,38 +343,54 @@ The following example shows how to extract metadata from the ATSD database:
 ```java
 
 	Class.forName("com.axibase.tsd.driver.jdbc.AtsdDriver");
+
     String hostUrl = System.getProperty("atsd.host");
-	String userName = System.getProperty("atsd.user");
-	String password = System.getProperty("atsd.password");
-	String sqlUrl = "jdbc:axibase:atsd:" + hostUrl + "/api/sql;trustServerCertificate=true";
+    String userName = System.getProperty("atsd.user");
+    String password = System.getProperty("atsd.password");
+    String sqlUrl = "jdbc:axibase:atsd:" + hostUrl + "/api/sql;trustServerCertificate=true";
 
-	String query = "SELECT * FROM mpstat.cpu_busy WHERE datetime > now - 1 * HOUR LIMIT 5";
+    try (Connection connection = DriverManager.getConnection(sqlUrl, userName, password);
+         Statement statement = connection.createStatement()) {
 
-	System.out.println("Connecting to " + sqlUrl);
-	try (Connection connection = DriverManager.getConnection(sqlUrl, userName, password)){
-		System.out.println("Connection established to " + sqlUrl);
-		try (Statement statement = connection.createStatement();
-			 ResultSet resultSet = statement.executeQuery(query)) {
+        DatabaseMetaData metaData = connection.getMetaData();
+        String databaseProductName = metaData.getDatabaseProductName();
+        String databaseProductVersion = metaData.getDatabaseProductVersion();
+        String driverName = metaData.getDriverName();
+        String driverVersion = metaData.getDriverVersion();
+        System.out.println("Product Name:   \t" + databaseProductName);
+        System.out.println("Product Version:\t" + databaseProductVersion);
+        System.out.println("Driver Name:    \t" + driverName);
+        System.out.println("Driver Version: \t" + driverVersion);
+        System.out.println("\nTypeInfo:");
 
-			System.out.println("Query complete.");
-			ResultSetMetaData metaData = resultSet.getMetaData();
-			int columnCount = metaData.getColumnCount();
-			int rowNumber = 1;
-			while (resultSet.next()) {
-				System.out.println("= row " + rowNumber++);
-				for (int colIndex = 1; colIndex <= columnCount; colIndex++) {
-					System.out.println("  " + metaData.getColumnLabel(colIndex) + " = " + resultSet.getString(colIndex));
-				}
-			}
+        ResultSet rs = metaData.getTypeInfo();
+        while (rs.next()) {
+            String name = rs.getString("TYPE_NAME");
+            int type = rs.getInt("DATA_TYPE");
+            int precision = rs.getInt("PRECISION");
+            boolean isCS = rs.getBoolean("CASE_SENSITIVE");
+            System.out.println(String.format(
+                    "\tName:%s \tCS: %s \tType: %s \tPrecision: %s", name, isCS, type, precision));
+        }
+        System.out.println("\nTableTypes:");
 
-			final SQLWarning warnings = resultSet.getWarnings();
-			if (warnings != null) {
-				warnings.printStackTrace();
-			}
-		}
-	} catch (Exception e) {
-		e.printStackTrace();
-	}
+        rs = metaData.getTableTypes();
+        while (rs.next()) {
+            String type = rs.getString(1);
+            System.out.println('\t' + type);
+        }
+        rs = metaData.getCatalogs();
+
+        while (rs.next()) {
+            String catalog = rs.getString(1);
+            System.out.println("\nCatalog: \t" + catalog);
+            ResultSet rs1 = metaData.getSchemas(catalog, null);
+            while (rs1.next()) {
+                String schema = rs1.getString(1);
+                System.out.println("Schema: \t" + schema);
+            }
+        }
+    }
 		
 ```
 
@@ -387,14 +403,16 @@ Driver Name:    	ATSD JDBC driver
 Driver Version: 	1.2.8
 
 TypeInfo:
-	Name: DECIMAL      	CS: false 	Type: 3    	Precision: -1
-	Name: DOUBLE      	CS: false 	Type: 8    	Precision: 52
-	Name: FLOAT      	CS: false 	Type: 6    	Precision: 23
-	Name: INTEGER      	CS: false 	Type: 4    	Precision: 10
-	Name: LONG      	CS: false 	Type: -5    Precision: 19
-	Name: SHORT      	CS: false 	Type: 5    	Precision: 5
-	Name: STRING      	CS: true 	Type: 12    Precision: 2147483647
-	Name: TIMESTAMP     CS: false 	Type: 93    Precision: 23
+	Name:bigint 	        CS: false 	Type: -5 	Precision: 19
+    Name:decimal 	        CS: false 	Type: 3 	Precision: -1
+    Name:double 	        CS: false 	Type: 8 	Precision: 52
+    Name:float 	            CS: false 	Type: 6 	Precision: 23
+    Name:integer 	        CS: false 	Type: 4 	Precision: 10
+    Name:long 	            CS: false 	Type: -5 	Precision: 19
+    Name:short 	            CS: false 	Type: 5 	Precision: 5
+    Name:smallint 	        CS: false 	Type: 5 	Precision: 5
+    Name:string 	        CS: true 	Type: 12 	Precision: 2147483647
+    Name:xsd:dateTimeStamp 	CS: false 	Type: 93 	Precision: 23
 
 TableTypes:
 	TABLE
