@@ -56,8 +56,9 @@
 		<maven-javadoc-plugin.version>2.10.4</maven-javadoc-plugin.version>
 		<maven-source-plugin.version>3.0.1</maven-source-plugin.version>
 		<maven-site-plugin.version>3.5.1</maven-site-plugin.version>
+		<maven-resources-plugin.version>3.0.1</maven-resources-plugin.version>
 		<build-helper-plugin.version>1.12</build-helper-plugin.version>
-		<findbugs-maven-plugin.version>1.12</findbugs-maven-plugin.version>
+		<findbugs-maven-plugin.version>3.0.4</findbugs-maven-plugin.version>
 		<coveralls-maven-plugin.version>4.2.0</coveralls-maven-plugin.version>
 		<sonar-maven-plugin.version>3.0.2</sonar-maven-plugin.version>
 		<locale>en_US</locale>
@@ -90,7 +91,7 @@
 			</plugin>
 			<plugin>
 				<artifactId>maven-resources-plugin</artifactId>
-				<version>2.7</version>
+				<version>${maven-resources-plugin.version}</version>
 				<executions>
 					<execution>
 						<id>copy-resources</id>
