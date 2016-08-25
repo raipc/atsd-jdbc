@@ -314,13 +314,9 @@ public class AtsdPreparedStatement extends AvaticaPreparedStatement {
 		throw new UnsupportedOperationException();
 	}
 
-	public void setDateTimeConstant(int parameterIndex, String value) throws SQLException {
-		try {
-			TimeDateExpression expression = new TimeDateExpression(value);
-			setObject(parameterIndex, expression);
-		} catch (IllegalArgumentException e) {
-			throw new IllegalArgumentException("Given string is not a valid time constant", e);
-		}
+	public void setTimeExpression(int parameterIndex, String value) throws SQLException {
+		TimeDateExpression expression = new TimeDateExpression(value);
+		setObject(parameterIndex, expression);
 	}
 
 }
