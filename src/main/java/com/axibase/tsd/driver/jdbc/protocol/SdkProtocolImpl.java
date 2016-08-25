@@ -38,7 +38,9 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
 import com.axibase.tsd.driver.jdbc.DriverConstants;
+import com.axibase.tsd.driver.jdbc.content.json.GeneralError;
 import com.axibase.tsd.driver.jdbc.enums.MetadataFormat;
+import com.axibase.tsd.driver.jdbc.ext.AtsdRuntimeException;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -162,10 +164,14 @@ public class SdkProtocolImpl implements IContentProtocol {
 			if (code == HttpURLConnection.HTTP_UNAUTHORIZED) {
 				throw new AtsdException("Wrong credentials provided");
 			}
-			if (code == UNSUCCESSFUL_SQL_RESULT_CODE) {
-				body = conn.getErrorStream();
-			} else {
-				throw new AtsdException("HTTP code " + code);
+			body = conn.getErrorStream();
+			if (code != UNSUCCESSFUL_SQL_RESULT_CODE) {
+				try {
+					final String error = GeneralError.errorFromInputStream(body);
+					throw new AtsdRuntimeException(error);
+				} catch (IOException e) {
+					throw new AtsdRuntimeException("HTTP code " + code);
+				}
 			}
 		} else {
 			body = conn.getInputStream();
