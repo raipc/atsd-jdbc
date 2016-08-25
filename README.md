@@ -20,7 +20,7 @@ The driver is designed to provide a convenient way to access Axibase Time Series
 | :--- | --- | ---: |
 | trustServerCertificate | true, false | `false` |
 | strategy | file, stream | `stream` |
-| connectTimeout | interval in seconds | 0 |
+| connectTimeout | interval in seconds | 5 |
 | readTimeout | interval in seconds | 0 |
 
 ## Apache Maven
