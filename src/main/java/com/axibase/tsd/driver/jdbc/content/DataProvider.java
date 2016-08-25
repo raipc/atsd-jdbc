@@ -29,8 +29,6 @@ import com.axibase.tsd.driver.jdbc.strategies.StrategyFactory;
 
 public class DataProvider implements IDataProvider {
 	private static final LoggingFacade logger = LoggingFacade.getLogger(DataProvider.class);
-	private static final String WHERE_CLAUSE = " WHERE ";
-	private static final String LIMIT_CLAUSE = " LIMIT ";
 	private static final String PARAM_SEPARATOR = ";";
 	private final ContentDescription contentDescription;
 	private final IContentProtocol contentProtocol;
