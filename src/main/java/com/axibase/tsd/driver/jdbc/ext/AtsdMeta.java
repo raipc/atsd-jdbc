@@ -37,7 +37,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 
 import com.axibase.tsd.driver.jdbc.enums.AtsdType;
-import com.axibase.tsd.driver.jdbc.enums.TimeDateConstants;
+import com.axibase.tsd.driver.jdbc.enums.timedatesyntax.EndTime;
+import com.axibase.tsd.driver.jdbc.util.TimeDateExpression;
 import org.apache.calcite.avatica.*;
 import org.apache.calcite.avatica.remote.TypedValue;
 import org.apache.commons.lang3.StringUtils;
@@ -135,7 +136,7 @@ public class AtsdMeta extends MetaImpl {
 					break;
 				}
 				final TypedValue next = iterator.next();
-				if (next.value instanceof Number) {
+				if (next.value instanceof Number || next.value instanceof TimeDateExpression) {
 					sb.append(next.value);
 				} else if (next.value instanceof String) {
 					sb.append('\'').append((String) next.value).append('\'');
@@ -145,8 +146,9 @@ public class AtsdMeta extends MetaImpl {
 					sb.append('\'').append(TIME_FORMATTER.get().format((java.sql.Time) next.value)).append('\'');
 				} else if (next.value instanceof Timestamp) {
 					sb.append('\'').append(TIMESTAMP_FORMATTER.get().format((Timestamp) next.value)).append('\'');
-				} else if (next.value instanceof TimeDateConstants) {
-					sb.append(next.value.toString().toLowerCase(Locale.US));
+				} else if (next.value instanceof EndTime) {
+					EndTime endTime = (EndTime) next.value;
+					sb.append(endTime);
 				}
 			}
 			if (log.isDebugEnabled()) {

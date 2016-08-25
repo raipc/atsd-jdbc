@@ -32,7 +32,7 @@ import java.sql.Timestamp;
 import java.util.*;
 import java.util.concurrent.ConcurrentSkipListMap;
 
-import com.axibase.tsd.driver.jdbc.enums.TimeDateConstants;
+import com.axibase.tsd.driver.jdbc.util.TimeDateExpression;
 import org.apache.calcite.avatica.AvaticaConnection;
 import org.apache.calcite.avatica.AvaticaPreparedStatement;
 import org.apache.calcite.avatica.ColumnMetaData;
@@ -316,8 +316,8 @@ public class AtsdPreparedStatement extends AvaticaPreparedStatement {
 
 	public void setDateTimeConstant(int parameterIndex, String value) throws SQLException {
 		try {
-			TimeDateConstants constant = TimeDateConstants.valueOf(value.toUpperCase(Locale.US));
-			setObject(parameterIndex, constant);
+			TimeDateExpression expression = new TimeDateExpression(value);
+			setObject(parameterIndex, expression);
 		} catch (IllegalArgumentException e) {
 			throw new IllegalArgumentException("Given string is not a valid time constant", e);
 		}
