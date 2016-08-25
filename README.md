@@ -8,10 +8,10 @@ The driver is designed to provide a convenient way to access Axibase Time Series
 
 ## Compatibility
 
-| **Product / Date** | **2016-03-15** | **2016-03-29** |  **2016-08-19** |
+| **Product / Date** | **2016-03-15** | **2016-03-29** |  **2016-08-25** |
 | :--- | --- | --- | --- |
-| JDBC Driver  | 1.2.1 | 1.2.6  | 1.2.7  |
-| ATSD Version | 12400 | 12500+ | 13970+ |
+| JDBC Driver  | 1.2.1 | 1.2.6  | 1.2.8  |
+| ATSD Version | 12400 | 12500+ | 14049+ |
 
 
 ## JDBC Connection Properties Supported by Driver
@@ -22,6 +22,16 @@ The driver is designed to provide a convenient way to access Axibase Time Series
 | strategy | file, stream | `stream` |
 | connectTimeout | interval in seconds | 5 |
 | readTimeout | interval in seconds | 0 |
+
+## Resultset Processing Strategy
+
+`file` strategy copies data received from the database to a file on the local file system and proceeds to read rows from the temporary file on `ResultSet.next()` invocation.
+
+`stream` strategy buffers data received from the database into the application memory and returns rows on `ResultSet.next()` invocation directly from a memory structure.
+
+While `stream` strategy may be more performant, it requires more memory. Applications are advised to choose the strategy based on available heap memory, disk space and expected resultset sizes.
+
+Generally, `stream` strategy is better suited to queries returning thousands of rows, whereas the `file` strategy can process millions of rows provided disk space is available.
 
 ## Apache Maven
 
@@ -79,9 +89,9 @@ The project is released under version 2.0 of the [Apache License](http://www.apa
 | DOUBLE | 8 | 52 |
 | FLOAT | 6 | 23 |
 | INTEGER | 4 | 10 |
-| LONG | -5 | 19 |
-| SHORT | 5 | 5 |
-| STRING | 12 | 2147483647 |
+| BIGINT | -5 | 19 |
+| SMALLINT | 5 | 5 |
+| VARCHAR | 12 | 2147483647 |
 | TIMESTAMP | 93 | 23 |
 
 ## Database Capabilities
@@ -212,7 +222,7 @@ The project is released under version 2.0 of the [Apache License](http://www.apa
 
 ## Usage
 
-First, make sure your ATSD instance is started and you have valid credentials to access it. To execute a query, open a connection, create a SQL statement, execute the query and process the resultset:
+To execute a query, load the driver class, open a connection, create a SQL statement, execute the query and process the resultset:
 
 ```java
         Class.forName("com.axibase.tsd.driver.jdbc.AtsdDriver");
@@ -230,6 +240,10 @@ The same pattern applies to prepared statements:
 	Connection connection = DriverManager.getConnection("jdbc:axibase:atsd:" + 
 		<ATDS_URL>, <ATSD_LOGIN>, <ATSD_PASSWORD>);
 	PreparedStatement prepareStatement = connection.prepareStatement(<SQL_QUERY>);
+	/*
+		Set placeholder parameters, if any
+	*/
+	prepareStatement.setString(1, "nurswgvml007");
 	ResultSet resultSet = prepareStatement.executeQuery();
 
 }
@@ -269,12 +283,6 @@ public class TestQuery {
                     System.out.println("  " + metaData.getColumnLabel(colIndex) + " = " + resultSet.getString(colIndex));
                 }
             }
-
-            final SQLWarning warnings = resultSet.getWarnings();
-            if (warnings != null) {
-                warnings.printStackTrace();
-            }
-
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -326,19 +334,19 @@ public class TestQuery {
 Results:
 
 ```ls
- 1 entity = nurswghbs001 datetime = 2016-03-22 12:52:03.0 value = 28.8116 tags.mount_point = / tags.file_system = /dev/md2
- 2 entity = nurswghbs001 datetime = 2016-03-22 12:52:04.0 value = 28.8116 tags.mount_point = / tags.file_system = /dev/md2
- 3 entity = nurswghbs001 datetime = 2016-03-22 12:52:18.0 value = 28.8116 tags.mount_point = / tags.file_system = /dev/md2
- 4 entity = nurswghbs001 datetime = 2016-03-22 12:52:19.0 value = 28.8116 tags.mount_point = / tags.file_system = /dev/md2
- 5 entity = nurswghbs001 datetime = 2016-03-22 12:52:33.0 value = 28.8117 tags.mount_point = / tags.file_system = /dev/md2
- 6 entity = nurswghbs001 datetime = 2016-03-22 12:52:34.0 value = 28.8117 tags.mount_point = / tags.file_system = /dev/md2
- 7 entity = nurswghbs001 datetime = 2016-03-22 12:52:48.0 value = 28.8117 tags.mount_point = / tags.file_system = /dev/md2
- 8 entity = nurswghbs001 datetime = 2016-03-22 12:52:49.0 value = 28.8117 tags.mount_point = / tags.file_system = /dev/md2
- 9 entity = nurswghbs001 datetime = 2016-03-22 12:53:03.0 value = 28.8117 tags.mount_point = / tags.file_system = /dev/md2
-10 entity = nurswghbs001 datetime = 2016-03-22 12:53:04.0 value = 28.8117 tags.mount_point = / tags.file_system = /dev/md2
+ 1 entity = nurswghbs001 datetime = 2016-08-22 12:52:03.0 value = 28.8116 tags.mount_point = / tags.file_system = /dev/md2
+ 2 entity = nurswghbs001 datetime = 2016-08-22 12:52:04.0 value = 28.8116 tags.mount_point = / tags.file_system = /dev/md2
+ 3 entity = nurswghbs001 datetime = 2016-08-22 12:52:18.0 value = 28.8116 tags.mount_point = / tags.file_system = /dev/md2
+ 4 entity = nurswghbs001 datetime = 2016-08-22 12:52:19.0 value = 28.8116 tags.mount_point = / tags.file_system = /dev/md2
+ 5 entity = nurswghbs001 datetime = 2016-08-22 12:52:33.0 value = 28.8117 tags.mount_point = / tags.file_system = /dev/md2
+ 6 entity = nurswghbs001 datetime = 2016-08-22 12:52:34.0 value = 28.8117 tags.mount_point = / tags.file_system = /dev/md2
+ 7 entity = nurswghbs001 datetime = 2016-08-22 12:52:48.0 value = 28.8117 tags.mount_point = / tags.file_system = /dev/md2
+ 8 entity = nurswghbs001 datetime = 2016-08-22 12:52:49.0 value = 28.8117 tags.mount_point = / tags.file_system = /dev/md2
+ 9 entity = nurswghbs001 datetime = 2016-08-22 12:53:03.0 value = 28.8117 tags.mount_point = / tags.file_system = /dev/md2
+10 entity = nurswghbs001 datetime = 2016-08-22 12:53:04.0 value = 28.8117 tags.mount_point = / tags.file_system = /dev/md2
 ```
 
-The following example shows how to extract metadata from the ATSD database:
+The following example shows how to extract metadata from the database:
 
 ```java
 
@@ -346,36 +354,22 @@ The following example shows how to extract metadata from the ATSD database:
     String hostUrl = System.getProperty("atsd.host");
 	String userName = System.getProperty("atsd.user");
 	String password = System.getProperty("atsd.password");
-	String sqlUrl = "jdbc:axibase:atsd:" + hostUrl + "/api/sql;trustServerCertificate=true";
+	String dbUrl = "jdbc:axibase:atsd:" + hostUrl + "/api/sql;trustServerCertificate=true";
 
-	String query = "SELECT * FROM mpstat.cpu_busy WHERE datetime > now - 1 * HOUR LIMIT 5";
+	System.out.println("Connecting to " + dbUrl);
+	Connection connection = null;
+	try {
+	    connection = DriverManager.getConnection(dbUrl, userName, password);
+		System.out.println("Connection established to " + dbUrl);
+		
 
-	System.out.println("Connecting to " + sqlUrl);
-	try (Connection connection = DriverManager.getConnection(sqlUrl, userName, password)){
-		System.out.println("Connection established to " + sqlUrl);
-		try (Statement statement = connection.createStatement();
-			 ResultSet resultSet = statement.executeQuery(query)) {
-
-			System.out.println("Query complete.");
-			ResultSetMetaData metaData = resultSet.getMetaData();
-			int columnCount = metaData.getColumnCount();
-			int rowNumber = 1;
-			while (resultSet.next()) {
-				System.out.println("= row " + rowNumber++);
-				for (int colIndex = 1; colIndex <= columnCount; colIndex++) {
-					System.out.println("  " + metaData.getColumnLabel(colIndex) + " = " + resultSet.getString(colIndex));
-				}
-			}
-
-			final SQLWarning warnings = resultSet.getWarnings();
-			if (warnings != null) {
-				warnings.printStackTrace();
-			}
-		}
 	} catch (Exception e) {
 		e.printStackTrace();
+	} finally {
+	   try {
+		   connection.close();
+	   } catch(Exception e){}	
 	}
-		
 ```
 
 Results:
@@ -403,7 +397,6 @@ TableTypes:
 	
 Catalog: 	ATSD
 Schema: 	Axibase
-
 ```
 
 ## Spring Framework Integration
