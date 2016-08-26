@@ -55,7 +55,7 @@ public class SdkProtocolImpl implements IContentProtocol {
 	private static final LoggingFacade logger = LoggingFacade.getLogger(SdkProtocolImpl.class);
 	private static final int UNSUCCESSFUL_SQL_RESULT_CODE = 400;
 	private static final int MILLIS = 1000;
-	private static final byte[] ENCODED_JSON_SCHEME_BEGIN;
+	private static final byte[] ENCODED_JSON_SCHEME_BEGIN = "#eyJAY29udGV4dCI6".getBytes(Charset.forName("UTF-8")); // #{"@context":
 	private static final TrustManager[] DUMMY_TRUST_MANAGER = new TrustManager[]{new X509TrustManager() {
 		@Override
 		public X509Certificate[] getAcceptedIssuers() {
@@ -79,11 +79,6 @@ public class SdkProtocolImpl implements IContentProtocol {
 		}
 	};
 
-	static {
-		final byte[] jsonSchemeBegin = "{\"@context\":".getBytes(Charset.defaultCharset());
-		final String encodedSchemeWithComment = "#" + Base64.encodeBase64String(jsonSchemeBegin);
-		ENCODED_JSON_SCHEME_BEGIN = encodedSchemeWithComment.getBytes(Charset.defaultCharset());
-	}
 	private static final byte LINEFEED = (byte)'\n';
 	private static final byte END_OF_INPUT = -1;
 
