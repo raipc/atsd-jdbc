@@ -54,7 +54,7 @@ public class GeneralError {
 		if (o == this) {
 			return true;
 		}
-		if (o == null || !(o instanceof GeneralError)) {
+		if (!(o instanceof GeneralError)) {
 			return false;
 		}
 		final GeneralError other = (GeneralError) o;

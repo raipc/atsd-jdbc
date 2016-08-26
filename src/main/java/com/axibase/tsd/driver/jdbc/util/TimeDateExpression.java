@@ -52,21 +52,20 @@ public class TimeDateExpression {
 	}
 
 	private String buildNewErrorMessage(Exception e, String[] token, int beginIndex) {
-		StringBuilder builder = new StringBuilder(e.getMessage())
-				.append(": ");
+		StringBuilder builder = new StringBuilder(e.getMessage()).append(": ");
 		int length = token.length;
-		if (beginIndex <= 2) {
-			builder.append("[");
+		if (beginIndex < 2) {
+			builder.append('[');
 		}
 		for (int i = 0; i < length; ++i) {
 			if (beginIndex - 2 == i) {
-				builder.append("[");
+				builder.append('[');
 			}
 			builder.append(token[i]);
 			if (beginIndex == i) {
-				builder.append("]");
+				builder.append(']');
 			}
-			builder.append(" ");
+			builder.append(' ');
 		}
 		return builder.toString();
 	}
@@ -75,7 +74,7 @@ public class TimeDateExpression {
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		for (ITimeDateConstant token : tokens) {
-			sb.append(token.value()).append(" ");
+			sb.append(token.value()).append(' ');
 		}
 		return sb.toString();
 	}
