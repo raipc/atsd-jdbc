@@ -92,12 +92,12 @@ public class SdkProtocolImpl implements IContentProtocol {
 
 	@Override
 	public InputStream readInfo() throws AtsdException, GeneralSecurityException, IOException {
-		return executeRequest(GET_METHOD, 0, false);
+		return executeRequest(GET_METHOD, 0);
 	}
 
 	@Override
 	public InputStream readContent(int timeout) throws AtsdException, GeneralSecurityException, IOException {
-		InputStream inputStream = executeRequest(POST_METHOD, timeout, false);
+		InputStream inputStream = executeRequest(POST_METHOD, timeout);
 		if (MetadataFormat.EMBED.name().equals(DriverConstants.METADATA_FORMAT_PARAM_VALUE)) {
 			inputStream = retrieveJsonSchemeAndSubstituteStream(inputStream);
 		}
@@ -116,15 +116,11 @@ public class SdkProtocolImpl implements IContentProtocol {
 		}
 	}
 
-	private InputStream executeRequest(String method, int queryTimeout, boolean onlyScheme) throws AtsdException, IOException, GeneralSecurityException {
+	private InputStream executeRequest(String method, int queryTimeout) throws AtsdException, IOException, GeneralSecurityException {
 		boolean isHead = method.equals(HEAD_METHOD);
 		boolean isPost = method.equals(POST_METHOD);
 		String postParams;
-		if (onlyScheme) {
-			postParams = contentDescription.getPostParamsForMetadata();
-		} else {
-			postParams = contentDescription.getPostParams();
-		}
+		postParams = contentDescription.getPostParams();
 
 		String url = contentDescription.getHost() + (isPost || StringUtils.isBlank(postParams) ? "" : '?' + postParams);
 		if (logger.isDebugEnabled()) {
