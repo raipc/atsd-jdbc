@@ -105,7 +105,12 @@ public class EnumUtil {
 	}
 
 	public static String getSupportedTimeFunctions() {
-		return StringUtils.join(',', buildTimeConstantsArray());
+		ITimeDateConstant[] timeFunctions = buildTimeConstantsArray();
+		StringBuilder builder = new StringBuilder(timeFunctions[0].toString());
+		for (int i = 1; i < timeFunctions.length; ++i) {
+			builder.append(',').append(timeFunctions[i].toString());
+		}
+		return builder.toString();
 	}
 
 }
