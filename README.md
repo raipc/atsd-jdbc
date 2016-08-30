@@ -41,7 +41,7 @@ Add dependency to pom.xml.
 <dependency>
     <groupId>com.axibase</groupId>
     <artifactId>atsd-jdbc</artifactId>
-    <version>1.2.8</version>
+    <version>1.2.9</version>
 </dependency>
 ```
 
@@ -56,8 +56,8 @@ $ mvn clean install -DskipTests=true
 If you do not use a build manager such as Maven, you can download a JAR library from Maven Central: [Direct URL](http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22com.axibase%22%20AND%20a%3A%22atsd-jdbc%22) and add it to the classpath of your application.
 
 ```
-* Unix: java -cp "atsd-jdbc-1.2.8.jar:lib/*" your.package.MainClass
-* Windows java -cp "atsd-jdbc-1.2.8.jar;lib/*" your.package.MainClass
+* Unix: java -cp "atsd-jdbc-1.2.9.jar:lib/*" your.package.MainClass
+* Windows java -cp "atsd-jdbc-1.2.9.jar;lib/*" your.package.MainClass
 ```
 
 ## Database Tools
@@ -417,19 +417,17 @@ Results:
 Product Name:   	Axibase
 Product Version:	Axibase Time Series Database, <ATSD_EDITION>, Revision: <ATSD_REVISION_NUMBER>
 Driver Name:    	ATSD JDBC driver
-Driver Version: 	1.2.8
+Driver Version: 	1.2.9
 
 TypeInfo:
-	Name:bigint 	        CS: false 	Type: -5 	Precision: 19
-    Name:decimal 	        CS: false 	Type: 3 	Precision: -1
-    Name:double 	        CS: false 	Type: 8 	Precision: 52
-    Name:float 	            CS: false 	Type: 6 	Precision: 23
-    Name:integer 	        CS: false 	Type: 4 	Precision: 10
-    Name:long 	            CS: false 	Type: -5 	Precision: 19
-    Name:short 	            CS: false 	Type: 5 	Precision: 5
-    Name:smallint 	        CS: false 	Type: 5 	Precision: 5
-    Name:string 	        CS: true 	Type: 12 	Precision: 2147483647
-    Name:xsd:dateTimeStamp 	CS: false 	Type: 93 	Precision: 23
+	Name:BIGINT 	        CS: false 	Type: -5 	Precision: 19
+    Name:DECIMAL 	        CS: false 	Type: 3 	Precision: -1
+    Name:DOUBLE 	        CS: false 	Type: 8 	Precision: 52
+    Name:FLOAT 	            CS: false 	Type: 6 	Precision: 23
+    Name:INTEGER 	        CS: false 	Type: 4 	Precision: 10
+    Name:SMALLINT 	        CS: false 	Type: 5 	Precision: 5
+    Name:VARCHAR 	        CS: true 	Type: 12 	Precision: 2147483647
+    Name:TIMESTAMP 	        CS: false 	Type: 93 	Precision: 23
 
 TableTypes:
 	TABLE
