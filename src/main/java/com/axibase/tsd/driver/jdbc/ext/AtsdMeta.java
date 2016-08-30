@@ -22,16 +22,8 @@ import java.security.GeneralSecurityException;
 import java.sql.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
+import java.util.*;
 import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Properties;
-import java.util.TimeZone;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
@@ -283,17 +275,17 @@ public class AtsdMeta extends MetaImpl {
 	}
 
 	private void closeProviderCaches(StatementHandle h) {
-		if (metaCache != null && !metaCache.isEmpty()) {
+		if (!metaCache.isEmpty()) {
 			metaCache.remove(h.id);
 		}
-		if (contextMap != null && !contextMap.isEmpty()) {
+		if (!contextMap.isEmpty()) {
 			contextMap.remove(h.id);
 		}
 
 	}
 
 	private void closeProvider(StatementHandle statementHandle) {
-		if (providerCache != null && !providerCache.isEmpty()) {
+		if (!providerCache.isEmpty()) {
 			final IDataProvider provider = providerCache.remove(statementHandle.id);
 			if (provider != null) {
 				try {
@@ -321,13 +313,13 @@ public class AtsdMeta extends MetaImpl {
 	}
 
 	private void closeCaches() {
-		if (metaCache != null && !metaCache.isEmpty()) {
+		if (!metaCache.isEmpty()) {
 			metaCache.clear();
 		}
-		if (contextMap != null && !contextMap.isEmpty()) {
+		if (!contextMap.isEmpty()) {
 			contextMap.clear();
 		}
-		if (providerCache != null && !providerCache.isEmpty()) {
+		if (!providerCache.isEmpty()) {
 			providerCache.clear();
 		}
 	}
@@ -377,9 +369,13 @@ public class AtsdMeta extends MetaImpl {
 
 	@Override
 	public MetaResultSet getTypeInfo(ConnectionHandle ch) {
-		final List<Object> list = new ArrayList<>();
-		for (AtsdType type : AtsdType.values()) {
-			list.add(getTypeInfo(type.originalType, type.sqlTypeCode, type == AtsdType.STRING_DATA_TYPE, type.maxPrecision));
+		AtsdType[] atsdTypes = AtsdType.values();
+		final List<Object> list = new ArrayList<>(atsdTypes.length - 2);
+		for (AtsdType type : atsdTypes) {
+			if (!(type == AtsdType.LONG_DATA_TYPE || type == AtsdType.SHORT_DATA_TYPE)) {
+				list.add(getTypeInfo(type.sqlType.toUpperCase(Locale.US), type.sqlTypeCode,
+						type == AtsdType.STRING_DATA_TYPE, type.maxPrecision));
+			}
 		}
 		return getResultSet(list, MetaTypeInfo.class, "TYPE_NAME", "DATA_TYPE", "PRECISION",
 				"LITERAL_PREFIX", "LITERAL_SUFFIX", "CREATE_PARAMS", "NULLABLE", "CASE_SENSITIVE", "SEARCHABLE",
@@ -387,10 +383,11 @@ public class AtsdMeta extends MetaImpl {
 				"MAXIMUM_SCALE", "NUM_PREC_RADIX");
 	}
 
-	private <E> MetaResultSet getResultSet(Iterable<Object> iterable, Class<?> clazz, String... names) {
-		final List<ColumnMetaData> columns = new ArrayList<>();
-		final List<Field> fields = new ArrayList<>();
-		final List<String> fieldNames = new ArrayList<>();
+	private MetaResultSet getResultSet(Iterable<Object> iterable, Class<?> clazz, String... names) {
+		final int length = names.length;
+		final List<ColumnMetaData> columns = new ArrayList<>(length);
+		final List<Field> fields = new ArrayList<>(length);
+		final List<String> fieldNames = new ArrayList<>(length);
 		for (String name : names) {
 			final int index = fields.size();
 			final String fieldName = AvaticaUtils.toCamelCase(name);
@@ -434,128 +431,115 @@ public class AtsdMeta extends MetaImpl {
 		return contentMetadata;
 	}
 
-	private List<Object> getFrame(final StatementHandle h, int fetchMaxRowCount, final List<String[]> subList) {
-		IDataProvider provider = providerCache.get(h.id);
+	private List<Object> getFrame(final StatementHandle handle, int fetchMaxRowCount, final List<String[]> subList) {
+		IDataProvider provider = providerCache.get(handle.id);
 		assert provider != null;
 		final String[] headers = provider.getContentDescription().getHeaders();
-		final ContentMetadata contentMetadata = metaCache.get(h.id);
+		final ContentMetadata contentMetadata = metaCache.get(handle.id);
 		final List<ColumnMetaData> metadataList = contentMetadata.getMetadataList();
-		final List<Object> rows = new ArrayList<>();
-		for (final String[] sarray : subList) {
-			if (sarray == null || headers == null || rows.size() == fetchMaxRowCount) {
+		final List<Object> rows = new ArrayList<>(subList.size());
+		for (final String[] stringArray : subList) {
+			if (stringArray == null || headers == null || rows.size() == fetchMaxRowCount) {
 				break;
 			}
-			if (sarray.length != headers.length) {
+			if (stringArray.length == headers.length) {
+				rows.add(getFrameRow(metadataList, stringArray));
+			} else {
 				if (log.isDebugEnabled()) {
-					log.debug("[getFrame] array length discrepancy: " + Arrays.toString(sarray));
+					log.debug("[getFrame] array length discrepancy: " + Arrays.toString(stringArray));
 				}
-				continue;
 			}
-			rows.add(getFrameRow(metadataList, sarray));
 		}
 		return rows;
 	}
 
-	private List<Object> getFrameRow(final List<ColumnMetaData> metadataList, final String[] sarray) {
-		final List<Object> row = new ArrayList<>();
-		for (int i = 0; i < sarray.length; i++) {
-			for (ColumnMetaData columnMetaData : metadataList) {
-				if (i != columnMetaData.ordinal) {
-					continue;
-				}
-				if (StringUtils.isEmpty(sarray[i])) {
-					row.add(columnMetaData.type.id == Types.VARCHAR ? sarray[i] : null);
-					continue;
-				}
-				switch (columnMetaData.type.id) {
-					case Types.SMALLINT:
-						Short s = null;
-						try {
-							s = Short.valueOf(sarray[i]);
-						} catch (final NumberFormatException nfe) {
-							if (log.isDebugEnabled()) {
-								log.debug("[getFrame] short type mismatched: {} on {} position", Arrays.toString(sarray),
-										i);
-							}
-						}
-						row.add(s);
-						break;
-					case Types.INTEGER:
-						Integer n = null;
-						try {
-							n = Integer.valueOf(sarray[i]);
-						} catch (final NumberFormatException nfe) {
-							if (log.isDebugEnabled()) {
-								log.debug("[getFrame] int type mismatched: {} on {} position", Arrays.toString(sarray), i);
-							}
-						}
-						row.add(n);
-						break;
-					case Types.BIGINT:
-						Long l = null;
-						try {
-							l = Long.valueOf(sarray[i]);
-						} catch (final NumberFormatException nfe) {
-							if (log.isDebugEnabled()) {
-								log.debug("[getFrame] long type mismatched: {} on {} position", Arrays.toString(sarray), i);
-							}
-						}
-						row.add(l);
-						break;
-					case Types.FLOAT:
-						// SQL FLOAT is up to 8 byte hence keep in Double
-					case Types.DOUBLE:
-						Double d = null;
-						try {
-							d = Double.valueOf(sarray[i]);
-						} catch (final NumberFormatException nfe) {
-							if (log.isDebugEnabled()) {
-								log.debug("[getFrame] double type mismatched: {} on {} position", Arrays.toString(sarray),
-										i);
-							}
-						}
-						row.add(d);
-						break;
-					case Types.DECIMAL:
-						BigDecimal bd = null;
-						try {
-							bd = new BigDecimal(sarray[i]);
-						} catch (final NumberFormatException nfe) {
-							if (log.isDebugEnabled()) {
-								log.debug("[getFrame] decimal type mismatched: {} on {} position", Arrays.toString(sarray),
-										i);
-							}
-						}
-						row.add(bd);
-						break;
-					case Types.TIMESTAMP:
-						Timestamp ts = null;
-						try {
-							Date dt = TIMESTAMP_FORMATTER.get().parse(sarray[i]);
-							ts = new Timestamp(dt.getTime());
-						} catch (final ParseException e) {
-							if (log.isDebugEnabled()) {
-								log.debug("[getFrame] " + e.getMessage());
-							}
-							try {
-								Date dt = TIMESTAMP_SHORT_FORMATTER.get().parse(sarray[i]);
-								ts = new Timestamp(dt.getTime());
-							} catch (ParseException e1) {
-								if (log.isDebugEnabled()) {
-									log.debug("[getFrame] " + e1.getMessage());
-								}
-							}
-						}
-						row.add(ts);
-						break;
-					case Types.VARCHAR:
-					default:
-						row.add(sarray[i]);
-				}
-				break;
+	private List<Object> getFrameRow(final List<ColumnMetaData> metadataOrdered, final String[] strings) {
+		final int length = strings.length;
+		final List<Object> row = new ArrayList<>(length);
+		int sqlType;
+		String cell;
+		for (int i = 0; i < length; i++) {
+			sqlType = metadataOrdered.get(i).type.id;
+			cell = strings[i];
+
+			if (StringUtils.isEmpty(cell)) {
+				row.add(sqlType == Types.VARCHAR ? cell : null);
+			} else if (sqlType == Types.VARCHAR) {
+				row.add(cell);
+			} else if (sqlType == Types.TIMESTAMP) {
+				row.add(readTimestampValue(cell));
+			} else {
+				row.add(readNumberValue(strings, i, sqlType));
 			}
 		}
 		return row;
+	}
+
+	private static Object readTimestampValue(String cell) {
+		Object value;
+		try {
+			Date date = TIMESTAMP_FORMATTER.get().parse(cell);
+			value = new Timestamp(date.getTime());
+		} catch (final ParseException e) {
+			if (log.isDebugEnabled()) {
+				log.debug("[getFrame] " + e.getMessage());
+			}
+			value = readShortTimestampValue(cell);
+		}
+		return value;
+	}
+
+	private static Object readShortTimestampValue(String cell) {
+		Object value = null;
+		try {
+			final Date date = TIMESTAMP_SHORT_FORMATTER.get().parse(cell);
+			value = new Timestamp(date.getTime());
+		} catch (ParseException parseException) {
+			if (log.isDebugEnabled()) {
+				log.debug("[getFrame] " + parseException.getMessage());
+			}
+		}
+		return value;
+	}
+
+	private static Object readNumberValue(String[] array, int index, int type) {
+		Object value = null;
+		String typeName = null;
+		try {
+			switch(type) {
+				case Types.SMALLINT:
+					typeName = "smallint";
+					value = Short.valueOf(array[index]);
+					break;
+				case Types.INTEGER:
+					typeName = "integer";
+					value = Integer.valueOf(array[index]);
+					break;
+				case Types.BIGINT:
+					typeName = "bigint";
+					value = Long.valueOf(array[index]);
+					break;
+				case Types.FLOAT:
+					typeName = "float";
+					value = Double.valueOf(array[index]);
+					break;
+				case Types.DOUBLE:
+					typeName = "double";
+					value = Double.valueOf(array[index]);
+					break;
+				case Types.DECIMAL:
+					typeName = "decimal";
+					value = new BigDecimal(array[index]);
+					break;
+				default:
+					throw new IllegalArgumentException("Numeric type expected");
+			}
+		} catch (final NumberFormatException e) {
+			if (log.isDebugEnabled()) {
+				log.debug("[getFrame] {} type mismatched: {} on {} position", typeName, Arrays.toString(array), index);
+			}
+		}
+		return value;
 	}
 
 	private static final ThreadLocal<SimpleDateFormat> DATE_FORMATTER = new ThreadLocal<SimpleDateFormat>() {
@@ -576,7 +560,7 @@ public class AtsdMeta extends MetaImpl {
 		}
 	};
 
-	public static final ThreadLocal<SimpleDateFormat> TIMESTAMP_FORMATTER = new ThreadLocal<SimpleDateFormat>() {
+	private static final ThreadLocal<SimpleDateFormat> TIMESTAMP_FORMATTER = new ThreadLocal<SimpleDateFormat>() {
 		@Override
 		protected SimpleDateFormat initialValue() {
 			SimpleDateFormat sdt = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.UK);
@@ -585,7 +569,7 @@ public class AtsdMeta extends MetaImpl {
 		}
 	};
 
-	public static final ThreadLocal<SimpleDateFormat> TIMESTAMP_SHORT_FORMATTER = new ThreadLocal<SimpleDateFormat>() {
+	private static final ThreadLocal<SimpleDateFormat> TIMESTAMP_SHORT_FORMATTER = new ThreadLocal<SimpleDateFormat>() {
 		@Override
 		protected SimpleDateFormat initialValue() {
 			SimpleDateFormat sdt = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.UK);
@@ -600,7 +584,7 @@ public class AtsdMeta extends MetaImpl {
 				0, 10);
 	}
 
-	public static String getLiteral(int type, boolean isPrefix) {
+	private static String getLiteral(int type, boolean isPrefix) {
 		switch (type) {
 			case Types.VARCHAR:
 				return "'";
