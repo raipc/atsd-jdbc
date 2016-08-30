@@ -117,7 +117,6 @@ public class SdkProtocolImpl implements IContentProtocol {
 	}
 
 	private InputStream executeRequest(String method, int queryTimeout) throws AtsdException, IOException, GeneralSecurityException {
-		boolean isHead = method.equals(HEAD_METHOD);
 		boolean isPost = method.equals(POST_METHOD);
 		String postParams;
 		postParams = contentDescription.getPostParams();
@@ -140,10 +139,6 @@ public class SdkProtocolImpl implements IContentProtocol {
 			logger.debug("[response] " + contentLength);
 		}
 		contentDescription.setContentLength(contentLength);
-
-		if (isHead) {
-			return null;
-		}
 
 		final boolean gzipped = COMPRESSION_ENCODING.equals(conn.getContentEncoding());
 		final int code = conn.getResponseCode();
