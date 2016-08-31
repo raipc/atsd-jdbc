@@ -103,7 +103,7 @@ public class AtsdMeta extends MetaImpl {
 			log.trace("[execute] maxRowsInFirstFrame: {} parameters: {} handle: {}", maxRowsInFirstFrame, parameterValues.size(),
 					statementHandle.toString());
 		}
-		final String query = statementHandle.signature.sql;
+		final String query = substitutePlaceholders(statementHandle.signature.sql, parameterValues);
 		IDataProvider provider = null;
 		try {
 			provider = initProvider(statementHandle.id, query);
@@ -113,41 +113,6 @@ public class AtsdMeta extends MetaImpl {
 			}
 		}
 		assert provider != null;
-		if (query.contains("?")) {
-			final Iterator<TypedValue> iterator = parameterValues.iterator();
-			final StringBuilder sb = new StringBuilder();
-			final String[] parts = query.split("\\?", -1);
-			if (parts.length != parameterValues.size() + 1) {
-				throw new IndexOutOfBoundsException(
-						String.format("Number of specified values [%d] does not match to number of occurences [%d]",
-								parameterValues.size(), parts.length));
-			}
-			for (String part : parts) {
-				sb.append(part);
-				if (!iterator.hasNext()) {
-					break;
-				}
-				final TypedValue next = iterator.next();
-				if (next.value instanceof Number || next.value instanceof TimeDateExpression) {
-					sb.append(next.value);
-				} else if (next.value instanceof String) {
-					sb.append('\'').append((String) next.value).append('\'');
-				} else if (next.value instanceof java.sql.Date) {
-					sb.append('\'').append(DATE_FORMATTER.get().format((java.sql.Date) next.value)).append('\'');
-				} else if (next.value instanceof java.sql.Time) {
-					sb.append('\'').append(TIME_FORMATTER.get().format((java.sql.Time) next.value)).append('\'');
-				} else if (next.value instanceof Timestamp) {
-					sb.append('\'').append(TIMESTAMP_FORMATTER.get().format((Timestamp) next.value)).append('\'');
-				} else if (next.value instanceof EndTime) {
-					EndTime endTime = (EndTime) next.value;
-					sb.append(endTime);
-				}
-			}
-			if (log.isDebugEnabled()) {
-				log.debug("[execute] " + sb.toString());
-			}
-			provider.getContentDescription().setQuery(sb.toString());
-		}
 		try {
 			final int timeout = getQueryTimeout(statementHandle.id);
 			provider.fetchData(maxRowsInFirstFrame, timeout);
@@ -159,6 +124,45 @@ public class AtsdMeta extends MetaImpl {
 			}
 			throw new NoSuchStatementException(statementHandle);
 		}
+	}
+
+	private static String substitutePlaceholders(String query, List<TypedValue> parameterValues) {
+		if (query.contains("?")) {
+			final StringBuilder buffer = new StringBuilder(query.length());
+			final String[] parts = query.split("\\?", -1);
+			if (parts.length != parameterValues.size() + 1) {
+				throw new IndexOutOfBoundsException(
+						String.format("Number of specified values [%d] does not match to number of occurences [%d]",
+								parameterValues.size(), parts.length - 1));
+			}
+			buffer.append(parts[0]);
+			int position = 0;
+			for (TypedValue parameterValue : parameterValues) {
+				++position;
+				Object value = parameterValue.value;
+
+				if (value instanceof Number || value instanceof TimeDateExpression || value instanceof EndTime) {
+					buffer.append(value);
+				} else if (value instanceof String) {
+					buffer.append('\'').append((String) value).append('\'');
+				} else if (value instanceof java.sql.Date) {
+					buffer.append('\'').append(DATE_FORMATTER.get().format((java.sql.Date) value)).append('\'');
+				} else if (value instanceof Time) {
+					buffer.append('\'').append(TIME_FORMATTER.get().format((Time) value)).append('\'');
+				} else if (value instanceof Timestamp) {
+					buffer.append('\'').append(TIMESTAMP_FORMATTER.get().format((Timestamp) value)).append('\'');
+				}
+
+				buffer.append(parts[position]);
+			}
+
+			final String result = buffer.toString();
+			if (log.isDebugEnabled()) {
+				log.debug("[substitutePlaceholders] " + result);
+			}
+			return result;
+		}
+		return query;
 	}
 
 	private int getQueryTimeout(int statementHandleId) {
