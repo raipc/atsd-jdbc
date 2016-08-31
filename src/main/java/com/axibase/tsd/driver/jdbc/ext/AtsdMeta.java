@@ -94,7 +94,7 @@ public class AtsdMeta extends MetaImpl {
 	@Override
 	public ExecuteResult execute(StatementHandle statementHandle, List<TypedValue> parameterValues, long maxRowsCount)
 			throws NoSuchStatementException {
-		return execute(statementHandle, parameterValues, (int) (maxRowsCount));
+		return execute(statementHandle, parameterValues, AvaticaUtils.toSaturatedInt(maxRowsCount));
 	}
 
 	@Override
@@ -114,8 +114,10 @@ public class AtsdMeta extends MetaImpl {
 		}
 		assert provider != null;
 		try {
-			final int timeout = getQueryTimeout(statementHandle.id);
-			provider.fetchData(maxRowsInFirstFrame, timeout);
+			final Statement statement = connection.statementMap.get(statementHandle.id);
+			final int maxRows = getMaxRows(statement);
+			final int timeout = getQueryTimeout(statement);
+			provider.fetchData(maxRows, timeout);
 			final ContentMetadata contentMetadata = findMetadata(query, statementHandle.connectionId, statementHandle.id);
 			return new ExecuteResult(contentMetadata.getList());
 		} catch (final AtsdException | GeneralSecurityException | IOException e) {
@@ -165,9 +167,20 @@ public class AtsdMeta extends MetaImpl {
 		return query;
 	}
 
-	private int getQueryTimeout(int statementHandleId) {
+	private int getMaxRows(Statement statement) {
+		int maxRows = 0;
+		if (statement != null) {
+			try {
+				maxRows = statement.getMaxRows();
+			} catch (SQLException e) {
+				maxRows = 0;
+			}
+		}
+		return maxRows;
+	}
+
+	private int getQueryTimeout(Statement statement) {
 		int timeout = 0;
-		final Statement statement = connection.statementMap.get(statementHandleId);
 		if (statement != null) {
 			try {
 				timeout = statement.getQueryTimeout();
