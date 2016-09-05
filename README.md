@@ -278,7 +278,7 @@ public class TestQuery {
         Connection connection = null;
         try {
             System.out.println("Connecting to " + sqlUrl);
-            connection = DriverManager.getConnection(sqlUrl, userName, password);
+            connection = DriverManager.getConnection(sqlUrl, username, password);
             System.out.println("Connection established to " + sqlUrl);
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery(query);
