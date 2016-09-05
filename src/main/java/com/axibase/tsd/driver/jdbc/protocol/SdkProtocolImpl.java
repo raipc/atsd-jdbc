@@ -279,9 +279,7 @@ public class SdkProtocolImpl implements IContentProtocol {
 				}
 				result.reset();
 				final int newSize = length - index - 1;
-				if (newSize > 0) {
-					return new ByteArrayInputStream(buffer, index + 1, newSize);
-				}
+				return new ByteArrayInputStream(buffer, index + 1, newSize);
 			}
 		}
 		return new ByteArrayInputStream(result.toByteArray());
@@ -294,7 +292,7 @@ public class SdkProtocolImpl implements IContentProtocol {
 			byte[] testHeader = new byte[testHeaderLength];
 			length = inputStream.read(testHeader);
 			if (!Arrays.equals(testHeader, ENCODED_JSON_SCHEME_BEGIN)) {
-				result.write(testHeader, 0, testHeaderLength);
+				result.write(testHeader, 0, length);
 				ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(result.toByteArray());
 				return new SequenceInputStream(byteArrayInputStream, inputStream);
 			}
