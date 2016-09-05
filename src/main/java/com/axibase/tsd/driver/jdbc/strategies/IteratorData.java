@@ -185,7 +185,7 @@ public class IteratorData {
 						sb.append(charNext);
 						pos++;
 					} else {
-						char charPrev = line.charAt(pos - 1);
+						char charPrev = pos > 0 ? line.charAt(pos - 1) : '\u0000';
 						if (nonterminal && pos > 2 && noSeparatorAround(charPrev, charNext)) {
 							sb.append(ch);
 						}
