@@ -81,6 +81,7 @@ public class SdkProtocolImpl implements IContentProtocol {
 
 	private static final byte LINEFEED = (byte)'\n';
 	private static final byte END_OF_INPUT = -1;
+	private static final int BUFFER_SIZE = 1024;
 
 	private final ContentDescription contentDescription;
 	private HttpURLConnection conn;
@@ -263,7 +264,8 @@ public class SdkProtocolImpl implements IContentProtocol {
 		}
 	}
 
-	private InputStream readJsonSchemeAndReturnRest(byte[] buffer, InputStream inputStream, ByteArrayOutputStream result) throws IOException {
+	private InputStream readJsonSchemeAndReturnRest(InputStream inputStream, ByteArrayOutputStream result) throws IOException {
+		final byte[] buffer = new byte[BUFFER_SIZE];
 		int length;
 		while ((length = inputStream.read(buffer)) != END_OF_INPUT) {
 			final int index = ArrayUtils.indexOf(buffer, LINEFEED);
@@ -298,8 +300,7 @@ public class SdkProtocolImpl implements IContentProtocol {
 			}
 			result.write(testHeader, 1, length - 1);
 
-			final byte[] buffer = new byte[1024];
-			InputStream readAfterScheme = readJsonSchemeAndReturnRest(buffer, inputStream, result);
+			InputStream readAfterScheme = readJsonSchemeAndReturnRest(inputStream, result);
 			return new SequenceInputStream(readAfterScheme, inputStream);
 
 		} catch (IOException e) {
