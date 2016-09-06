@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.axibase</groupId>
 	<artifactId>atsd-jdbc</artifactId>
-	<version>1.2.10-SNAPSHOT</version>
+	<version>1.2.10</version>
 	<name>ATSD JDBC driver</name>
 	<description>JDBC driver for SQL API using</description>
 	<url>http://axibase.com</url>
@@ -65,7 +65,7 @@
 		<build.timestamp>${maven.build.timestamp}</build.timestamp>
 		<maven.build.timestamp.format>E dd-MM-yyyy HH:mm:ss z</maven.build.timestamp.format>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<version.major>12500</version.major>
+		<version.major>14126</version.major>
 		<version.minor>0</version.minor>
 	</properties>
 	<build>

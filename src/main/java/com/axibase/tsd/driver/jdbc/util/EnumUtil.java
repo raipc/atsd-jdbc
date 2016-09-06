@@ -1,8 +1,6 @@
 package com.axibase.tsd.driver.jdbc.util;
 
-import com.axibase.tsd.driver.jdbc.enums.AtsdType;
-import com.axibase.tsd.driver.jdbc.enums.DefaultColumns;
-import com.axibase.tsd.driver.jdbc.enums.ReservedWordsSQL2003;
+import com.axibase.tsd.driver.jdbc.enums.*;
 import com.axibase.tsd.driver.jdbc.enums.timedatesyntax.*;
 import com.axibase.tsd.driver.jdbc.intf.ITimeDateConstant;
 import org.apache.commons.lang3.StringUtils;
@@ -104,13 +102,31 @@ public class EnumUtil {
 		return result;
 	}
 
+	private static String getPeriodReservedWords() {
+		return "PERIOD,PREVIOUS,NEXT,LINEAR,EXTEND,START_TIME,END_TIME,FIRST_VALUE_TIME,CALENDAR";
+	}
+
 	public static String getSupportedTimeFunctions() {
 		ITimeDateConstant[] timeFunctions = buildTimeConstantsArray();
-		StringBuilder builder = new StringBuilder(timeFunctions[0].toString());
+		StringBuilder buffer = new StringBuilder(timeFunctions[0].toString());
 		for (int i = 1; i < timeFunctions.length; ++i) {
-			builder.append(',').append(timeFunctions[i].toString());
+			buffer.append(',').append(timeFunctions[i].toString());
 		}
-		return builder.toString();
+		buffer.append("LAST_TIME,DATE_FORMAT,");
+		buffer.append(getPeriodReservedWords());
+		return buffer.toString();
+	}
+
+	public static String getNumericFunctions() {
+		return StringUtils.join(NumericFunctions.values(), ',');
+	}
+
+	public static String getStringFunctions() {
+		return LexerTokens.REGEX.name();
+	}
+
+	public static String getSqlKeywords() {
+		return LexerTokens.ROW_NUMBER.name();
 	}
 
 }

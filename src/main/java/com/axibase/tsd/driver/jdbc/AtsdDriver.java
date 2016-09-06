@@ -74,10 +74,10 @@ public class AtsdDriver extends UnregisteredDriver {
 		property = properties.getProperty(DRIVER_VERSION_MINOR_KEY);
 		int driverVersionMinor = StringUtils.isNoneEmpty(property) ? NumberUtils.toInt(property)
 				: DRIVER_VERSION_MINOR_DEFAULT;
-		boolean jdbcComplient = BooleanUtils.toBoolean(properties.getProperty(JDBC_COMPLIENT_KEY));
+		final boolean jdbcCompliant = false;
 		if (logger.isDebugEnabled())
 			logger.debug("[createDriverVersion] " + driverVersion);
-		return new DriverVersion(driverName, driverVersion, productName, productVersion, jdbcComplient,
+		return new DriverVersion(driverName, driverVersion, productName, productVersion, jdbcCompliant,
 				driverVersionMajor, driverVersionMinor, productVersionMajor, productVersionMinor);
 	}
 

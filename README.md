@@ -8,10 +8,10 @@ The driver is designed to provide a convenient way to access Axibase Time Series
 
 ## Compatibility
 
-| **Product / Date** | **2016-03-15** | **2016-03-29** |  **2016-08-25** |
-| :--- | --- | --- | --- |
-| JDBC Driver  | 1.2.1 | 1.2.6  | 1.2.8  |
-| ATSD Version | 12400 | 12500+ | 14049+ |
+| **Product / Date** | **2016-03-15** | **2016-03-29** |  **2016-08-25** | **2016-09-06** |
+| :--- | --- | --- | --- | --- |
+| JDBC Driver  | 1.2.1 | 1.2.6  | 1.2.8  | 1.2.10 |
+| ATSD Version | 12400 | 12500+ | 14049+ | 14126+ |
 
 
 ## JDBC Connection Properties Supported by Driver
@@ -41,7 +41,7 @@ Add dependency to pom.xml.
 <dependency>
     <groupId>com.axibase</groupId>
     <artifactId>atsd-jdbc</artifactId>
-    <version>1.2.9-RELEASE</version>
+    <version>1.2.10</version>
 </dependency>
 ```
 
@@ -103,7 +103,7 @@ The project is released under version 2.0 of the [Apache License](http://www.apa
 | Auto Commit Failure Closes All Result Sets |  false  |
 | Catalog Separator |  .  |
 | Catalog Term |  database  |
-| Database Major Version |  14123  |
+| Database Major Version |  14126  |
 | Database Minor Version |  0  |
 | Data Definition Causes Transaction Commit |  false  |
 | Data Definition Ignored In Transactions |  false  |
@@ -152,9 +152,9 @@ The project is released under version 2.0 of the [Apache License](http://www.apa
 | Stores Lower Case Identifiers |  true  |
 | Stores Lower Case Quoted Identifiers |  true  |
 | Stores Mixed Case Identifiers |  false  |
-| Stores Mixed Case Quoted Identifiers |  true  |
+| Stores Mixed Case Quoted Identifiers |  false  |
 | Stores Upper Case Identifiers |  false  |
-| Stores Upper Case Quoted Identifiers |  true  |
+| Stores Upper Case Quoted Identifiers |  false  |
 | Supports Alter Table With Add Column |  false  |
 | Supports Alter Table With Drop Column |  false  |
 | Supports ANSI92 Entry Level SQL |  false  |
@@ -184,8 +184,8 @@ The project is released under version 2.0 of the [Apache License](http://www.apa
 | Supports Like Escape Clause |  true  |
 | Supports Limited Outer Joins |  true  |
 | Supports Minimum SQLGrammar |  false  |
-| Supports Mixed Case Identifiers |  true  |
-| Supports Mixed Case Quoted Identifiers |  true |
+| Supports Mixed Case Identifiers |  false  |
+| Supports Mixed Case Quoted Identifiers |  false |
 | Supports Multiple Open Results |  false  |
 | Supports Multiple Result Sets |  false  |
 | Supports Multiple Transactions |  false  |

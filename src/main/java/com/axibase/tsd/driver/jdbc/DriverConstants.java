@@ -17,9 +17,8 @@ public final class DriverConstants {
 	public static final String DRIVER_VERSION_MAJOR_KEY = "driver.version.major";
 	public static final String DRIVER_VERSION_MINOR_KEY = "driver.version.minor";
 	public static final String DRIVER_PROPERTIES = "META-INF/axibase-atsd-jdbc.properties";
-	public static final String JDBC_COMPLIENT_KEY = "jdbc.compliant";
 	public static final String RETRIES_NUMBER = "1";
-	public static final String JDBC_DRIVER_VERSION_DEFAULT = "1.2.9";
+	public static final String JDBC_DRIVER_VERSION_DEFAULT = "1.2.10";
 	public static final int    DRIVER_VERSION_MAJOR_DEFAULT = 1;
 	public static final int    DRIVER_VERSION_MINOR_DEFAULT = 2;
 
@@ -43,7 +42,7 @@ public final class DriverConstants {
 	public static final String DEFAULT_SCHEMA = "Axibase Time-Series Database";
 	public static final String COLUMNS_SCHEME = "columns";
 	public static final String DATATYPE_PROPERTY = "datatype";
-	public static final String DEFAULT_CATALOG_NAME = "axiCatalog";
+	public static final String DEFAULT_CATALOG_NAME = "atsd_";
 	public static final String INDEX_PROPERTY = "columnIndex";
 	public static final String NAME_PROPERTY = "name";
 	public static final String PUBLISHER_SECTION = "dc:publisher";
@@ -69,7 +68,6 @@ public final class DriverConstants {
 	public static final String POST_METHOD = "POST";
 	public static final String KEEP_ALIVE = "Keep-Alive";
 	public static final String FORM_URLENCODED_TYPE = "application/x-www-form-urlencoded";
-	public static final String MULTIPART_FORM_DATA_BOUNDARY = "multipart/form-data;boundary=---------------------------1717271041";
 	public static final String SCHEME_HEADER = "Link";
 	public static final String START_LINK = "<data:application/csvm+json;base64,";
 	public static final String USER_AGENT = "User-Agent";

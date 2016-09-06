@@ -14,28 +14,21 @@
 */
 package com.axibase.tsd.driver.jdbc.ext;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.UnknownHostException;
-import java.security.GeneralSecurityException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Properties;
 
 import com.axibase.tsd.driver.jdbc.util.EnumUtil;
 import org.apache.calcite.avatica.AvaticaConnection;
 import org.apache.calcite.avatica.AvaticaDatabaseMetaData;
 import org.apache.calcite.avatica.ConnectionConfig;
-import org.apache.commons.lang3.StringUtils;
 
 import static com.axibase.tsd.driver.jdbc.DriverConstants.*;
 import com.axibase.tsd.driver.jdbc.content.ContentDescription;
 import com.axibase.tsd.driver.jdbc.content.json.Version;
-import com.axibase.tsd.driver.jdbc.enums.LexerTokens;
-import com.axibase.tsd.driver.jdbc.enums.NumericFunctions;
 import com.axibase.tsd.driver.jdbc.intf.IContentProtocol;
 import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
 import com.axibase.tsd.driver.jdbc.protocol.ProtocolFactory;
@@ -58,7 +51,7 @@ public class AtsdDatabaseMetaData extends AvaticaDatabaseMetaData {
 		final Properties info = ((AtsdConnection) connection).getInfo();
 		String urlSuffix = config.url();
 		final String host = urlSuffix.substring(0,
-				urlSuffix.indexOf("/", urlSuffix.indexOf(PROTOCOL_SEPARATOR) + PROTOCOL_SEPARATOR.length()))
+				urlSuffix.indexOf('/', urlSuffix.indexOf(PROTOCOL_SEPARATOR) + PROTOCOL_SEPARATOR.length()))
 				+ VERSION_ENDPOINT;
 		String user = info != null ? (String) info.get("user") : "";
 		String pass = info != null ? (String) info.get("password") : "";
@@ -76,8 +69,8 @@ public class AtsdDatabaseMetaData extends AvaticaDatabaseMetaData {
 
 	private void initVersions(final String host, String user, String pass, String[] params) throws SQLException {
 		final ContentDescription cd = new ContentDescription(host, "", user, pass, params);
-		final IContentProtocol protocol = ProtocolFactory.create(SdkProtocolImpl.class, cd);
-		try {
+		try (final IContentProtocol protocol = ProtocolFactory.create(SdkProtocolImpl.class, cd)) {
+			assert protocol != null;
 			final InputStream is = protocol.readInfo();
 			final Version version = mapper.readValue(is, Version.class);
 			if (logger.isTraceEnabled())
@@ -92,7 +85,7 @@ public class AtsdDatabaseMetaData extends AvaticaDatabaseMetaData {
 			if (logger.isDebugEnabled())
 				logger.debug(e.getMessage());
 			throw new SQLException("Unknown host specified", e);
-		} catch (final AtsdException | GeneralSecurityException | IOException e) {
+		} catch (final Exception e) {
 			if (logger.isDebugEnabled())
 				logger.debug(e.getMessage());
 			throw new SQLException(e);
@@ -166,46 +159,23 @@ public class AtsdDatabaseMetaData extends AvaticaDatabaseMetaData {
 	}
 
 	@Override
-	public String getDriverName() throws SQLException {
-		return super.getDriverName();
-	}
-
-	@Override
-	public String getDriverVersion() throws SQLException {
-		return super.getDriverVersion();
-	}
-
-	@Override
-	public int getDriverMajorVersion() {
-		return super.getDriverMajorVersion();
-	}
-
-	@Override
-	public int getDriverMinorVersion() {
-		return super.getDriverMinorVersion();
-	}
-
-	@Override
 	public String getSQLKeywords() throws SQLException {
-		List<String> keywords = new ArrayList<>();
-		String name;
-		for (LexerTokens value : LexerTokens.values()) {
-			name = value.name();
-			if (!EnumUtil.isReservedSqlToken(name)) {
-				keywords.add(name);
-			}
-		}
-		return StringUtils.join(keywords, ',');
+		return EnumUtil.getSqlKeywords();
 	}
 
 	@Override
 	public String getNumericFunctions() throws SQLException {
-		return StringUtils.join(NumericFunctions.values(), ',');
+		return EnumUtil.getNumericFunctions();
+	}
+
+	@Override
+	public boolean supportsBatchUpdates() throws SQLException {
+		return false;
 	}
 
 	@Override
 	public String getStringFunctions() throws SQLException {
-		return super.getStringFunctions();
+		return EnumUtil.getStringFunctions();
 	}
 
 	@Override
@@ -334,12 +304,32 @@ public class AtsdDatabaseMetaData extends AvaticaDatabaseMetaData {
 	}
 
 	@Override
-	public boolean supportsMixedCaseIdentifiers() throws SQLException {
-		return true;
+	public boolean storesMixedCaseIdentifiers() throws SQLException {
+		return false;
+	}
+
+	@Override
+	public boolean storesMixedCaseQuotedIdentifiers() throws SQLException {
+		return false;
+	}
+
+	@Override
+	public boolean storesUpperCaseQuotedIdentifiers() throws SQLException {
+		return false;
 	}
 
 	@Override
 	public boolean storesUpperCaseIdentifiers() throws SQLException {
+		return false;
+	}
+
+	@Override
+	public boolean supportsMixedCaseQuotedIdentifiers() throws SQLException {
+		return false;
+	}
+
+	@Override
+	public boolean supportsMixedCaseIdentifiers() throws SQLException {
 		return false;
 	}
 
@@ -423,6 +413,26 @@ public class AtsdDatabaseMetaData extends AvaticaDatabaseMetaData {
 		return false;
 	}
 
+	@Override
+	public boolean nullsAreSortedHigh() throws SQLException {
+		return false;
+	}
+
+	@Override
+	public boolean nullsAreSortedLow() throws SQLException {
+		return true;
+	}
+
+	@Override
+	public boolean nullsAreSortedAtStart() throws SQLException {
+		return false;
+	}
+
+	@Override
+	public boolean nullsAreSortedAtEnd() throws SQLException {
+		return false;
+	}
+
 	public String getRevision() {
 		return revision;
 	}
@@ -437,6 +447,11 @@ public class AtsdDatabaseMetaData extends AvaticaDatabaseMetaData {
 
 	public void setEdition(String edition) {
 		this.edition = edition;
+	}
+
+	@Override
+	public String getCatalogTerm() throws SQLException {
+		return "database";
 	}
 
 }
