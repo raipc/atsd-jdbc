@@ -55,7 +55,7 @@ public class SdkProtocolImpl implements IContentProtocol {
 	private static final LoggingFacade logger = LoggingFacade.getLogger(SdkProtocolImpl.class);
 	private static final int UNSUCCESSFUL_SQL_RESULT_CODE = 400;
 	private static final int MILLIS = 1000;
-	private static final byte[] ENCODED_JSON_SCHEME_BEGIN;
+	private static final byte[] ENCODED_JSON_SCHEME_BEGIN = "#eyJAY29udGV4dCI6".getBytes(Charset.forName("UTF-8")); // #{"@context":
 	private static final TrustManager[] DUMMY_TRUST_MANAGER = new TrustManager[]{new X509TrustManager() {
 		@Override
 		public X509Certificate[] getAcceptedIssuers() {
@@ -79,13 +79,9 @@ public class SdkProtocolImpl implements IContentProtocol {
 		}
 	};
 
-	static {
-		final byte[] jsonSchemeBegin = "{\"@context\":".getBytes(Charset.defaultCharset());
-		final String encodedSchemeWithComment = "#" + Base64.encodeBase64String(jsonSchemeBegin);
-		ENCODED_JSON_SCHEME_BEGIN = encodedSchemeWithComment.getBytes(Charset.defaultCharset());
-	}
 	private static final byte LINEFEED = (byte)'\n';
 	private static final byte END_OF_INPUT = -1;
+	private static final int BUFFER_SIZE = 1024;
 
 	private final ContentDescription contentDescription;
 	private HttpURLConnection conn;
@@ -97,12 +93,12 @@ public class SdkProtocolImpl implements IContentProtocol {
 
 	@Override
 	public InputStream readInfo() throws AtsdException, GeneralSecurityException, IOException {
-		return executeRequest(GET_METHOD, 0, false);
+		return executeRequest(GET_METHOD, 0);
 	}
 
 	@Override
 	public InputStream readContent(int timeout) throws AtsdException, GeneralSecurityException, IOException {
-		InputStream inputStream = executeRequest(POST_METHOD, timeout, false);
+		InputStream inputStream = executeRequest(POST_METHOD, timeout);
 		if (MetadataFormat.EMBED.name().equals(DriverConstants.METADATA_FORMAT_PARAM_VALUE)) {
 			inputStream = retrieveJsonSchemeAndSubstituteStream(inputStream);
 		}
@@ -121,15 +117,10 @@ public class SdkProtocolImpl implements IContentProtocol {
 		}
 	}
 
-	private InputStream executeRequest(String method, int queryTimeout, boolean onlyScheme) throws AtsdException, IOException, GeneralSecurityException {
-		boolean isHead = method.equals(HEAD_METHOD);
+	private InputStream executeRequest(String method, int queryTimeout) throws AtsdException, IOException, GeneralSecurityException {
 		boolean isPost = method.equals(POST_METHOD);
 		String postParams;
-		if (onlyScheme) {
-			postParams = contentDescription.getPostParamsForMetadata();
-		} else {
-			postParams = contentDescription.getPostParams();
-		}
+		postParams = contentDescription.getPostParams();
 
 		String url = contentDescription.getHost() + (isPost || StringUtils.isBlank(postParams) ? "" : '?' + postParams);
 		if (logger.isDebugEnabled()) {
@@ -149,10 +140,6 @@ public class SdkProtocolImpl implements IContentProtocol {
 			logger.debug("[response] " + contentLength);
 		}
 		contentDescription.setContentLength(contentLength);
-
-		if (isHead) {
-			return null;
-		}
 
 		final boolean gzipped = COMPRESSION_ENCODING.equals(conn.getContentEncoding());
 		final int code = conn.getResponseCode();
@@ -277,7 +264,8 @@ public class SdkProtocolImpl implements IContentProtocol {
 		}
 	}
 
-	private InputStream readJsonSchemeAndReturnRest(byte[] buffer, InputStream inputStream, ByteArrayOutputStream result) throws IOException {
+	private InputStream readJsonSchemeAndReturnRest(InputStream inputStream, ByteArrayOutputStream result) throws IOException {
+		final byte[] buffer = new byte[BUFFER_SIZE];
 		int length;
 		while ((length = inputStream.read(buffer)) != END_OF_INPUT) {
 			final int index = ArrayUtils.indexOf(buffer, LINEFEED);
@@ -293,9 +281,7 @@ public class SdkProtocolImpl implements IContentProtocol {
 				}
 				result.reset();
 				final int newSize = length - index - 1;
-				if (newSize > 0) {
-					return new ByteArrayInputStream(buffer, index + 1, newSize);
-				}
+				return new ByteArrayInputStream(buffer, index + 1, newSize);
 			}
 		}
 		return new ByteArrayInputStream(result.toByteArray());
@@ -308,14 +294,13 @@ public class SdkProtocolImpl implements IContentProtocol {
 			byte[] testHeader = new byte[testHeaderLength];
 			length = inputStream.read(testHeader);
 			if (!Arrays.equals(testHeader, ENCODED_JSON_SCHEME_BEGIN)) {
-				result.write(testHeader, 0, testHeaderLength);
+				result.write(testHeader, 0, length);
 				ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(result.toByteArray());
 				return new SequenceInputStream(byteArrayInputStream, inputStream);
 			}
 			result.write(testHeader, 1, length - 1);
 
-			final byte[] buffer = new byte[1024];
-			InputStream readAfterScheme = readJsonSchemeAndReturnRest(buffer, inputStream, result);
+			InputStream readAfterScheme = readJsonSchemeAndReturnRest(inputStream, result);
 			return new SequenceInputStream(readAfterScheme, inputStream);
 
 		} catch (IOException e) {

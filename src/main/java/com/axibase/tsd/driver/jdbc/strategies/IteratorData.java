@@ -26,6 +26,7 @@ import java.util.regex.Pattern;
 import com.axibase.tsd.driver.jdbc.content.StatementContext;
 import com.axibase.tsd.driver.jdbc.content.json.*;
 import com.axibase.tsd.driver.jdbc.ext.AtsdException;
+import com.axibase.tsd.driver.jdbc.ext.AtsdRuntimeException;
 import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -121,8 +122,11 @@ public class IteratorData {
 		final ObjectMapper mapper = new ObjectMapper();
 		final Comments commentsObject = mapper.readValue(json, Comments.class);
 
-		fillErrors(commentsObject.getErrors());
 		fillWarnings(commentsObject.getWarnings());
+		SQLException lastException = fillErrors(commentsObject.getErrors());
+		if (lastException != null) {
+			throw new AtsdRuntimeException(lastException.getMessage(), lastException);
+		}
 	}
 
 	private void fillWarnings(List<WarningSection> warningSections) {
@@ -136,15 +140,17 @@ public class IteratorData {
 		}
 	}
 
-	private void fillErrors(List<ErrorSection> errorSections) {
+	private SQLException fillErrors(List<ErrorSection> errorSections) {
+		SQLException sqlException = null;
 		if (errorSections != null) {
 			for (ErrorSection section : errorSections) {
-				SQLException sqle = new SQLException(section.getMessage(), section.getState());
+				sqlException = new SQLException(section.getMessage(), section.getState());
 				List<StackTraceElement> list = getStackTrace(section);
-				sqle.setStackTrace(list.toArray(new StackTraceElement[list.size()]));
-				context.addException(sqle);
+				sqlException.setStackTrace(list.toArray(new StackTraceElement[list.size()]));
+				context.addException(sqlException);
 			}
 		}
+		return sqlException;
 	}
 
 	private List<StackTraceElement> getStackTrace(AtsdExceptionRepresentation section) {
@@ -179,7 +185,7 @@ public class IteratorData {
 						sb.append(charNext);
 						pos++;
 					} else {
-						char charPrev = line.charAt(pos - 1);
+						char charPrev = pos > 0 ? line.charAt(pos - 1) : '\u0000';
 						if (nonterminal && pos > 2 && noSeparatorAround(charPrev, charNext)) {
 							sb.append(ch);
 						}

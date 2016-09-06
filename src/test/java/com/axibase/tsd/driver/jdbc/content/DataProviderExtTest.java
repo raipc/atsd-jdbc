@@ -23,6 +23,7 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.zip.ZipInputStream;
 
+import com.axibase.tsd.driver.jdbc.ext.AtsdRuntimeException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -58,7 +59,7 @@ public class DataProviderExtTest extends AtsdProperties {
 	public void testStrategyOnOne() throws Exception {
 		final StatementContext context = new StatementContext();
 		try (final IStoreStrategy storeStrategy = PowerMockito
-				.spy(isDefaultStrategy ? new KeepAliveStrategy(context) : new FileStoreStrategy(context));) {
+				.spy(isDefaultStrategy ? new KeepAliveStrategy(context) : new FileStoreStrategy(context))) {
 			fetch(storeStrategy, "/csv/1.csv", 1);
 		}
 	}
@@ -67,7 +68,7 @@ public class DataProviderExtTest extends AtsdProperties {
 	public void testStrategyStrategyOn143() throws Exception {
 		final StatementContext context = new StatementContext();
 		try (final IStoreStrategy storeStrategy = PowerMockito
-				.spy(isDefaultStrategy ? new KeepAliveStrategy(context) : new FileStoreStrategy(context));) {
+				.spy(isDefaultStrategy ? new KeepAliveStrategy(context) : new FileStoreStrategy(context))) {
 			fetch(storeStrategy, "/csv/143.csv", 143);
 		}
 	}
@@ -76,34 +77,34 @@ public class DataProviderExtTest extends AtsdProperties {
 	public void testStrategyOn20001() throws Exception {
 		final StatementContext context = new StatementContext();
 		try (final IStoreStrategy storeStrategy = PowerMockito
-				.spy(isDefaultStrategy ? new KeepAliveStrategy(context) : new FileStoreStrategy(context));) {
+				.spy(isDefaultStrategy ? new KeepAliveStrategy(context) : new FileStoreStrategy(context))) {
 			fetch(storeStrategy, "/csv/20001.csv", 20001);
 		}
 	}
 
-	@Test(expected = SQLException.class)
+	@Test(expected = AtsdRuntimeException.class)
 	public void testStrategyOnSqleWithoutRecords() throws Exception {
 		final StatementContext context = new StatementContext();
 		try (final IStoreStrategy storeStrategy = PowerMockito
-				.spy(isDefaultStrategy ? new KeepAliveStrategy(context) : new FileStoreStrategy(context));) {
+				.spy(isDefaultStrategy ? new KeepAliveStrategy(context) : new FileStoreStrategy(context))) {
 			fetch(storeStrategy, "/csv/docker.network.eth0.rxerrors.csv", 1);
 		}
 	}
 
-	@Test(expected = SQLException.class)
+	@Test(expected = AtsdRuntimeException.class)
 	public void testStrategyOnSqleWithRecords() throws Exception {
 		final StatementContext context = new StatementContext();
 		try (final IStoreStrategy storeStrategy = PowerMockito
-				.spy(isDefaultStrategy ? new KeepAliveStrategy(context) : new FileStoreStrategy(context));) {
+				.spy(isDefaultStrategy ? new KeepAliveStrategy(context) : new FileStoreStrategy(context))) {
 			fetch(storeStrategy, "/csv/df.bytes.free.csv.zip", 18835);
 		}
 	}
 
-	@Test(expected = SQLException.class)
+	@Test(expected = AtsdRuntimeException.class)
 	public void testStrategyOnSqleWithManyRecords() throws Exception {
 		final StatementContext context = new StatementContext();
 		try (final IStoreStrategy storeStrategy = PowerMockito
-				.spy(isDefaultStrategy ? new KeepAliveStrategy(context) : new FileStoreStrategy(context));) {
+				.spy(isDefaultStrategy ? new KeepAliveStrategy(context) : new FileStoreStrategy(context))) {
 			fetch(storeStrategy, "/csv/gc_time_persent.csv.zip", 323115);
 		}
 	}
@@ -131,7 +132,7 @@ public class DataProviderExtTest extends AtsdProperties {
 			final List<String[]> fetched = storeStrategy.fetch(0L, fetchSize);
 			final StatementContext context = storeStrategy.getContext();
 			final SQLException exception = context.getException();
-			if (context != null && exception != null) {
+			if (exception != null) {
 				if (logger.isDebugEnabled())
 					logger.debug("SQLException: " + exception.getMessage());
 				throw exception;

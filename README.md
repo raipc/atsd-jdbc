@@ -41,7 +41,7 @@ Add dependency to pom.xml.
 <dependency>
     <groupId>com.axibase</groupId>
     <artifactId>atsd-jdbc</artifactId>
-    <version>1.2.8</version>
+    <version>1.2.9-RELEASE</version>
 </dependency>
 ```
 
@@ -56,8 +56,8 @@ $ mvn clean install -DskipTests=true
 If you do not use a build manager such as Maven, you can download a JAR library from Maven Central: [Direct URL](http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22com.axibase%22%20AND%20a%3A%22atsd-jdbc%22) and add it to the classpath of your application.
 
 ```
-* Unix: java -cp "atsd-jdbc-1.2.8.jar:lib/*" your.package.MainClass
-* Windows java -cp "atsd-jdbc-1.2.8.jar;lib/*" your.package.MainClass
+* Unix: java -cp "atsd-jdbc-1.2.9-RELEASE.jar:lib/*" your.package.MainClass
+* Windows java -cp "atsd-jdbc-1.2.9-RELEASE.jar;lib/*" your.package.MainClass
 ```
 
 ## Database Tools
@@ -222,31 +222,40 @@ The project is released under version 2.0 of the [Apache License](http://www.apa
 
 ## Usage
 
-To execute a query, load the driver class, open a connection, create a SQL statement, execute the query and process the resultset:
+To execute a query, load the driver class, open a connection, create an SQL statement, execute the query and process the resultset:
 
 ```java
-        Class.forName("com.axibase.tsd.driver.jdbc.AtsdDriver");
-	Connection connection = DriverManager.getConnection("jdbc:axibase:atsd:" + 
-		<ATDS_URL>, <ATSD_LOGIN>, <ATSD_PASSWORD>);
-	Statement statement = connection.createStatement();
-	ResultSet resultSet = statement.executeQuery(<SQL_QUERY>);
-
+Class.forName("com.axibase.tsd.driver.jdbc.AtsdDriver");
+Connection connection = DriverManager.getConnection("jdbc:axibase:atsd:" + 
+    <ATDS_URL>, <ATSD_LOGIN>, <ATSD_PASSWORD>);
+Statement statement = connection.createStatement();
+ResultSet resultSet = statement.executeQuery(<SQL_QUERY>);
 ```
 
 The same pattern applies to prepared statements:
 
 ```java
-        Class.forName("com.axibase.tsd.driver.jdbc.AtsdDriver");
-	Connection connection = DriverManager.getConnection("jdbc:axibase:atsd:" + 
-		<ATDS_URL>, <ATSD_LOGIN>, <ATSD_PASSWORD>);
-	PreparedStatement prepareStatement = connection.prepareStatement(<SQL_QUERY>);
-	/*
-		Set placeholder parameters, if any
-	*/
-	prepareStatement.setString(1, "nurswgvml007");
-	ResultSet resultSet = prepareStatement.executeQuery();
+Class.forName("com.axibase.tsd.driver.jdbc.AtsdDriver");
+Connection connection = DriverManager.getConnection("jdbc:axibase:atsd:" + 
+    <ATDS_URL>, <ATSD_LOGIN>, <ATSD_PASSWORD>);
+PreparedStatement prepareStatement = connection.prepareStatement(<SQL_QUERY>);
+/*
+    Set placeholder parameters, if any
+*/
+prepareStatement.setString(1, "nurswgvml007");
+ResultSet resultSet = prepareStatement.executeQuery();
+```
 
-}
+## EndTime expressions (since v1.2.9)
+To use endTime expression in prepared statements you can invoke method `setTimeExpression`. It may throw `IllegalArgumentException` if expression cannot be validated.
+
+```java
+
+String query = "select datetime, value, tags.*, entity from df.disk_used where datetime < ? limit 50;";
+try (Connection connection = DriverManager.getConnection(connectionString, user, password);
+     PreparedStatement pstatement = connection.prepareStatement(query)) {
+    AtsdPreparedStatement statement = (AtsdPreparedStatement) pstatement;
+    statement.setTimeExpression(1, "current_day - 1 * week + 2 * day");
 ```
 
 ## Basic Example
@@ -269,7 +278,7 @@ public class TestQuery {
         Connection connection = null;
         try {
             System.out.println("Connecting to " + sqlUrl);
-            connection = DriverManager.getConnection(sqlUrl, userName, password);
+            connection = DriverManager.getConnection(sqlUrl, username, password);
             System.out.println("Connection established to " + sqlUrl);
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery(query);
@@ -351,25 +360,55 @@ The following example shows how to extract metadata from the database:
 ```java
 
 	Class.forName("com.axibase.tsd.driver.jdbc.AtsdDriver");
+
     String hostUrl = System.getProperty("atsd.host");
-	String userName = System.getProperty("atsd.user");
-	String password = System.getProperty("atsd.password");
-	String dbUrl = "jdbc:axibase:atsd:" + hostUrl + "/api/sql;trustServerCertificate=true";
+    String userName = System.getProperty("atsd.user");
+    String password = System.getProperty("atsd.password");
+    String sqlUrl = "jdbc:axibase:atsd:" + hostUrl + "/api/sql;trustServerCertificate=true";
 
-	System.out.println("Connecting to " + dbUrl);
-	Connection connection = null;
-	try {
-	    connection = DriverManager.getConnection(dbUrl, userName, password);
-		System.out.println("Connection established to " + dbUrl);
-		
+    try (Connection connection = DriverManager.getConnection(sqlUrl, userName, password);
+         Statement statement = connection.createStatement()) {
 
-	} catch (Exception e) {
-		e.printStackTrace();
-	} finally {
-	   try {
-		   connection.close();
-	   } catch(Exception e){}	
-	}
+        DatabaseMetaData metaData = connection.getMetaData();
+        String databaseProductName = metaData.getDatabaseProductName();
+        String databaseProductVersion = metaData.getDatabaseProductVersion();
+        String driverName = metaData.getDriverName();
+        String driverVersion = metaData.getDriverVersion();
+        System.out.println("Product Name:   \t" + databaseProductName);
+        System.out.println("Product Version:\t" + databaseProductVersion);
+        System.out.println("Driver Name:    \t" + driverName);
+        System.out.println("Driver Version: \t" + driverVersion);
+        System.out.println("\nTypeInfo:");
+
+        ResultSet rs = metaData.getTypeInfo();
+        while (rs.next()) {
+            String name = rs.getString("TYPE_NAME");
+            int type = rs.getInt("DATA_TYPE");
+            int precision = rs.getInt("PRECISION");
+            boolean isCS = rs.getBoolean("CASE_SENSITIVE");
+            System.out.println(String.format(
+                    "\tName:%s \tCS: %s \tType: %s \tPrecision: %s", name, isCS, type, precision));
+        }
+        System.out.println("\nTableTypes:");
+
+        rs = metaData.getTableTypes();
+        while (rs.next()) {
+            String type = rs.getString(1);
+            System.out.println('\t' + type);
+        }
+        rs = metaData.getCatalogs();
+
+        while (rs.next()) {
+            String catalog = rs.getString(1);
+            System.out.println("\nCatalog: \t" + catalog);
+            ResultSet rs1 = metaData.getSchemas(catalog, null);
+            while (rs1.next()) {
+                String schema = rs1.getString(1);
+                System.out.println("Schema: \t" + schema);
+            }
+        }
+    }
+
 ```
 
 Results:
@@ -378,17 +417,17 @@ Results:
 Product Name:   	Axibase
 Product Version:	Axibase Time Series Database, <ATSD_EDITION>, Revision: <ATSD_REVISION_NUMBER>
 Driver Name:    	ATSD JDBC driver
-Driver Version: 	1.2.8
+Driver Version: 	1.2.9-RELEASE
 
 TypeInfo:
-	Name: DECIMAL      	CS: false 	Type: 3    	Precision: -1
-	Name: DOUBLE      	CS: false 	Type: 8    	Precision: 52
-	Name: FLOAT      	CS: false 	Type: 6    	Precision: 23
-	Name: INTEGER      	CS: false 	Type: 4    	Precision: 10
-	Name: LONG      	CS: false 	Type: -5    Precision: 19
-	Name: SHORT      	CS: false 	Type: 5    	Precision: 5
-	Name: STRING      	CS: true 	Type: 12    Precision: 2147483647
-	Name: TIMESTAMP     CS: false 	Type: 93    Precision: 23
+	Name:BIGINT 	        CS: false 	Type: -5 	Precision: 19
+    Name:DECIMAL 	        CS: false 	Type: 3 	Precision: -1
+    Name:DOUBLE 	        CS: false 	Type: 8 	Precision: 52
+    Name:FLOAT 	            CS: false 	Type: 6 	Precision: 23
+    Name:INTEGER 	        CS: false 	Type: 4 	Precision: 10
+    Name:SMALLINT 	        CS: false 	Type: 5 	Precision: 5
+    Name:VARCHAR 	        CS: true 	Type: 12 	Precision: 2147483647
+    Name:TIMESTAMP 	        CS: false 	Type: 93 	Precision: 23
 
 TableTypes:
 	TABLE

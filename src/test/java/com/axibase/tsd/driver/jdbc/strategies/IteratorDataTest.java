@@ -15,16 +15,18 @@
 package com.axibase.tsd.driver.jdbc.strategies;
 
 import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.sql.SQLException;
 
+import com.axibase.tsd.driver.jdbc.ext.AtsdRuntimeException;
+import org.hamcrest.core.IsInstanceOf;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
@@ -90,6 +92,9 @@ public class IteratorDataTest {
 	private IteratorData data;
 	private StatementContext context;
 
+	@Rule
+	public ExpectedException thrown= ExpectedException.none();
+
 	@Before
 	public void setUp() throws Exception {
 		context = new StatementContext();
@@ -114,13 +119,12 @@ public class IteratorDataTest {
 		assertTrue(data.getSb().toString().length() == 0);
 	}
 
-	@Test(expected = SQLException.class)
+	@Test
 	public void testProcessComments() throws JsonParseException, JsonMappingException, IOException, SQLException {
+		thrown.expect(AtsdRuntimeException.class);
+		thrown.expectMessage("Name not found for id=10358022, type=TAG_VALUE");
+		thrown.expectCause(IsInstanceOf.<Throwable>instanceOf(SQLException.class));
 		data.processComments();
-		SQLException exc = context.getException();
-		assertNotNull(exc);
-		assertEquals(exc.getMessage(), "Name not found for id=10358022, type=TAG_VALUE");
-		throw exc;
 	}
 
 }

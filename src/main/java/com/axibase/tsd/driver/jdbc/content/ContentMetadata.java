@@ -54,8 +54,8 @@ public class ContentMetadata {
 	public ContentMetadata(String scheme, String sql, String connectionId, int statementId)
 			throws AtsdException, IOException {
 		metadataList = StringUtils.isNoneEmpty(scheme) ? buildMetadataList(scheme)
-				: Collections.<ColumnMetaData> emptyList();
-		sign = new Signature(metadataList, sql, Collections.<AvaticaParameter> emptyList(), null, CursorFactory.LIST,
+				: Collections.<ColumnMetaData>emptyList();
+		sign = new Signature(metadataList, sql, Collections.<AvaticaParameter>emptyList(), null, CursorFactory.LIST,
 				StatementType.SELECT);
 		list = Collections.unmodifiableList(
 				Collections.singletonList(MetaResultSet.create(connectionId, statementId, false, sign, null)));
@@ -91,30 +91,37 @@ public class ContentMetadata {
 	static List<ColumnMetaData> buildMetadataList(String json)
 			throws JsonParseException, MalformedURLException, IOException, AtsdException {
 		final Map<String, Object> jsonObject = getJsonScheme(json);
-		if (jsonObject == null)
+		if (jsonObject == null) {
 			throw new AtsdException("Wrong metadata content");
-		final Map<String, Object> publisher = (Map<String, Object>) jsonObject.get(PUBLISHER_SECTION);
-		if (publisher == null)
-			throw new AtsdException("Wrong metadata publisher");
-		final String schema = (String) publisher.get(SCHEMA_NAME_PROPERTY);
-		if (schema == null)
-			throw new AtsdException("Wrong metadata schema");
-		final Map<String, Object> tableSchema = (Map<String, Object>) jsonObject.get(TABLE_SCHEMA_SECTION);
-		if (tableSchema == null)
-			throw new AtsdException("Wrong table schema");
-		final List<Object> columns = (List<Object>) tableSchema.get(COLUMNS_SCHEME);
-		if (columns == null)
-			throw new AtsdException("Wrong columns schema");
-		final List<ColumnMetaData> metadataList = new ArrayList<>();
-		int ind = 0;
-		for (final Object obj : columns) {
-			final ColumnMetaData cmd = getColumnMetaData(schema, ind, obj);
-			metadataList.add(cmd);
-			ind++;
 		}
-		if (logger.isDebugEnabled())
-			logger.debug(String.format("Schema is processed. %s headers are found.", metadataList.size()));
-		return Collections.unmodifiableList(metadataList);
+		final Map<String, Object> publisher = (Map<String, Object>) jsonObject.get(PUBLISHER_SECTION);
+		if (publisher == null) {
+			throw new AtsdException("Wrong metadata publisher");
+		}
+		final String schema = (String) publisher.get(SCHEMA_NAME_PROPERTY);
+		if (schema == null) {
+			throw new AtsdException("Wrong metadata schema");
+		}
+		final Map<String, Object> tableSchema = (Map<String, Object>) jsonObject.get(TABLE_SCHEMA_SECTION);
+		if (tableSchema == null) {
+			throw new AtsdException("Wrong table schema");
+		}
+		final List<Object> columns = (List<Object>) tableSchema.get(COLUMNS_SCHEME);
+		if (columns == null) {
+			throw new AtsdException("Wrong columns schema");
+		}
+		final int size = columns.size();
+		ColumnMetaData[] sortedByOrdinal = new ColumnMetaData[size];
+		int index = 0;
+		for (final Object obj : columns) {
+			final ColumnMetaData cmd = getColumnMetaData(schema, index, obj);
+			sortedByOrdinal[cmd.ordinal] = cmd;
+			++index;
+		}
+		if (logger.isDebugEnabled()) {
+			logger.debug(String.format("Schema is processed. %s headers are found.", size));
+		}
+		return Collections.unmodifiableList(Arrays.asList(sortedByOrdinal));
 	}
 
 	private static List<ColumnMetaData> generateDefaultColumnMetaDataList(String query) {
@@ -154,7 +161,7 @@ public class ContentMetadata {
 		String name = (String) property.get(NAME_PROPERTY);
 		String title = (String) property.get(TITLE_PROPERTY);
 		String table = (String) property.get(TABLE_PROPERTY);
-		String datatype = (String) property.get(DATATYPE_PROPERTY);
+		String datatype = property.get(DATATYPE_PROPERTY).toString(); // may be represented as a json object (hashmap)
 		final ColumnMetaData.AvaticaType atype = getAvaticaType(datatype);
 		return new ColumnMetaDataBuilder()
 				.withColumnIndex(columnIndex)

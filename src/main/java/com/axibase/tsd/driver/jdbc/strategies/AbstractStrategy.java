@@ -15,7 +15,7 @@ import java.util.List;
 public abstract class AbstractStrategy implements IStoreStrategy {
 	private static final LoggingFacade logger = LoggingFacade.getLogger(AbstractStrategy.class);
 
-	protected IConsumer consumer = null;
+	protected IConsumer consumer;
 	protected final StrategyStatus status;
 	protected long position;
 

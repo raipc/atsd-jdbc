@@ -3,6 +3,9 @@ package com.axibase.tsd.driver.jdbc.util;
 import com.axibase.tsd.driver.jdbc.enums.AtsdType;
 import com.axibase.tsd.driver.jdbc.enums.DefaultColumns;
 import com.axibase.tsd.driver.jdbc.enums.ReservedWordsSQL2003;
+import com.axibase.tsd.driver.jdbc.enums.timedatesyntax.*;
+import com.axibase.tsd.driver.jdbc.intf.ITimeDateConstant;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
 
@@ -12,6 +15,7 @@ public class EnumUtil {
 	private static final Set<String> reservedWordsSql2003 = createSetFromEnum(ReservedWordsSQL2003.values());
 	private static final Map<String, AtsdType> atsdNameTypeMapping = createAtsdNameTypeMapping();
 	private static final Map<String, AtsdType> columnPrefixAtsdTypeMapping = createColumnPrefixAtsdTypeMapping();
+	private static final Map<String, ITimeDateConstant> tokenToTimeDateEnumConstant = initializeTimeDateMap();
 
 	private EnumUtil() {}
 
@@ -63,6 +67,50 @@ public class EnumUtil {
 			type = AtsdType.STRING_DATA_TYPE;
 		}
 		return type;
+	}
+
+	private static ITimeDateConstant[] buildTimeConstantsArray() {
+		EndTime[] endTimeValues = EndTime.values();
+		IntervalUnit[] intervalUnitValues = IntervalUnit.values();
+
+		int length = endTimeValues.length + intervalUnitValues.length;
+		ITimeDateConstant[] all = new ITimeDateConstant[length];
+		System.arraycopy(endTimeValues, 0, all, 0, endTimeValues.length);
+		System.arraycopy(intervalUnitValues, 0, all, endTimeValues.length, intervalUnitValues.length);
+		return all;
+	}
+
+	private static Map<String, ITimeDateConstant> initializeTimeDateMap() {
+		Map<String, ITimeDateConstant> map = new HashMap<>();
+		for (ITimeDateConstant timeConstant : buildTimeConstantsArray()) {
+			map.put(timeConstant.value(), timeConstant);
+		}
+		for (ITimeDateConstant operator: ArithmeticOperator.values()) {
+			map.put(operator.value(), operator);
+		}
+		return Collections.unmodifiableMap(map);
+	}
+
+	public static ITimeDateConstant getTimeDateConstantByName(String token) {
+		final String tokenLowerCase = token.toLowerCase(Locale.US);
+		ITimeDateConstant result = tokenToTimeDateEnumConstant.get(tokenLowerCase);
+		if (result == null) {
+			try {
+				result = new NumberConstant(Long.parseLong(token));
+			} catch (NumberFormatException e) {
+				result = new IsoDateFormat(token);
+			}
+		}
+		return result;
+	}
+
+	public static String getSupportedTimeFunctions() {
+		ITimeDateConstant[] timeFunctions = buildTimeConstantsArray();
+		StringBuilder builder = new StringBuilder(timeFunctions[0].toString());
+		for (int i = 1; i < timeFunctions.length; ++i) {
+			builder.append(',').append(timeFunctions[i].toString());
+		}
+		return builder.toString();
 	}
 
 }
