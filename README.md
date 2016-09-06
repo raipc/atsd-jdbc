@@ -102,8 +102,8 @@ The project is released under version 2.0 of the [Apache License](http://www.apa
 | All Tables Are Selectable |  false  |
 | Auto Commit Failure Closes All Result Sets |  false  |
 | Catalog Separator |  .  |
-| Catalog Term |  catalog  |
-| Database Major Version |  12500  |
+| Catalog Term |  database  |
+| Database Major Version |  14123  |
 | Database Minor Version |  0  |
 | Data Definition Causes Transaction Commit |  false  |
 | Data Definition Ignored In Transactions |  false  |
@@ -111,7 +111,7 @@ The project is released under version 2.0 of the [Apache License](http://www.apa
 | Does Max Row Size Include Blobs |  false  |
 | Driver Major Version |  1  |
 | Driver Minor Version |  2  |
-| Extra Name Characters |    |
+| Extra Name Characters |  |
 | Generated Key Always Returned |  false  |
 | Identifier Quote String |  "  |
 | Is Catalog At Start |  false  |
@@ -140,10 +140,10 @@ The project is released under version 2.0 of the [Apache License](http://www.apa
 | Max Tables In Select |  0  |
 | Max User Name Length |  0  |
 | Null Plus Non Null Is Null |  true  |
-| Nulls Are Sorted At End |  true  |
+| Nulls Are Sorted At End |  false  |
 | Nulls Are Sorted At Start |  false  |
 | Nulls Are Sorted High |  false  |
-| Nulls Are Sorted Low |  false  |
+| Nulls Are Sorted Low |  true  |
 | Procedure Term |  procedure  |
 | Result Set Holdability |  1  |
 | Schema Term |  schema  |
@@ -152,9 +152,9 @@ The project is released under version 2.0 of the [Apache License](http://www.apa
 | Stores Lower Case Identifiers |  true  |
 | Stores Lower Case Quoted Identifiers |  true  |
 | Stores Mixed Case Identifiers |  false  |
-| Stores Mixed Case Quoted Identifiers |  false  |
+| Stores Mixed Case Quoted Identifiers |  true  |
 | Stores Upper Case Identifiers |  false  |
-| Stores Upper Case Quoted Identifiers |  false  |
+| Stores Upper Case Quoted Identifiers |  true  |
 | Supports Alter Table With Add Column |  false  |
 | Supports Alter Table With Drop Column |  false  |
 | Supports ANSI92 Entry Level SQL |  false  |
@@ -180,12 +180,12 @@ The project is released under version 2.0 of the [Apache License](http://www.apa
 | Supports Group By |  true  |
 | Supports Group By Beyond Select |  true  |
 | Supports Group By Unrelated |  true  |
-| Supports Integrity Enhancement Facility |  false
+| Supports Integrity Enhancement Facility |  false |
 | Supports Like Escape Clause |  true  |
 | Supports Limited Outer Joins |  true  |
 | Supports Minimum SQLGrammar |  false  |
 | Supports Mixed Case Identifiers |  true  |
-| Supports Mixed Case Quoted Identifiers |  true
+| Supports Mixed Case Quoted Identifiers |  true |
 | Supports Multiple Open Results |  false  |
 | Supports Multiple Result Sets |  false  |
 | Supports Multiple Transactions |  false  |
