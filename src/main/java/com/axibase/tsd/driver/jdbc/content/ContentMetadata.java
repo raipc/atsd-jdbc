@@ -161,7 +161,7 @@ public class ContentMetadata {
 		String name = (String) property.get(NAME_PROPERTY);
 		String title = (String) property.get(TITLE_PROPERTY);
 		String table = (String) property.get(TABLE_PROPERTY);
-		String datatype = (String) property.get(DATATYPE_PROPERTY);
+		String datatype = property.get(DATATYPE_PROPERTY).toString(); // may be represented as a json object (hashmap)
 		final ColumnMetaData.AvaticaType atype = getAvaticaType(datatype);
 		return new ColumnMetaDataBuilder()
 				.withColumnIndex(columnIndex)
