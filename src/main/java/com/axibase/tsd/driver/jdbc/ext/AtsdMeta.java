@@ -366,14 +366,14 @@ public class AtsdMeta extends MetaImpl {
 		final Properties info = ((AtsdConnection) connection).getInfo();
 		String username = info != null ? (String) info.get("user") : "";
 		final Iterable<Object> iterable = new ArrayList<Object>(
-				Arrays.asList(new MetaSchema(DriverConstants.CATALOG_NAME, WordUtils.capitalize(username))));
+				Arrays.asList(new MetaSchema(DriverConstants.DEFAULT_CATALOG_NAME, WordUtils.capitalize(username))));
 		return getResultSet(iterable, MetaSchema.class, "TABLE_SCHEM", "TABLE_CATALOG");
 	}
 
 	@Override
 	public MetaResultSet getCatalogs(ConnectionHandle ch) {
 		final Iterable<Object> iterable = new ArrayList<Object>(
-				Arrays.asList(new MetaCatalog(DriverConstants.CATALOG_NAME)));
+				Arrays.asList(new MetaCatalog(DriverConstants.DEFAULT_CATALOG_NAME)));
 		return getResultSet(iterable, MetaCatalog.class, "TABLE_CAT");
 	}
 
