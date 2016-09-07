@@ -2,8 +2,6 @@ package com.axibase.tsd.driver.jdbc;
 
 public final class DriverConstants {
 	private DriverConstants(){}
-
-	public static final String CATALOG_NAME = "ATSD";
 	public static final String CONNECT_URL_PREFIX = "jdbc:axibase:atsd:";
 	public static final String DATABASE_PRODUCT_NAME = "Axibase";
 	public static final String DATABASE_PRODUCT_VERSION = "Axibase Time Series Database";
@@ -18,7 +16,7 @@ public final class DriverConstants {
 	public static final String DRIVER_VERSION_MINOR_KEY = "driver.version.minor";
 	public static final String DRIVER_PROPERTIES = "META-INF/axibase-atsd-jdbc.properties";
 	public static final String RETRIES_NUMBER = "1";
-	public static final String JDBC_DRIVER_VERSION_DEFAULT = "1.2.10";
+	public static final String JDBC_DRIVER_VERSION_DEFAULT = "1.2.11";
 	public static final int    DRIVER_VERSION_MAJOR_DEFAULT = 1;
 	public static final int    DRIVER_VERSION_MINOR_DEFAULT = 2;
 
