@@ -225,38 +225,48 @@ The project is released under version 2.0 of the [Apache License](http://www.apa
 To execute a query, load the driver class, open a connection, create an SQL statement, execute the query and process the resultset:
 
 ```java
-Class.forName("com.axibase.tsd.driver.jdbc.AtsdDriver");
-Connection connection = DriverManager.getConnection("jdbc:axibase:atsd:" + 
-    <ATDS_URL>, <ATSD_LOGIN>, <ATSD_PASSWORD>);
-Statement statement = connection.createStatement();
-ResultSet resultSet = statement.executeQuery(<SQL_QUERY>);
+	Class.forName("com.axibase.tsd.driver.jdbc.AtsdDriver");
+	Connection connection = DriverManager.getConnection("jdbc:axibase:atsd:" + <ATDS_URL>, <USERNAME>, <PASSWORD>);
+	String query = "SELECT value, datetime FROM cpu_busy WHERE entity = 'nurswgvml007' LIMIT 1";
+	Statement statement = connection.createStatement();
+	ResultSet resultSet = statement.executeQuery(query);
 ```
 
-The same pattern applies to prepared statements:
+## Prepared Statements
+
+Initialize a prepared statement, set placeholder parameters, and execute the query:
 
 ```java
-Class.forName("com.axibase.tsd.driver.jdbc.AtsdDriver");
-Connection connection = DriverManager.getConnection("jdbc:axibase:atsd:" + 
-    <ATDS_URL>, <ATSD_LOGIN>, <ATSD_PASSWORD>);
-PreparedStatement prepareStatement = connection.prepareStatement(<SQL_QUERY>);
-/*
-    Set placeholder parameters, if any
-*/
-prepareStatement.setString(1, "nurswgvml007");
-ResultSet resultSet = prepareStatement.executeQuery();
+	String query = "SELECT value, datetime FROM cpu_busy WHERE entity = ? LIMIT 1";
+	PreparedStatement preparedStatement = connection.prepareStatement(query);
+	preparedStatement.setString(1, "nurswgvml007");
+	ResultSet resultSet = prepareStatement.executeQuery();
 ```
 
-## EndTime Expressions
+### EndTime Expressions in Prepared Statements
 
 > Supported in 1.2.9+.
 
-To set `endTime` expressions as a parameter in prepared statements, invoke `setTimeExpression` method.
+To set an [`endTime`](https://github.com/axibase/atsd-docs/blob/master/end-time-syntax.md) expression as a parameter in prepared statement, cast statement to `AtsdPreparedStatement` and invoke `setTimeExpression` method.
 
 ```java
     String query = "SELECT * FROM df.disk_used WHERE datetime > ? LIMIT 1";
-    PreparedStatement pstatement = connection.prepareStatement(query);
-    AtsdPreparedStatement statement = (AtsdPreparedStatement) pstatement;
-    statement.setTimeExpression(1, "current_day - 1 * week + 2 * day");
+    PreparedStatement preparedStatement = connection.prepareStatement(query);
+    AtsdPreparedStatement axibaseStatement = (AtsdPreparedStatement)preparedStatement;
+    axibaseStatement.setTimeExpression(1, "current_day - 1 * week + 2 * day");
+```
+
+## SQL Warnings
+
+In some circumstances such as unknown tag or tag value, the database may return SQL warnings as opposed to raising a non-recoverable error.
+
+To retrieve the warning, invoke `resultSet.getWarnings()` method:
+
+```java
+	SQLWarning rsWarning = resultSet.getWarnings();
+	if (rsWarning != null) {
+		System.err.println(rsWarning.getMessage());
+	}
 ```
 
 ## Basic Example
