@@ -41,7 +41,7 @@ Add dependency to pom.xml:
 <dependency>
     <groupId>com.axibase</groupId>
     <artifactId>atsd-jdbc</artifactId>
-    <version>1.2.10-RELEASE</version>
+    <version>1.2.10</version>
 </dependency>
 ```
 
