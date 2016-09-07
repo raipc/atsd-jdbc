@@ -37,7 +37,6 @@ import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
-import com.axibase.tsd.driver.jdbc.DriverConstants;
 import com.axibase.tsd.driver.jdbc.content.json.GeneralError;
 import com.axibase.tsd.driver.jdbc.enums.MetadataFormat;
 import com.axibase.tsd.driver.jdbc.ext.AtsdRuntimeException;
@@ -99,7 +98,7 @@ public class SdkProtocolImpl implements IContentProtocol {
 	@Override
 	public InputStream readContent(int timeout) throws AtsdException, GeneralSecurityException, IOException {
 		InputStream inputStream = executeRequest(POST_METHOD, timeout);
-		if (MetadataFormat.EMBED.name().equals(DriverConstants.METADATA_FORMAT_PARAM_VALUE)) {
+		if (MetadataFormat.EMBED.name().equals(contentDescription.getMetadataFormat())) {
 			inputStream = retrieveJsonSchemeAndSubstituteStream(inputStream);
 		}
 		return inputStream;
@@ -131,7 +130,7 @@ public class SdkProtocolImpl implements IContentProtocol {
 			doTrustToCertificates((HttpsURLConnection) this.conn);
 		}
 		setBaseProperties(method, queryTimeout);
-		if (MetadataFormat.HEADER.name().equals(DriverConstants.METADATA_FORMAT_PARAM_VALUE)
+		if (MetadataFormat.HEADER.name().equals(contentDescription.getMetadataFormat())
 				&& StringUtils.isEmpty(contentDescription.getJsonScheme())) {
 			retrieveJsonSchemeFromHeader(conn.getHeaderFields());
 		}

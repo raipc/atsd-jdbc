@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
+import com.axibase.tsd.driver.jdbc.enums.MetadataFormat;
 import org.apache.commons.lang3.StringUtils;
 
 import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
@@ -40,14 +41,20 @@ public class ContentDescription {
 	private long contentLength;
 	private String[] headers;
 	private String jsonScheme;
-	private String url;
+	private final String metadataFormat;
 	private long maxRowsCount;
 
 	public ContentDescription(String host, String query, String login, String password, String[] params) {
+		this(host, query, login, password, 0, params);
+	}
+
+	public ContentDescription(String host, String query, String login, String password, int atsdVersion, String[] params) {
 		this.host = host;
 		this.query = query;
 		this.login = login;
 		this.password = password;
+		this.metadataFormat = atsdVersion < ATSD_VERSION_SUPPORTING_BODY_METADATA ?
+				MetadataFormat.HEADER.name() : MetadataFormat.EMBED.name();
 		final int size = params == null ? 0 : params.length;
 		this.paramsMap = new HashMap<>(size);
 		if (size > 0) {
@@ -136,8 +143,12 @@ public class ContentDescription {
 		}
 		return Q_PARAM_NAME + '=' + getEncodedQuery() + '&' +
 				FORMAT_PARAM_NAME + '=' + FORMAT_PARAM_VALUE + '&' +
-				METADATA_FORMAT_PARAM_NAME + '=' + METADATA_FORMAT_PARAM_VALUE + '&' +
+				METADATA_FORMAT_PARAM_NAME + '=' + metadataFormat + '&' +
 				LIMIT_PARAM_NAME + '=' + maxRowsCount;
+	}
+
+	public String getMetadataFormat() {
+		return metadataFormat;
 	}
 
 	public String getPostParamsForMetadata() {
@@ -146,7 +157,7 @@ public class ContentDescription {
 		}
 		return Q_PARAM_NAME + '=' + getEncodedQuery() + '&' +
 				FORMAT_PARAM_NAME + '=' + FORMAT_PARAM_VALUE + '&' +
-				METADATA_FORMAT_PARAM_NAME + '=' + METADATA_FORMAT_PARAM_VALUE;
+				METADATA_FORMAT_PARAM_NAME + '=' + metadataFormat;
 	}
 
 	public Map<String, String> getQueryParamsAsMap() {
@@ -156,7 +167,7 @@ public class ContentDescription {
 		Map<String, String> map = new HashMap<>();
 		map.put(Q_PARAM_NAME, query);
 		map.put(FORMAT_PARAM_NAME, FORMAT_PARAM_VALUE);
-		map.put(METADATA_FORMAT_PARAM_NAME, METADATA_FORMAT_PARAM_VALUE);
+		map.put(METADATA_FORMAT_PARAM_NAME, metadataFormat);
 		map.put(LIMIT_PARAM_NAME, Long.toString(maxRowsCount));
 		return map;
 	}
@@ -191,7 +202,6 @@ public class ContentDescription {
 		int result = 1;
 		result = prime * result + ((login == null) ? 0 : login.hashCode());
 		result = prime * result + ((password == null) ? 0 : password.hashCode());
-		result = prime * result + ((url == null) ? 0 : url.hashCode());
 		return result;
 	}
 
@@ -213,11 +223,6 @@ public class ContentDescription {
 			if (other.password != null)
 				return false;
 		} else if (!password.equals(other.password))
-			return false;
-		if (url == null) {
-			if (other.url != null)
-				return false;
-		} else if (!url.equals(other.url))
 			return false;
 		return true;
 	}

@@ -431,7 +431,15 @@ public class AtsdMeta extends MetaImpl {
 		contextMap.put(id, newContext);
 		final String login = info != null ? (String) info.get("user") : "";
 		final String password = info != null ? (String) info.get("password") : "";
-		final IDataProvider dataProvider = new DataProvider(config.url(), sql, login, password, newContext);
+		int atsdVersion = 0;
+		try {
+			atsdVersion = connection.getMetaData().getDatabaseMajorVersion();
+		} catch (SQLException e) {
+			if (log.isDebugEnabled()) {
+				log.debug("[initProvider] Error attempting to get databaseMajorVersion", e);
+			}
+		}
+		final IDataProvider dataProvider = new DataProvider(config.url(), sql, login, password, newContext, atsdVersion);
 		providerCache.put(id, dataProvider);
 		return dataProvider;
 	}
