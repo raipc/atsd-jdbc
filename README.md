@@ -4,7 +4,7 @@
 
 # JDBC driver
 
-The driver is designed to provide a convenient way to access Axibase Time Series Database via SQL. The internal communication is implemented by means of transferring resultsets in CSV format via HTTP or HTTPS protocols. See the [SQL API Documentation](https://github.com/axibase/atsd-docs/tree/master/api/sql#overview) to find a description of the query format, a list of supported SQL functions, and other useful information.
+The driver is designed to provide a convenient way to access Axibase Time Series Database via SQL. The internal communication is implemented by means of transferring results in CSV format via HTTP or HTTPS protocols. See the [SQL API Documentation](https://github.com/axibase/atsd-docs/tree/master/api/sql#overview) for a description of the query syntax and examples.
 
 ## Compatibility
 
@@ -35,17 +35,17 @@ Generally, `stream` strategy is better suited to queries returning thousands of 
 
 ## Apache Maven
 
-Add dependency to pom.xml.
+Add dependency to pom.xml:
 
 ```xml
 <dependency>
     <groupId>com.axibase</groupId>
     <artifactId>atsd-jdbc</artifactId>
-    <version>1.2.9-RELEASE</version>
+    <version>1.2.10-RELEASE</version>
 </dependency>
 ```
 
-Alternatively, you can build the project yourself.
+Alternatively, build the project with Maven:
 
 ```bash
 $ mvn clean install -DskipTests=true
@@ -53,11 +53,11 @@ $ mvn clean install -DskipTests=true
 
 ## Classpath
 
-If you do not use a build manager such as Maven, you can download a JAR library from Maven Central: [Direct URL](http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22com.axibase%22%20AND%20a%3A%22atsd-jdbc%22) and add it to the classpath of your application.
+If you do not use a build manager such as Maven, you can download the driver [jar file](https://github.com/axibase/atsd-jdbc/releases/download/RELEASE-1.2.10/atsd-jdbc-1.2.10-DEPS.jar) with dependencies and add it to the classpath of your application.
 
 ```
-* Unix: java -cp "atsd-jdbc-1.2.9-RELEASE.jar:lib/*" your.package.MainClass
-* Windows java -cp "atsd-jdbc-1.2.9-RELEASE.jar;lib/*" your.package.MainClass
+* Unix: java -cp "atsd-jdbc-1.2.10-DEPS.jar:lib/*" your.package.MainClass
+* Windows java -cp "atsd-jdbc-1.2.10-DEPS.jar;lib/*" your.package.MainClass
 ```
 
 ## Database Tools
@@ -246,14 +246,15 @@ prepareStatement.setString(1, "nurswgvml007");
 ResultSet resultSet = prepareStatement.executeQuery();
 ```
 
-## EndTime expressions (since v1.2.9)
-To use endTime expression in prepared statements you can invoke method `setTimeExpression`. It may throw `IllegalArgumentException` if expression cannot be validated.
+## EndTime Expressions
+
+> Supported in 1.2.9+.
+
+To set `endTime` expressions as a parameter in prepared statements, invoke `setTimeExpression` method.
 
 ```java
-
-String query = "select datetime, value, tags.*, entity from df.disk_used where datetime < ? limit 50;";
-try (Connection connection = DriverManager.getConnection(connectionString, user, password);
-     PreparedStatement pstatement = connection.prepareStatement(query)) {
+    String query = "SELECT * FROM df.disk_used WHERE datetime > ? LIMIT 1";
+    PreparedStatement pstatement = connection.prepareStatement(query);
     AtsdPreparedStatement statement = (AtsdPreparedStatement) pstatement;
     statement.setTimeExpression(1, "current_day - 1 * week + 2 * day");
 ```
@@ -417,7 +418,7 @@ Results:
 Product Name:   	Axibase
 Product Version:	Axibase Time Series Database, <ATSD_EDITION>, Revision: <ATSD_REVISION_NUMBER>
 Driver Name:    	ATSD JDBC driver
-Driver Version: 	1.2.9-RELEASE
+Driver Version: 	1.2.10
 
 TypeInfo:
 	Name:BIGINT 	        CS: false 	Type: -5 	Precision: 19
