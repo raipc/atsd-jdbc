@@ -14,14 +14,10 @@
 */
 package com.axibase.tsd.driver.jdbc.ext;
 
-import java.sql.DatabaseMetaData;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.Properties;
 
-import org.apache.calcite.avatica.AvaticaConnection;
-import org.apache.calcite.avatica.AvaticaFactory;
-import org.apache.calcite.avatica.Meta;
-import org.apache.calcite.avatica.UnregisteredDriver;
+import org.apache.calcite.avatica.*;
 
 import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
 
@@ -29,11 +25,17 @@ public class AtsdConnection extends AvaticaConnection {
 	@SuppressWarnings("unused")
 	private static final LoggingFacade logger = LoggingFacade.getLogger(AtsdConnection.class);
 	protected static final Trojan TROJAN = createTrojan();
-	protected final Properties info;
 	
 	protected AtsdConnection(UnregisteredDriver driver, AvaticaFactory factory, String url, Properties info) {
 		super(driver, factory, url, info);
-		this.info = info;
+	}
+
+	@Override
+	public AvaticaStatement createStatement(int resultSetType, int resultSetConcurrency, int resultSetHoldability) throws SQLException {
+		if (resultSetType != ResultSet.TYPE_FORWARD_ONLY) {
+			throw new SQLFeatureNotSupportedException("Only TYPE_FORWARD_ONLY ResultSet type is supported");
+		}
+		return super.createStatement(resultSetType, resultSetConcurrency, resultSetHoldability);
 	}
 
 	public Properties getInfo() {
@@ -45,11 +47,6 @@ public class AtsdConnection extends AvaticaConnection {
 		return true;
 	}
 
-	@Override
-	public DatabaseMetaData getMetaData() throws SQLException {
-		return super.getMetaData();
-	}
-	
 	protected Meta getMeta(){
 		return TROJAN.getMeta(this);
 	}
@@ -60,6 +57,5 @@ public class AtsdConnection extends AvaticaConnection {
 		AtsdMeta meta = (AtsdMeta) getMeta();
 		meta.close();
 	}
-	
 
 }
