@@ -12,13 +12,12 @@
 * express or implied. See the License for the specific language governing
 * permissions and limitations under the License.
 */
-package com.axibase.tsd.driver.jdbc.strategies;
+package com.axibase.tsd.driver.jdbc.strategies.sequential;
 
 import com.axibase.tsd.driver.jdbc.content.StatementContext;
 import com.axibase.tsd.driver.jdbc.ext.AtsdException;
-import com.axibase.tsd.driver.jdbc.intf.IConsumer;
-import com.axibase.tsd.driver.jdbc.intf.IStoreStrategy;
 import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
+import com.axibase.tsd.driver.jdbc.strategies.stream.KeepAliveStrategy;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -26,30 +25,20 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-public abstract class AbstractStrategy implements IStoreStrategy {
-	private static final LoggingFacade logger = LoggingFacade.getLogger(AbstractStrategy.class);
+public class SequentialStrategy extends KeepAliveStrategy {
+	private static final LoggingFacade logger = LoggingFacade.getLogger(SequentialStrategy.class);
 
-	protected IConsumer consumer;
-	protected final StrategyStatus status;
-	protected long position;
-
-	protected AbstractStrategy() {
-		this.status = new StrategyStatus();
-		this.status.setInProgress(true);
-		this.consumer = null;
-		this.position = 0;
-	}
-
-	@Override
-	public StatementContext getContext() {
-		return consumer != null ? consumer.getContext() : null;
+	public SequentialStrategy(StatementContext context) {
+		super();
+		consumer = new SequentialConsumer(context, status);
 	}
 
 	@Override
 	public List<String[]> fetch(long from, int limit) throws AtsdException, IOException {
 		final List<String[]> list = new ArrayList<>();
 		final Iterator<String[]> iterator = consumer.getIterator();
-		while (iterator.hasNext()) {
+
+		while (iterator.hasNext() && list.size() < limit) {
 			final String[] next = iterator.next();
 			if (next == null) {
 				if (logger.isDebugEnabled()) {
@@ -62,21 +51,20 @@ public abstract class AbstractStrategy implements IStoreStrategy {
 					logger.trace("[fetch] position less from: " + position + "->" + from);
 				}
 				position++;
-				continue;
+			} else {
+				list.add(next);
 			}
-			list.add(next);
-			if (list.size() >= limit) {
-				break;
-			}
+
 		}
+		final int size = list.size();
 		if (logger.isTraceEnabled()) {
-			logger.trace("[fetch] sublist size: " + list.size());
+			logger.trace("[fetch] sublist size: " + size);
 		}
-		position = from + list.size();
+		position = from + size;
 		if (logger.isTraceEnabled()) {
 			logger.trace("[fetch] updated position: " + position);
 		}
-		status.increaseProcessed(list.size());
+		status.increaseProcessed(size);
 		return Collections.unmodifiableList(list);
 	}
 }

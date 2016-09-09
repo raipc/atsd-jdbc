@@ -31,13 +31,12 @@ import com.axibase.tsd.driver.jdbc.strategies.StrategyStatus;
 public class FileChannelWriter implements Callable<Long> {
 	private static final LoggingFacade logger = LoggingFacade.getLogger(FileChannelWriter.class);
 
-	private static final int PART_LENGTH = 1 * 1024 * 1024;
+	private static final int PART_LENGTH = 1024 * 1024;
 	private final ReadableByteChannel inputChannel;
 	private final AsynchronousFileChannel writeChannel;
 	private final StrategyStatus status;
 	private final ByteBuffer buffer = ByteBuffer.allocate(256 * 1024);
 	private long position;
-	private long receivedBytes;
 	private long nextPart = PART_LENGTH;
 
 	public FileChannelWriter(final ReadableByteChannel inputChannel, final AsynchronousFileChannel writeChannel,
@@ -54,6 +53,7 @@ public class FileChannelWriter implements Callable<Long> {
 			logger.trace("[Writer->call] " + writeChannel.size());
 		FileLock fileLock = getFileLock(position);
 		try {
+			long receivedBytes;
 			while ((receivedBytes = inputChannel.read(buffer)) >= 0 || buffer.position() != 0) {
 				buffer.flip();
 				Future<Integer> lastWrite = writeChannel.write(buffer, position);
@@ -97,7 +97,7 @@ public class FileChannelWriter implements Callable<Long> {
 			logger.trace("Try write lock: " + position);
 		status.setLockPosition(position);
 		final Future<FileLock> lock = writeChannel.lock(position, PART_LENGTH, false);
-		FileLock fileLock = null;
+		FileLock fileLock;
 		try {
 			fileLock = lock.get();
 			if (logger.isTraceEnabled())

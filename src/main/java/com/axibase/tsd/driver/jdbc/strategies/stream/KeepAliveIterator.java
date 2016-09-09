@@ -14,28 +14,24 @@
 */
 package com.axibase.tsd.driver.jdbc.strategies.stream;
 
-import java.io.IOException;
-import java.nio.channels.ReadableByteChannel;
-import java.util.Arrays;
-import java.util.Iterator;
-
 import com.axibase.tsd.driver.jdbc.content.StatementContext;
 import com.axibase.tsd.driver.jdbc.ext.AtsdException;
 import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
-import com.axibase.tsd.driver.jdbc.strategies.IteratorData;
+import com.axibase.tsd.driver.jdbc.strategies.AbstractIterator;
 import com.axibase.tsd.driver.jdbc.strategies.StrategyStatus;
 
-public class KeepAliveIterator<T> implements Iterator<String[]>, AutoCloseable {
+import java.io.IOException;
+import java.nio.channels.ReadableByteChannel;
+import java.util.Arrays;
+
+public class KeepAliveIterator extends AbstractIterator {
 	private static final LoggingFacade logger = LoggingFacade.getLogger(KeepAliveIterator.class);
 	private final ReadableByteChannel readChannel;
-	private final StrategyStatus status;
-	private final IteratorData data;
 
 	public KeepAliveIterator(final ReadableByteChannel readChannel, final StatementContext context,
-			final StrategyStatus status) {
+							 final StrategyStatus status) {
+		super(context, status);
 		this.readChannel = readChannel;
-		this.status = status;
-		this.data = new IteratorData(context);
 	}
 
 	@Override
@@ -53,8 +49,9 @@ public class KeepAliveIterator<T> implements Iterator<String[]>, AutoCloseable {
 			try {
 				data.bufferOperations();
 			} catch (final AtsdException e) {
-				if (logger.isDebugEnabled())
+				if (logger.isDebugEnabled()) {
 					logger.debug("[bufferOperations] " + e.getMessage());
+				}
 				status.setInProgress(false);
 				return null;
 			}
@@ -66,8 +63,9 @@ public class KeepAliveIterator<T> implements Iterator<String[]>, AutoCloseable {
 		try {
 			data.processComments();
 		} catch (IOException e) {
-			if (logger.isDebugEnabled())
+			if (logger.isDebugEnabled()) {
 				logger.debug("[processComments] " + e.getMessage());
+			}
 		}
 		status.setInProgress(false);
 		found = data.getNext(true);
@@ -82,25 +80,24 @@ public class KeepAliveIterator<T> implements Iterator<String[]>, AutoCloseable {
 		int size = -1;
 		try {
 			size = readChannel.read(data.getBuffer());
-			if (logger.isTraceEnabled())
+			if (logger.isTraceEnabled()) {
 				logger.trace("[readNextBuffer] " + size);
+			}
 		} catch (IOException e) {
-			if (logger.isDebugEnabled())
+			if (logger.isDebugEnabled()) {
 				logger.debug("[readNextBuffer] " + e.getMessage());
+			}
 		}
 		return size;
 	}
 
 	@Override
 	public void close() throws IOException {
-		if (readChannel != null)
+		if (readChannel != null) {
 			readChannel.close();
-		if (logger.isTraceEnabled())
+		}
+		if (logger.isTraceEnabled()) {
 			logger.trace("[closed]");
-	}
-
-	@Override
-	public void remove() {
-		throw new UnsupportedOperationException();
+		}
 	}
 }

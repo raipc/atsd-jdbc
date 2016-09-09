@@ -21,18 +21,21 @@ import java.nio.channels.ReadableByteChannel;
 import java.util.concurrent.CountDownLatch;
 
 import com.axibase.tsd.driver.jdbc.content.StatementContext;
-import com.axibase.tsd.driver.jdbc.intf.IStoreStrategy;
 import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
 import com.axibase.tsd.driver.jdbc.strategies.AbstractStrategy;
 
-public class KeepAliveStrategy extends AbstractStrategy implements IStoreStrategy {
+public class KeepAliveStrategy extends AbstractStrategy {
 	private static final LoggingFacade logger = LoggingFacade.getLogger(KeepAliveStrategy.class);
 
-	private InputStream is;
+	private InputStream inputStream;
 
 	public KeepAliveStrategy(StatementContext context) {
 		super();
 		consumer = new KeepAliveConsumer(context, status);
+	}
+
+	protected KeepAliveStrategy() {
+		super();
 	}
 
 	@Override
@@ -41,8 +44,8 @@ public class KeepAliveStrategy extends AbstractStrategy implements IStoreStrateg
 		if (consumer != null) {
 			consumer.close();
 		}
-		if (is != null) {
-			is.close();
+		if (inputStream != null) {
+			inputStream.close();
 		}
 		if (logger.isDebugEnabled()) {
 			logger.debug("[close] processed " + status.getProcessed());
@@ -62,27 +65,22 @@ public class KeepAliveStrategy extends AbstractStrategy implements IStoreStrateg
 			}
 		}
 		if (logger.isTraceEnabled()) {
-			logger.trace("[openToRead] " + is.hashCode() + " -> " + is.available());
+			logger.trace("[openToRead] " + inputStream.hashCode() + " -> " + inputStream.available());
 		}
-		final ReadableByteChannel rbc = Channels.newChannel(is);
-		return consumer.open(rbc);
+		final ReadableByteChannel readableByteChannel = Channels.newChannel(inputStream);
+		return consumer.open(readableByteChannel);
 	}
 
 	@Override
-	public void store(InputStream is) throws IOException {
+	public void store(InputStream inputStream) throws IOException {
 		if (logger.isTraceEnabled()) {
-			logger.trace("[store] " + is.hashCode() + " -> " + is.available());
+			logger.trace("[store] " + inputStream.hashCode() + " -> " + inputStream.available());
 		}
-		this.is = is;
+		this.inputStream = inputStream;
 		final CountDownLatch syncLatch = status.getSyncLatch();
 		if (syncLatch.getCount() != 0) {
 			syncLatch.countDown();
 		}
-	}
-
-	@Override
-	public StatementContext getContext() {
-		return consumer != null ? consumer.getContext() : null;
 	}
 
 }

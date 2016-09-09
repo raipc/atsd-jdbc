@@ -18,7 +18,6 @@ import java.io.IOException;
 import java.nio.channels.AsynchronousFileChannel;
 import java.nio.channels.FileLock;
 import java.nio.channels.OverlappingFileLockException;
-import java.util.Iterator;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.locks.ReentrantLock;
@@ -26,30 +25,30 @@ import java.util.concurrent.locks.ReentrantLock;
 import com.axibase.tsd.driver.jdbc.content.StatementContext;
 import com.axibase.tsd.driver.jdbc.ext.AtsdException;
 import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
-import com.axibase.tsd.driver.jdbc.strategies.IteratorData;
+import com.axibase.tsd.driver.jdbc.strategies.AbstractIterator;
 import com.axibase.tsd.driver.jdbc.strategies.StrategyStatus;
 
-public class FileChannelIterator<T> implements Iterator<String[]>, AutoCloseable {
+public class FileChannelIterator extends AbstractIterator {
 	private static final LoggingFacade logger = LoggingFacade.getLogger(FileChannelIterator.class);
-	private static final int PART_LENGTH = 1 * 1024 * 1024;
+	private static final int PART_LENGTH = 1024 * 1024;
 	private final ReentrantLock lock = new ReentrantLock();
 	private final AsynchronousFileChannel readChannel;
-	private final StrategyStatus status;
-	private final IteratorData data;
 
 	public FileChannelIterator(final AsynchronousFileChannel readChannel, final StatementContext context,
-			final StrategyStatus status) {
+							   final StrategyStatus status) {
+
+		super(context, status);
 		this.readChannel = readChannel;
-		this.status = status;
-		data = new IteratorData(context);
 	}
 
 	@Override
 	public boolean hasNext() {
-		if (status.isInProgress() || data.getPosition() < status.getCurrentSize())
+		if (status.isInProgress() || data.getPosition() < status.getCurrentSize()) {
 			return true;
-		if (logger.isDebugEnabled())
+		}
+		if (logger.isDebugEnabled()) {
 			logger.debug("[hasNext->false] comments: " + data.getComments().length());
+		}
 		return false;
 	}
 
@@ -61,14 +60,16 @@ public class FileChannelIterator<T> implements Iterator<String[]>, AutoCloseable
 		}
 		while (true) {
 			if (!status.isInProgress() && status.getCurrentSize() <= data.getPosition()) {
-				if (logger.isDebugEnabled())
+				if (logger.isDebugEnabled()) {
 					logger.debug("[next] stop iterating with " + status.isInProgress() + ' ' + status.getCurrentSize()
 							+ ' ' + data.getPosition());
+				}
 				return null;
 			}
 			while (status.getLockPosition() <= data.getPosition()) {
-				if (logger.isDebugEnabled())
+				if (logger.isDebugEnabled()) {
 					logger.debug("[next] waiting for the next section: " + data.getPosition());
+				}
 				try {
 					Thread.sleep(100);
 				} catch (InterruptedException e) {
@@ -78,8 +79,9 @@ public class FileChannelIterator<T> implements Iterator<String[]>, AutoCloseable
 					break;
 				}
 			}
-			if (logger.isTraceEnabled())
+			if (logger.isTraceEnabled()) {
 				logger.trace("[next] try read lock: " + data.getPosition());
+			}
 			Future<FileLock> fileLock;
 			try {
 				fileLock = readChannel.lock(data.getPosition(), PART_LENGTH, true);
@@ -91,8 +93,9 @@ public class FileChannelIterator<T> implements Iterator<String[]>, AutoCloseable
 					}
 				}
 			} catch (OverlappingFileLockException e) {
-				if (logger.isTraceEnabled())
+				if (logger.isTraceEnabled()) {
 					logger.trace("[next] overlapped");
+				}
 				try {
 					Thread.sleep(500);
 				} catch (InterruptedException e1) {
@@ -100,8 +103,9 @@ public class FileChannelIterator<T> implements Iterator<String[]>, AutoCloseable
 				}
 				continue;
 			}
-			if (logger.isTraceEnabled())
+			if (logger.isTraceEnabled()) {
 				logger.trace("[next] locked on read: " + data.getPosition());
+			}
 			Future<Integer> operation = readChannel.read(data.getBuffer(), data.getPosition());
 			while (!operation.isDone()) {
 				try {
@@ -118,8 +122,9 @@ public class FileChannelIterator<T> implements Iterator<String[]>, AutoCloseable
 					return data.getNext(true);
 				}
 			} catch (ExecutionException | InterruptedException | IOException e) {
-				if (logger.isDebugEnabled())
+				if (logger.isDebugEnabled()) {
 					logger.debug("[next] ExecutionInterruptedException: " + e.getMessage());
+				}
 				return data.getNext(true);
 			} finally {
 				releaseFileLock(fileLock);
@@ -128,20 +133,17 @@ public class FileChannelIterator<T> implements Iterator<String[]>, AutoCloseable
 			try {
 				data.bufferOperations();
 			} catch (final AtsdException e) {
-				if (logger.isDebugEnabled())
+				if (logger.isDebugEnabled()) {
 					logger.debug("[bufferOperations] " + e.getMessage());
+				}
 				status.setInProgress(false);
 				return null;
 			}
 			found = data.getNext(false);
-			if (found != null)
+			if (found != null) {
 				return found;
+			}
 		}
-	}
-
-	@Override
-	public void remove() {
-		throw new UnsupportedOperationException();
 	}
 
 	@Override
@@ -150,26 +152,29 @@ public class FileChannelIterator<T> implements Iterator<String[]>, AutoCloseable
 			lock.lock();
 			try {
 				readChannel.close();
-				if (logger.isTraceEnabled())
+				if (logger.isTraceEnabled()) {
 					logger.trace("[close]");
+				}
 			} finally {
 				lock.unlock();
 			}
 		}
 	}
 
-	private void releaseFileLock(final Future<FileLock> fileLock) {
-		if (fileLock == null)
+	private void releaseFileLock(final Future<FileLock> fileLockFuture) {
+		if (fileLockFuture == null) {
 			return;
+		}
 		try {
-			final FileLock lock = fileLock.get();
-			lock.release();
-			lock.close();
+			final FileLock fileLock = fileLockFuture.get();
+			fileLock.release();
+			fileLock.close();
 		} catch (final IOException | InterruptedException | ExecutionException e) {
-			if (logger.isDebugEnabled())
+			if (logger.isDebugEnabled()) {
 				logger.debug("[releaseFileLock] " + e.getMessage());
+			}
 		} finally {
-			fileLock.cancel(true);
+			fileLockFuture.cancel(true);
 		}
 	}
 

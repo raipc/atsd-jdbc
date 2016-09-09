@@ -12,31 +12,32 @@
 * express or implied. See the License for the specific language governing
 * permissions and limitations under the License.
 */
-package com.axibase.tsd.driver.jdbc.strategies.storage;
-
-import java.io.IOException;
-import java.nio.channels.AsynchronousFileChannel;
-import java.nio.channels.Channel;
-import java.util.Iterator;
+package com.axibase.tsd.driver.jdbc.strategies.sequential;
 
 import com.axibase.tsd.driver.jdbc.content.StatementContext;
 import com.axibase.tsd.driver.jdbc.ext.AtsdException;
 import com.axibase.tsd.driver.jdbc.strategies.AbstractConsumer;
 import com.axibase.tsd.driver.jdbc.strategies.StrategyStatus;
 
-public class FileChannelConsumer extends AbstractConsumer {
-	public FileChannelConsumer(final StatementContext context, final StrategyStatus status) {
+import java.io.IOException;
+import java.nio.channels.Channel;
+import java.nio.channels.ReadableByteChannel;
+import java.util.Iterator;
+
+public class SequentialConsumer extends AbstractConsumer {
+	public SequentialConsumer(final StatementContext context, final StrategyStatus status) {
 		super(context, status);
 	}
 
+	@Override
 	public Iterator<String[]> getIterator() throws AtsdException {
-		return super.getIterator("File");
+		return super.getIterator("Stream");
 	}
 
 	@Override
 	public String[] open(Channel channel) throws IOException {
-		AsynchronousFileChannel readChannel = (AsynchronousFileChannel) channel;
-		iterator = new FileChannelIterator(readChannel, context, status);
+		final ReadableByteChannel readChannel = (ReadableByteChannel) channel;
+		iterator = new SequentialIterator(readChannel, context, status);
 		return iterator.next();
 	}
 

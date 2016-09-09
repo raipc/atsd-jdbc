@@ -82,7 +82,12 @@ public class IteratorData {
 		return splitLine(line);
 	}
 
-	public void bufferOperations() throws AtsdException {
+	/**
+	 * Fetch the <code>buffer</code> and decide whether its content is CSV or JSON with comments, and put it to appropriate StringBuffer
+	 * @return true if content is CSV, false if commented JSON
+	 * @throws AtsdException if format is unexpected, i.e. HTML or plain JSON
+	 */
+	public boolean bufferOperations() throws AtsdException {
 		buffer.flip();
 		final byte[] tmp = new byte[buffer.limit()];
 		buffer.get(tmp);
@@ -97,17 +102,19 @@ public class IteratorData {
 		}
 		if (line.indexOf(COMMENT_NEW_LINE) == 0 || comments.length() > 0) {
 			comments.append(line);
-			return;
+			return false;
 		}
 		int commentStart = line.indexOf(COMMENT_NEXT_LINE);
 		if (commentStart != -1) {
 			content.append(line.substring(0, commentStart));
 			comments.append(line.substring(commentStart));
+			return false;
 		} else {
 			if (logger.isTraceEnabled()) {
 				logger.trace("[bufferOperations] " + line);
 			}
 			content.append(line);
+			return true;
 		}
 	}
 

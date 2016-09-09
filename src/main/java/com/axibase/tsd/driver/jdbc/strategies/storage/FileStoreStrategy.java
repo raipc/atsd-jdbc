@@ -26,11 +26,10 @@ import java.nio.file.StandardOpenOption;
 
 import com.axibase.tsd.driver.jdbc.content.StatementContext;
 import com.axibase.tsd.driver.jdbc.intf.IProducer;
-import com.axibase.tsd.driver.jdbc.intf.IStoreStrategy;
 import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
 import com.axibase.tsd.driver.jdbc.strategies.AbstractStrategy;
 
-public class FileStoreStrategy extends AbstractStrategy implements IStoreStrategy {
+public class FileStoreStrategy extends AbstractStrategy {
 	private static final LoggingFacade logger = LoggingFacade.getLogger(FileStoreStrategy.class);
 	private static final String TMP_FILE_PREFIX = "atsd-driver";
 
@@ -96,11 +95,6 @@ public class FileStoreStrategy extends AbstractStrategy implements IStoreStrateg
 			logger.debug("[store] " + tmp.toRealPath());
 		}
 		producer.produce(tmp, inputChannel);
-	}
-
-	@Override
-	public StatementContext getContext() {
-		return consumer != null ? consumer.getContext() : null;
 	}
 
 }
