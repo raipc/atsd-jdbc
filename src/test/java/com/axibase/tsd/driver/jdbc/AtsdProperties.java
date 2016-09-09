@@ -26,7 +26,6 @@ import static com.axibase.tsd.driver.jdbc.TestConstants.*;
 
 public class AtsdProperties {
 	private static final LoggingFacade logger = LoggingFacade.getLogger(AtsdProperties.class);
-	protected static int RETRIES = 1;
 	protected static Boolean TRUST_URL;
 	protected static String HTTP_ATSD_URL;
 	protected static String JDBC_ATSD_URL;
@@ -43,20 +42,22 @@ public class AtsdProperties {
 		LOGIN_PASSWORD = System.getProperty("axibase.tsd.driver.jdbc.password");
 		HTTP_ATSD_URL = System.getProperty("axibase.tsd.driver.jdbc.url");
 		final StringBuilder sb = new StringBuilder(JDBC_ATSD_URL_PREFIX).append(HTTP_ATSD_URL);
-		if (TRUST_URL != null)
+		if (TRUST_URL != null) {
 			sb.append(TRUST_URL ? TRUST_PARAMETER_IN_QUERY : UNTRUST_PARAMETER_IN_QUERY);
+		}
 		READ_STRATEGY = System.getProperty("axibase.tsd.driver.jdbc.strategy");
 		if (READ_STRATEGY != null) {
-			if (TRUST_URL == null)
+			if (TRUST_URL == null) {
 				sb.append(PARAM_SEPARATOR);
-			sb.append(READ_STRATEGY.equalsIgnoreCase(StrategyFactory.FILE_STRATEGY) ? STRATEGY_FILE_PARAMETER
-					: STRATEGY_STREAM_PARAMETER);
+			}
+			sb.append(DriverConstants.STRATEGY_PARAM_NAME).append('=').append(READ_STRATEGY);
 		}
 		JDBC_ATSD_URL = sb.toString();
 		driver = new AtsdDriver();
 		Class.forName("com.axibase.tsd.driver.jdbc.AtsdDriver");
-		if (logger.isDebugEnabled())
+		if (logger.isDebugEnabled()) {
 			logger.debug("System properties has been set");
+		}
 	}
 
 	@AfterClass

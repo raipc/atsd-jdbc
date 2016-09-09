@@ -251,7 +251,7 @@ public class AtsdMeta extends MetaImpl {
 		}
 		IDataProvider provider = providerCache.get(statementHandle.id);
 		assert provider != null;
-		final ContentDescription cd = provider.getContentDescription();
+		final ContentDescription contentDescription = provider.getContentDescription();
 		final IStoreStrategy strategy = provider.getStrategy();
 		try {
 			if (offset == 0) {
@@ -259,7 +259,7 @@ public class AtsdMeta extends MetaImpl {
 				if (headers == null || headers.length == 0) {
 					throw new MissingResultsException(statementHandle);
 				}
-				cd.setHeaders(headers);
+				contentDescription.setHeaders(headers);
 			}
 			final List<String[]> subList = strategy.fetch(offset, fetchMaxRowCount);
 			final List<Object> rows = getFrame(statementHandle, fetchMaxRowCount, subList);
@@ -366,14 +366,14 @@ public class AtsdMeta extends MetaImpl {
 		final Properties info = ((AtsdConnection) connection).getInfo();
 		String username = info != null ? (String) info.get("user") : "";
 		final Iterable<Object> iterable = new ArrayList<Object>(
-				Arrays.asList(new MetaSchema(DriverConstants.DEFAULT_CATALOG_NAME, WordUtils.capitalize(username))));
+				Collections.singletonList(new MetaSchema(DriverConstants.DEFAULT_CATALOG_NAME, WordUtils.capitalize(username))));
 		return getResultSet(iterable, MetaSchema.class, "TABLE_SCHEM", "TABLE_CATALOG");
 	}
 
 	@Override
 	public MetaResultSet getCatalogs(ConnectionHandle ch) {
 		final Iterable<Object> iterable = new ArrayList<Object>(
-				Arrays.asList(new MetaCatalog(DriverConstants.DEFAULT_CATALOG_NAME)));
+				Collections.singletonList(new MetaCatalog(DriverConstants.DEFAULT_CATALOG_NAME)));
 		return getResultSet(iterable, MetaCatalog.class, "TABLE_CAT");
 	}
 

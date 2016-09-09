@@ -14,6 +14,7 @@
 */
 package com.axibase.tsd.driver.jdbc.content;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -46,21 +47,17 @@ public class ContentMetadataTest {
 		checkMetadataList(MCN_JSON_SCHEMA, 3);
 	}
 
-	private void checkMetadataList(String schema, int expected) {
+	private void checkMetadataList(String schema, int expectedSize) {
 		try (final InputStream is = this.getClass().getResourceAsStream(schema);
 				final Scanner scanner = new Scanner(is);) {
 			scanner.useDelimiter("\\A");
 			String json = scanner.hasNext() ? scanner.next() : "";
 			assertTrue(json != null && json.length() != 0 && json.startsWith(CONTEXT_START));
 			final List<ColumnMetaData> metadataList = ContentMetadata.buildMetadataList(json);
-			assertTrue(metadataList != null && metadataList.size() == expected);
-			for (ColumnMetaData cmd : metadataList) {
-				if (cmd.ordinal == 0)
-					assertTrue("datetime".equals(cmd.columnName));
-				else if (cmd.ordinal == 1)
-					assertTrue("value".equals(cmd.columnName));
-				else if (cmd.ordinal == 2)
-					assertTrue("entity".equals(cmd.columnName));
+			assertEquals(expectedSize, metadataList.size());
+			final String[] expectedColumnNames = {"datetime", "value", "entity"};
+			for (int i = 0; i < metadataList.size(); i++) {
+				assertEquals(expectedColumnNames[i], metadataList.get(i).columnName);
 			}
 		} catch (final IOException | AtsdException e) {
 			fail(e.getMessage());
