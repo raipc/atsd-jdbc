@@ -109,8 +109,8 @@ public class AtsdDriver extends UnregisteredDriver {
 		final AvaticaConnection connection = atsdFactory.newConnection(this, atsdFactory, url, info);
 		final DatabaseMetaData metaData = connection.getMetaData();
 		assert metaData instanceof AtsdDatabaseMetaData;
-		AtsdDatabaseMetaData admd = (AtsdDatabaseMetaData) metaData;
-		admd.init(connection);
+		AtsdDatabaseMetaData atsdDatabaseMetaData = (AtsdDatabaseMetaData) metaData;
+		atsdDatabaseMetaData.init(connection);
 		handler.onConnectionInit(connection);
 		return connection;
 	}
