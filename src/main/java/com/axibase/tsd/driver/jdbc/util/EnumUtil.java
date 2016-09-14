@@ -99,7 +99,7 @@ public class EnumUtil {
 				return result;
 			}
 		}
-		return Strategy.MEMORY;
+		return Strategy.STREAM;
 	}
 
 	public static ITimeDateConstant getTimeDateConstantByName(String token) {
