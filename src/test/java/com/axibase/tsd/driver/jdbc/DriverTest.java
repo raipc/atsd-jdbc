@@ -54,7 +54,6 @@ public class DriverTest extends AtsdProperties {
 			fail(e.getMessage());
 		}
 		assertNotNull(driver);
-		assertTrue(driver instanceof AtsdDriver);
 	}
 
 	@Test

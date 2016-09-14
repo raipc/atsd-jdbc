@@ -15,16 +15,18 @@
 package com.axibase.tsd.driver.jdbc.strategies;
 
 import com.axibase.tsd.driver.jdbc.content.StatementContext;
-import com.axibase.tsd.driver.jdbc.ext.AtsdException;
+import com.axibase.tsd.driver.jdbc.enums.Strategy;
 import com.axibase.tsd.driver.jdbc.intf.IConsumer;
 import com.axibase.tsd.driver.jdbc.intf.IStoreStrategy;
 import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 public abstract class AbstractStrategy implements IStoreStrategy {
 	private static final LoggingFacade logger = LoggingFacade.getLogger(AbstractStrategy.class);
@@ -32,12 +34,13 @@ public abstract class AbstractStrategy implements IStoreStrategy {
 	protected IConsumer consumer;
 	protected final StrategyStatus status;
 	protected long position;
+	protected InputStream inputStream;
 
-	protected AbstractStrategy() {
+	protected AbstractStrategy(StatementContext context, Strategy strategy) {
 		this.status = new StrategyStatus();
 		this.status.setInProgress(true);
-		this.consumer = null;
 		this.position = 0;
+		this.consumer = new Consumer(context, status, strategy.getSource());
 	}
 
 	@Override
@@ -46,37 +49,76 @@ public abstract class AbstractStrategy implements IStoreStrategy {
 	}
 
 	@Override
-	public List<String[]> fetch(long from, int limit) throws AtsdException, IOException {
+	public List<String[]> fetch(long from, int limit) throws IOException {
 		final List<String[]> list = new ArrayList<>();
 		final Iterator<String[]> iterator = consumer.getIterator();
-		while (iterator.hasNext()) {
+		int counter = 0;
+		while (iterator.hasNext() && counter < limit) {
 			final String[] next = iterator.next();
-			if (next == null) {
-				if (logger.isDebugEnabled()) {
-					logger.debug("[fetch] no more");
-				}
-				break;
-			}
 			if (position < from) {
 				if (logger.isTraceEnabled()) {
 					logger.trace("[fetch] position less from: " + position + "->" + from);
 				}
 				position++;
-				continue;
-			}
-			list.add(next);
-			if (list.size() >= limit) {
-				break;
+			} else {
+				list.add(next);
+				++counter;
 			}
 		}
+		consumer.fillComments();
+		final int size = list.size();
 		if (logger.isTraceEnabled()) {
-			logger.trace("[fetch] sublist size: " + list.size());
+			logger.trace("[fetch] sublist size: " + size);
 		}
-		position = from + list.size();
+		position = from + size;
 		if (logger.isTraceEnabled()) {
 			logger.trace("[fetch] updated position: " + position);
 		}
-		status.increaseProcessed(list.size());
+		status.increaseProcessed(size);
 		return Collections.unmodifiableList(list);
+	}
+
+	@Override
+	public String[] openToRead() throws IOException {
+		if (logger.isTraceEnabled()) {
+			logger.trace("[openToRead] " + status.getSyncLatch().getCount());
+		}
+		try {
+			status.getSyncLatch().await();
+		} catch (InterruptedException e) {
+			if (logger.isDebugEnabled()) {
+				logger.debug("[openToRead] " + e.getMessage());
+			}
+		}
+		final String[] header = consumer.open(inputStream);
+		consumer.fillComments();
+		return header;
+	}
+
+	@Override
+	public void store(InputStream inputStream) throws IOException {
+		if (logger.isTraceEnabled()) {
+			logger.trace("[store] " + inputStream.hashCode() + " -> " + inputStream.available());
+		}
+		this.inputStream = inputStream;
+
+		final CountDownLatch syncLatch = status.getSyncLatch();
+		if (syncLatch.getCount() != 0) {
+			syncLatch.countDown();
+		}
+	}
+
+	@Override
+	public void close() throws Exception {
+		status.setInProgress(false);
+		if (consumer != null) {
+			consumer.close();
+		}
+		if (inputStream != null) {
+			inputStream.close();
+		}
+		if (logger.isDebugEnabled()) {
+			logger.debug("[close] processed " + status.getProcessed());
+		}
 	}
 }

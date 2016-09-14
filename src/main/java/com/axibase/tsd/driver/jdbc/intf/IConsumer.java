@@ -15,17 +15,18 @@
 package com.axibase.tsd.driver.jdbc.intf;
 
 import java.io.IOException;
-import java.nio.channels.Channel;
+import java.io.InputStream;
 import java.util.Iterator;
 
 import com.axibase.tsd.driver.jdbc.content.StatementContext;
-import com.axibase.tsd.driver.jdbc.ext.AtsdException;
 
 public interface IConsumer extends AutoCloseable {
 
-	String[] open(Channel channel) throws IOException;
+	String[] open(InputStream inputStream) throws IOException;
 
-	Iterator<String[]> getIterator() throws AtsdException;
+	Iterator<String[]> getIterator();
 
 	StatementContext getContext();
+
+	void fillComments();
 }

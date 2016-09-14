@@ -14,20 +14,14 @@
 */
 package com.axibase.tsd.driver.jdbc.strategies;
 
-import com.axibase.tsd.driver.jdbc.strategies.sequential.SequentialStrategy;
-import org.apache.commons.lang3.StringUtils;
+import com.axibase.tsd.driver.jdbc.util.EnumUtil;
 
 import com.axibase.tsd.driver.jdbc.content.StatementContext;
 import com.axibase.tsd.driver.jdbc.intf.IStoreStrategy;
 import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
-import com.axibase.tsd.driver.jdbc.strategies.storage.FileStoreStrategy;
-import com.axibase.tsd.driver.jdbc.strategies.stream.KeepAliveStrategy;
 
 public class StrategyFactory {
 	private static final LoggingFacade logger = LoggingFacade.getLogger(StrategyFactory.class);
-	public static final String STREAM_STRATEGY = "memory";
-	public static final String FILE_STRATEGY = "file";
-	public static final String SEQUENTIAL_STRATEGY = "stream";
 
 	private StrategyFactory() {}
 
@@ -42,17 +36,6 @@ public class StrategyFactory {
 	}
 
 	public static Class<? extends IStoreStrategy> findClassByName(final String name) {
-		if (StringUtils.isEmpty(name)) {
-			return KeepAliveStrategy.class;
-		}
-		switch (name) {
-			case FILE_STRATEGY:
-				return FileStoreStrategy.class;
-			case SEQUENTIAL_STRATEGY:
-				return SequentialStrategy.class;
-			case STREAM_STRATEGY:
-			default:
-				return KeepAliveStrategy.class;
-			}
+		return EnumUtil.getStrategyByName(name).getStrategyClass();
 	}
 }

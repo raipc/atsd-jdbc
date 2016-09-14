@@ -12,28 +12,14 @@
 * express or implied. See the License for the specific language governing
 * permissions and limitations under the License.
 */
-package com.axibase.tsd.driver.jdbc.strategies;
+package com.axibase.tsd.driver.jdbc.strategies.stream;
 
 import com.axibase.tsd.driver.jdbc.content.StatementContext;
+import com.axibase.tsd.driver.jdbc.enums.Strategy;
+import com.axibase.tsd.driver.jdbc.strategies.AbstractStrategy;
 
-import java.io.IOException;
-import java.util.Iterator;
-
-public abstract class AbstractIterator implements Iterator<String[]>, AutoCloseable {
-
-	protected final StrategyStatus status;
-	protected final IteratorData data;
-
-	protected AbstractIterator(final StatementContext context, final StrategyStatus status) {
-		this.status = status;
-		data = new IteratorData(context);
+public class StreamStrategy extends AbstractStrategy {
+	public StreamStrategy(StatementContext context) {
+		super(context, Strategy.STREAM);
 	}
-
-	@Override
-	public void remove() {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public abstract void close() throws IOException;
 }

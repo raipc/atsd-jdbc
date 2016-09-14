@@ -3,6 +3,7 @@ package com.axibase.tsd.driver.jdbc.util;
 import com.axibase.tsd.driver.jdbc.enums.*;
 import com.axibase.tsd.driver.jdbc.enums.timedatesyntax.*;
 import com.axibase.tsd.driver.jdbc.intf.ITimeDateConstant;
+import org.apache.commons.lang3.EnumUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
@@ -14,6 +15,7 @@ public class EnumUtil {
 	private static final Map<String, AtsdType> atsdNameTypeMapping = createAtsdNameTypeMapping();
 	private static final Map<String, AtsdType> columnPrefixAtsdTypeMapping = createColumnPrefixAtsdTypeMapping();
 	private static final Map<String, ITimeDateConstant> tokenToTimeDateEnumConstant = initializeTimeDateMap();
+	private static final Map<String, Strategy> strategyMap = EnumUtils.getEnumMap(Strategy.class);
 
 	private EnumUtil() {}
 
@@ -87,6 +89,17 @@ public class EnumUtil {
 			map.put(operator.value(), operator);
 		}
 		return Collections.unmodifiableMap(map);
+	}
+
+
+	public static Strategy getStrategyByName(String name) {
+		if (name != null) {
+			final Strategy result = strategyMap.get(name.toUpperCase(Locale.US));
+			if (result != null) {
+				return result;
+			}
+		}
+		return Strategy.MEMORY;
 	}
 
 	public static ITimeDateConstant getTimeDateConstantByName(String token) {

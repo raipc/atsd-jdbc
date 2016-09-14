@@ -14,45 +14,33 @@
 */
 package com.axibase.tsd.driver.jdbc.strategies.storage;
 
+import com.axibase.tsd.driver.jdbc.content.StatementContext;
+import com.axibase.tsd.driver.jdbc.enums.Strategy;
+import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
+import com.axibase.tsd.driver.jdbc.strategies.AbstractStrategy;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.channels.AsynchronousFileChannel;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
-
-import com.axibase.tsd.driver.jdbc.content.StatementContext;
-import com.axibase.tsd.driver.jdbc.intf.IProducer;
-import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
-import com.axibase.tsd.driver.jdbc.strategies.AbstractStrategy;
+import java.nio.file.*;
+import java.util.concurrent.CountDownLatch;
 
 public class FileStoreStrategy extends AbstractStrategy {
 	private static final LoggingFacade logger = LoggingFacade.getLogger(FileStoreStrategy.class);
 	private static final String TMP_FILE_PREFIX = "atsd-driver";
 
-	private final IProducer producer;
 	private Path tmp;
 
 	public FileStoreStrategy(StatementContext context) {
-		super();
-		consumer = new FileChannelConsumer(context, status);
-		producer = new FileChannelProducer(status);
+		super(context, Strategy.FILE);
 	}
 
 	@Override
 	public void close() throws Exception {
+		super.close();
+
 		if (logger.isTraceEnabled()) {
 			logger.trace("[close] " + status.getSyncLatch().getCount());
-		}
-		status.setInProgress(false);
-		if (consumer != null) {
-			consumer.close();
-		}
-		if (producer != null) {
-			producer.close();
 		}
 		if (tmp != null) {
 			final File file = tmp.toFile();
@@ -63,38 +51,19 @@ public class FileStoreStrategy extends AbstractStrategy {
 				}
 			}
 		}
-		if (logger.isDebugEnabled()) {
-			logger.debug("[close] processed " + status.getProcessed());
-		}
 	}
 
 	@Override
-	public String[] openToRead() throws IOException {
-		if (logger.isTraceEnabled()) {
-			logger.trace("[openToRead] " + status.getSyncLatch().getCount());
-		}
-		try {
-			status.getSyncLatch().await();
-		} catch (InterruptedException e) {
-			if (logger.isDebugEnabled()) {
-				logger.debug("[openToRead] " + e.getMessage());
-			}
-		}
-		AsynchronousFileChannel readChannel = AsynchronousFileChannel.open(tmp, StandardOpenOption.READ);
-		if (logger.isDebugEnabled()) {
-			logger.debug("[openToRead] {} -> {}", tmp.toAbsolutePath(), readChannel.isOpen());
-		}
-		return consumer.open(readChannel);
-	}
-
-	@Override
-	public void store(InputStream is) throws IOException {
-		final ReadableByteChannel inputChannel = Channels.newChannel(is);
+	public void store(InputStream inputStream) throws IOException {
 		tmp = Files.createTempFile(TMP_FILE_PREFIX, null);
 		if (logger.isDebugEnabled()) {
 			logger.debug("[store] " + tmp.toRealPath());
 		}
-		producer.produce(tmp, inputChannel);
+		Files.copy(inputStream, tmp, StandardCopyOption.REPLACE_EXISTING);
+		this.inputStream = Files.newInputStream(tmp, StandardOpenOption.READ);
+		final CountDownLatch syncLatch = status.getSyncLatch();
+		if (syncLatch.getCount() != 0) {
+			syncLatch.countDown();
+		}
 	}
-
 }

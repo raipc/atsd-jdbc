@@ -24,8 +24,6 @@ import java.util.List;
 import java.util.Scanner;
 
 import org.apache.calcite.avatica.ColumnMetaData;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 import com.axibase.tsd.driver.jdbc.ext.AtsdException;
@@ -33,14 +31,6 @@ import com.axibase.tsd.driver.jdbc.ext.AtsdException;
 public class ContentMetadataTest {
 	private static final String CONTEXT_START = "{\n   \"@context\":[";
 	private static final String MCN_JSON_SCHEMA = "/json/mpstat_cpu_busy.jsonld";
-
-	@Before
-	public void setUp() throws Exception {
-	}
-
-	@After
-	public void tearDown() throws Exception {
-	}
 
 	@Test
 	public final void testGetMetadataList() {
