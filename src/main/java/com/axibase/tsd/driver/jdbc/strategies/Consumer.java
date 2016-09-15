@@ -21,6 +21,7 @@ import com.axibase.tsd.driver.jdbc.ext.AtsdRuntimeException;
 import com.axibase.tsd.driver.jdbc.intf.IConsumer;
 import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.*;
 import java.sql.SQLException;
@@ -29,10 +30,11 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import static com.fasterxml.jackson.core.JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES;
+
 
 public class Consumer implements IConsumer {
 	private static final LoggingFacade logger = LoggingFacade.getLogger(Consumer.class);
-	public static final char COMMENT_NEW_LINE = '#';
 
 	protected final StrategyStatus status;
 	protected final StatementContext context;
@@ -81,7 +83,7 @@ public class Consumer implements IConsumer {
 	}
 
 	private static void processComments(StatementContext context, CharSequence comments) {
-		if (comments.length() == 0) {
+		if (StringUtils.isBlank(comments)) {
 			return;
 		}
 		final String json = comments.toString();
@@ -89,6 +91,7 @@ public class Consumer implements IConsumer {
 			logger.trace(json);
 		}
 		final ObjectMapper mapper = new ObjectMapper();
+		mapper.configure(ALLOW_UNQUOTED_FIELD_NAMES, true);
 		final Comments commentsObject;
 		try {
 			commentsObject = mapper.readValue(json, Comments.class);
