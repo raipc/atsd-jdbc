@@ -1,6 +1,5 @@
 package com.axibase.tsd.driver.jdbc.strategies;
 
-import com.axibase.tsd.driver.jdbc.DriverConstants;
 import com.axibase.tsd.driver.jdbc.ext.AtsdRuntimeException;
 import org.apache.commons.lang3.StringUtils;
 import org.sfm.csv.CsvParser;
@@ -26,6 +25,7 @@ public class RowIterator implements Iterator<String[]>, AutoCloseable {
 	private final int version;
 	private final int columnCount;
 	private String[] nextRow;
+	private boolean[] columnIsTag;
 	private boolean inCommentSection;
 	private String commentSection;
 
@@ -39,14 +39,25 @@ public class RowIterator implements Iterator<String[]>, AutoCloseable {
 			this.decorated = CsvParser.iterator(reader);
 
 			if (handleErrors(firstLine)) {
-				columnCount = 0;
+				this.columnCount = 0;
 				return;
 			}
 			this.nextRow = CsvParser.reader(firstLine).iterator().next();
-			columnCount = nextRow == null || inCommentSection ? 0 : nextRow.length;
+			this.columnCount = nextRow == null || inCommentSection ? 0 : nextRow.length;
+			fillColumnIsTagArray();
 
 		} catch (IOException e) {
 			throw new AtsdRuntimeException(e);
+		}
+	}
+
+	private void fillColumnIsTagArray() {
+		if (this.nextRow != null) {
+			final int length = this.nextRow.length;
+			columnIsTag = new boolean[length];
+			for (int i = 0; i < length; ++i) {
+				columnIsTag[i] = this.nextRow[i].startsWith("tag");
+			}
 		}
 	}
 
@@ -68,6 +79,8 @@ public class RowIterator implements Iterator<String[]>, AutoCloseable {
 				inCommentSection = true;
 				fillCommentSection(data);
 				data = null;
+			} else {
+				setEmptyTagsNull(data);
 			}
 		} catch (NoSuchElementException e) {
 			data = null;
@@ -104,6 +117,14 @@ public class RowIterator implements Iterator<String[]>, AutoCloseable {
 		return data[0].charAt(1) == JSON_OBJECT_START;
 	}
 
+	private void setEmptyTagsNull(String[] data) {
+		final int length = data.length;
+		for (int i = 0; i < length; ++i) {
+			if (columnIsTag[i] && "".equals(data[i])) {
+				data[i] = null;
+			}
+		}
+	}
 
 	@Override
 	public void remove() {
