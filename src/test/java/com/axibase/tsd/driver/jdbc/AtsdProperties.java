@@ -20,7 +20,6 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
 import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
-import com.axibase.tsd.driver.jdbc.strategies.StrategyFactory;
 
 import static com.axibase.tsd.driver.jdbc.TestConstants.*;
 
