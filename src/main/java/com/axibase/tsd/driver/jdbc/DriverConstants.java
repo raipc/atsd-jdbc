@@ -24,6 +24,7 @@ public final class DriverConstants {
 	public static final String FORMAT_PARAM_VALUE = "csv";
 	public static final String METADATA_FORMAT_PARAM_NAME = "metadataFormat";
 	public static final int ATSD_VERSION_SUPPORTING_BODY_METADATA = 13919;
+	public static final int ATSD_VERSION_COMPRESSED_ERRORS = 14185;
 	public static final String LIMIT_PARAM_NAME = "limit";
 	public static final String PARAM_SEPARATOR = ";";
 	public static final String PROTOCOL_SEPARATOR = "://";
