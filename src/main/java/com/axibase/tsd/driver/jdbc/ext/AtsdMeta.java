@@ -434,12 +434,13 @@ public class AtsdMeta extends MetaImpl {
 		int atsdVersion = 0;
 		try {
 			atsdVersion = connection.getMetaData().getDatabaseMajorVersion();
+			newContext.setVersion(atsdVersion);
 		} catch (SQLException e) {
 			if (log.isDebugEnabled()) {
 				log.debug("[initProvider] Error attempting to get databaseMajorVersion", e);
 			}
 		}
-		final IDataProvider dataProvider = new DataProvider(config.url(), sql, login, password, newContext, atsdVersion);
+		final IDataProvider dataProvider = new DataProvider(config.url(), sql, login, password, newContext);
 		providerCache.put(id, dataProvider);
 		return dataProvider;
 	}

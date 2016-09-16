@@ -35,7 +35,7 @@ public class DataProvider implements IDataProvider {
 	private final StatementContext context;
 	private IStoreStrategy strategy;
 
-	public DataProvider(String url, String query, String login, String password, StatementContext context, int atsdVersion) {
+	public DataProvider(String url, String query, String login, String password, StatementContext context) {
 		final String[] parts = url.split(PARAM_SEPARATOR);
 		String[] params = new String[parts.length - 1];
 		if (parts.length > 1) {
@@ -45,7 +45,7 @@ public class DataProvider implements IDataProvider {
 			logger.trace("Host: " + parts[0]);
 			logger.trace("Params: " + params.length);
 		}
-		this.contentDescription = new ContentDescription(parts[0], query, login, password, atsdVersion, params);
+		this.contentDescription = new ContentDescription(parts[0], query, login, password, context.getVersion(), params);
 		this.contentProtocol = ProtocolFactory.create(SdkProtocolImpl.class, contentDescription);
 		this.context = context;
 		this.strategy = defineStrategy();

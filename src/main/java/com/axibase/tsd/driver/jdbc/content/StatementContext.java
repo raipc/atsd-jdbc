@@ -20,6 +20,7 @@ import java.sql.SQLWarning;
 public class StatementContext {
 	private SQLException exception;
 	private SQLWarning warning;
+	private int version;
 
 	public StatementContext() {
 	}
@@ -58,5 +59,13 @@ public class StatementContext {
 			this.warning.setNextWarning(warn);
 		else
 			setWarning(warn);
+	}
+
+	public int getVersion() {
+		return version;
+	}
+
+	public void setVersion(int version) {
+		this.version = version;
 	}
 }
