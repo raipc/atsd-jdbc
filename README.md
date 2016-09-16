@@ -19,7 +19,7 @@ The driver is designed to provide a convenient way to access Axibase Time Series
 | **Property Name** | **Options** | **Default** |
 | :--- | --- | ---: |
 | trustServerCertificate | true, false | `false` |
-| strategy | file, stream | `stream` |
+| strategy | file, memory, stream | `stream` |
 | connectTimeout | interval in seconds | 5 |
 | readTimeout | interval in seconds | 0 |
 
@@ -27,11 +27,13 @@ The driver is designed to provide a convenient way to access Axibase Time Series
 
 `file` strategy copies data received from the database to a file on the local file system and proceeds to read rows from the temporary file on `ResultSet.next()` invocation.
 
-`stream` strategy buffers data received from the database into the application memory and returns rows on `ResultSet.next()` invocation directly from a memory structure.
+`memory` strategy buffers data received from the database into the application memory and returns rows on `ResultSet.next()` invocation directly from a memory structure.
 
-While `stream` strategy may be more performant, it requires more memory. Applications are advised to choose the strategy based on available heap memory, disk space and expected resultset sizes.
+`stream` strategy reads data received from the database and processes them on `ResultSet.next()` invocations without copying the stream.
 
-Generally, `stream` strategy is better suited to queries returning thousands of rows, whereas the `file` strategy can process millions of rows provided disk space is available.
+`stream` strategy performs best but is not advised to use if closing ATSD connections fast is significant. While `memory` strategy may be more efficient than `file`, it requires more memory. Applications are advised to choose the strategy based on available heap memory, disk space and expected resultset sizes.
+
+Generally, `memory` strategy is better suited to queries returning thousands of rows, whereas the `file` strategy can process millions of rows provided disk space is available.
 
 ## Apache Maven
 
@@ -41,7 +43,7 @@ Add dependency to pom.xml:
 <dependency>
     <groupId>com.axibase</groupId>
     <artifactId>atsd-jdbc</artifactId>
-    <version>1.2.11</version>
+    <version>1.2.12</version>
 </dependency>
 ```
 
@@ -53,11 +55,11 @@ $ mvn clean install -DskipTests=true
 
 ## Classpath
 
-If you do not use a build manager such as Maven, you can download the driver [jar file](https://github.com/axibase/atsd-jdbc/releases/download/RELEASE-1.2.11/atsd-jdbc-1.2.11-DEPS.jar) with dependencies and add it to the classpath of your application.
+If you do not use a build manager such as Maven, you can download the driver [jar file](https://github.com/axibase/atsd-jdbc/releases/download/RELEASE-1.2.12/atsd-jdbc-1.2.12-DEPS.jar) with dependencies and add it to the classpath of your application.
 
 ```
-* Unix: java -cp "atsd-jdbc-1.2.11-DEPS.jar:lib/*" your.package.MainClass
-* Windows java -cp "atsd-jdbc-1.2.11-DEPS.jar;lib/*" your.package.MainClass
+* Unix: java -cp "atsd-jdbc-1.2.12-DEPS.jar:lib/*" your.package.MainClass
+* Windows java -cp "atsd-jdbc-1.2.12-DEPS.jar;lib/*" your.package.MainClass
 ```
 
 ## Database Tools
@@ -428,7 +430,7 @@ Results:
 Product Name:   	Axibase
 Product Version:	Axibase Time Series Database, <ATSD_EDITION>, Revision: <ATSD_REVISION_NUMBER>
 Driver Name:    	ATSD JDBC driver
-Driver Version: 	1.2.11
+Driver Version: 	1.2.12
 
 TypeInfo:
 	Name:BIGINT 	        CS: false 	Type: -5 	Precision: 19
