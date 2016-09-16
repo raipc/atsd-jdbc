@@ -58,6 +58,13 @@ public class DataProviderExtTest extends AbstractFetchTest {
 		}
 	}
 
+	@Test
+	public void testStrategyOnTags() throws Exception {
+		try (final IStoreStrategy storeStrategy = getMockStrategyObject()) {
+			fetch(storeStrategy, "/csv/tags.csv", 6);
+		}
+	}
+
 	@Test(expected = AtsdRuntimeException.class)
 	public void testStrategyOnSqleWithoutRecords() throws Exception {
 		try (final IStoreStrategy storeStrategy = getMockStrategyObject()) {

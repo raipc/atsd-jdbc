@@ -1,0 +1,7 @@
+tag.test
+simple
+"quoted"
+"quotes""inside"
+"line\nfeed"
+"#comment"
+"with,comma"
