@@ -4,40 +4,70 @@
 
 # JDBC driver
 
-The driver is designed to provide a convenient way to access Axibase Time Series Database via SQL. The internal communication is implemented by means of transferring results in CSV format via HTTP or HTTPS protocols. See the [SQL API Documentation](https://github.com/axibase/atsd-docs/tree/master/api/sql#overview) for a description of the query syntax and examples.
+The JDBC driver provides a convenient way to query Axibase Time Series Database via SQL. 
+
+The internal communication is implemented by means of transferring results in CSV format via HTTP or HTTPS protocols. See the [SQL API Documentation](https://github.com/axibase/atsd-docs/tree/master/api/sql#overview) for a description of the query syntax and examples.
+
+## JDBC URL
+
+ATSD JDBC driver prefix is **"jdbc:axibase:atsd:"**, followed by http/https URL of the ATSD SQL API endpoint and optional driver properties.
+
+```ls
+jdbc:axibase:atsd:http://atsd_hostname:8088/api/sql
+jdbc:axibase:atsd:https://atsd_hostname:8443/api/sql;trustServerCertificate=true
+```
+
+## License
+
+The project is released under [Apache 2.0 License](http://www.apache.org/licenses/LICENSE-2.0).
 
 ## Compatibility
 
-| **Product / Date** | **2016-03-15** | **2016-03-29** |  **2016-08-25** | **2016-09-06** |
-| :--- | --- | --- | --- | --- |
-| JDBC Driver  | 1.2.1 | 1.2.6  | 1.2.8  | 1.2.10 |
-| ATSD Version | 12400 | 12500+ | 14049+ | 14126+ |
+| **Database Version** | **Driver Version** |
+|:---|---|
+| 12400 |  1.2.1 |
+| 12500 |  1.2.6 |
+| 14049 |  1.2.8 |
+| 14126 | 1.2.10 |
+| 14220 | 1.2.12 |
 
+The above table specifies, given the database version, a range of compatible driver versions.
+
+For example, database versions 14150 supports driver versions between 1.2.10 (inclusive) and 1.2.12 (exclusive).
 
 ## JDBC Connection Properties Supported by Driver
 
-| **Property Name** | **Options** | **Default** |
-| :--- | --- | ---: |
-| trustServerCertificate | true, false | `false` |
-| strategy | file, memory, stream | `stream` |
-| connectTimeout | interval in seconds | 5 |
-| readTimeout | interval in seconds | 0 |
+| **Name** | **Type** | **Default** | **Description** |
+| :--- | --- | ---: | --- |
+| trustServerCertificate | boolean | `false` | Skip SSL certification validation |
+| connectTimeout | number | 5 | Connection timeout, in seconds. |
+| readTimeout | number | 0 | Read timeout, in seconds. |
+| strategy | `file`, `memory`, `stream` | `stream` | Resultset processing strategy. |
+
+Properties can be included as part of JDBC url using semi-colon as a separator, for example `jdbc:axibase:atsd:https://10.102.0.6:8443/api/sql;trustServerCertificate=true;strategy=file`.
 
 ## Resultset Processing Strategy
 
-`file` strategy copies data received from the database to a file on the local file system and proceeds to read rows from the temporary file on `ResultSet.next()` invocation.
+|**Name**|**Description**|
+|:--|---|
+|`stream`| Reads data received from the database in batches when triggered by `ResultSet.next()` invocations. Keeps the connection open until all rows are processed by the client.|
+|`file`| Buffers data received from the database to a temporary file on the local file system and reads rows from the file on `ResultSet.next()` invocation. |
+|`memory`| Buffers data received from the database into the application memory and returns rows on `ResultSet.next()` invocation directly from a memory structure. |
 
-`memory` strategy buffers data received from the database into the application memory and returns rows on `ResultSet.next()` invocation directly from a memory structure.
+* The `stream` strategy is faster than alternatives at the expense of keeping the database connection open. It is not recommended if row processing may take a long time. 
+* While `memory` strategy may be more efficient than `file`, it requires more memory. Generally, `memory` strategy is better suited to queries returning thousands of rows, whereas the `file`/`stream` strategy can process millions of rows provided disk space is available.
 
-`stream` strategy reads data received from the database and processes them on `ResultSet.next()` invocations without copying the stream.
+Applications are advised to choose the right strategy based on available Java heap memory, disk space and expected row counts produced by typical queries.
 
-`stream` strategy performs best but is not advised to use if closing ATSD connections fast is significant. While `memory` strategy may be more efficient than `file`, it requires more memory. Applications are advised to choose the strategy based on available heap memory, disk space and expected resultset sizes.
+## Integration
 
-Generally, `memory` strategy is better suited to queries returning thousands of rows, whereas the `file` strategy can process millions of rows provided disk space is available.
+### Requirements
 
-## Apache Maven
+* Java 1.7 and later
 
-Add dependency to pom.xml:
+### Apache Maven
+
+Add dependency to `pom.xml` in your project. The JDBC driver will be imported automatically since the project is hosted in MavenCentral/SonaType repositories. 
 
 ```xml
 <dependency>
@@ -53,35 +83,20 @@ Alternatively, build the project with Maven:
 $ mvn clean install -DskipTests=true
 ```
 
-## Classpath
+### Classpath
 
-If you do not use a build manager such as Maven, you can download the driver [jar file](https://github.com/axibase/atsd-jdbc/releases/download/RELEASE-1.2.12/atsd-jdbc-1.2.12-DEPS.jar) with dependencies and add it to the classpath of your application.
+Download the driver [jar file](https://github.com/axibase/atsd-jdbc/releases/download/RELEASE-1.2.12/atsd-jdbc-1.2.12-DEPS.jar) with dependencies and add it to the classpath of your application.
 
 ```
 * Unix: java -cp "atsd-jdbc-1.2.12-DEPS.jar:lib/*" your.package.MainClass
 * Windows java -cp "atsd-jdbc-1.2.12-DEPS.jar;lib/*" your.package.MainClass
 ```
 
-## Database Tools
+### Database Tools
 
-You can also use a universal database manager, for example [DbVisualizer](https://www.dbvis.com). Follow instructions in the manager's user guide to create a custom driver based on the JAR file from the link above.
+Download the jar file with dependencies above and import into your database manager, for example [DbVisualizer](https://www.dbvis.com). 
 
-## JDBC URL
-
-ATSD JDBC driver prefix is "jdbc:axibase:atsd:". Following the prefix is the http/https URL of the ATSD SQL API endpoint. If necessary, add JDBC Connection properties listed above.
-
-```ls
-jdbc:axibase:atsd:http://atsd_hostname:8088/api/sql
-jdbc:axibase:atsd:https://atsd_hostname:8443/api/sql;trustServerCertificate=true;strategy=file
-```
-
-## License
-
-The project is released under version 2.0 of the [Apache License](http://www.apache.org/licenses/LICENSE-2.0).
-
-## Requirements
-
-* Java 1.7 and later
+Follow instructions in the manager's user guide to create a custom driver based on ATSD jar file.
 
 ## Supported Data Types
 
@@ -96,131 +111,10 @@ The project is released under version 2.0 of the [Apache License](http://www.apa
 | VARCHAR | 12 | 2147483647 |
 | TIMESTAMP | 93 | 23 |
 
-## Database Capabilities
+## Capabilities
 
-| **Feature** | **Value** |
-|:--------|:------|
-| All Procedures Are Callable |  false  |
-| All Tables Are Selectable |  false  |
-| Auto Commit Failure Closes All Result Sets |  false  |
-| Catalog Separator |  .  |
-| Catalog Term |  database  |
-| Database Major Version |  14126  |
-| Database Minor Version |  0  |
-| Data Definition Causes Transaction Commit |  false  |
-| Data Definition Ignored In Transactions |  false  |
-| Default Transaction Isolation |  0  |
-| Does Max Row Size Include Blobs |  false  |
-| Driver Major Version |  1  |
-| Driver Minor Version |  2  |
-| Extra Name Characters |  |
-| Generated Key Always Returned |  false  |
-| Identifier Quote String |  "  |
-| Is Catalog At Start |  false  |
-| Is Read Only |  true  |
-| JDBCMajor Version |  4  |
-| JDBCMinor Version |  1  |
-| Locators Update Copy |  false  |
-| Max Binary Literal Length |  0  |
-| Max Catalog Name Length |  0  |
-| Max Char Literal Length |  0  |
-| Max Column Name Length |  0  |
-| Max Columns In Group By |  0  |
-| Max Columns In Index |  0  |
-| Max Columns In Order By |  0  |
-| Max Columns In Select |  0  |
-| Max Columns In Table |  0  |
-| Max Connections |  0  |
-| Max Cursor Name Length |  0  |
-| Max Index Length |  0  |
-| Max Procedure Name Length |  0  |
-| Max Row Size |  0  |
-| Max Schema Name Length |  0  |
-| Max Statement Length |  0  |
-| Max Statements |  0  |
-| Max Table Name Length |  0  |
-| Max Tables In Select |  0  |
-| Max User Name Length |  0  |
-| Null Plus Non Null Is Null |  true  |
-| Nulls Are Sorted At End |  false  |
-| Nulls Are Sorted At Start |  false  |
-| Nulls Are Sorted High |  false  |
-| Nulls Are Sorted Low |  true  |
-| Procedure Term |  procedure  |
-| Result Set Holdability |  1  |
-| Schema Term |  schema  |
-| Search String Escape |  \  |
-| SQL State Type |  2  |
-| Stores Lower Case Identifiers |  true  |
-| Stores Lower Case Quoted Identifiers |  true  |
-| Stores Mixed Case Identifiers |  false  |
-| Stores Mixed Case Quoted Identifiers |  false  |
-| Stores Upper Case Identifiers |  false  |
-| Stores Upper Case Quoted Identifiers |  false  |
-| Supports Alter Table With Add Column |  false  |
-| Supports Alter Table With Drop Column |  false  |
-| Supports ANSI92 Entry Level SQL |  false  |
-| Supports ANSI92 Full SQL |  false  |
-| Supports ANSI92 Intermediate SQL |  false  |
-| Supports Batch Updates |  false  |
-| Supports Catalogs In Data Manipulation |  false  |
-| Supports Catalogs In Index Definitions |  false  |
-| Supports Catalogs In Privilege Definitions |  false  |
-| Supports Catalogs In Procedure Calls |  false  |
-| Supports Catalogs In Table Definitions |  false  |
-| Supports Column Aliasing |  true  |
-| Supports Convert |  false  |
-| Supports Core SQLGrammar |  false  |
-| Supports Correlated Subqueries |  false  |
-| Supports Data Definition And Data Manipulation Transactions |  false  |
-| Supports Data Manipulation Transactions Only |  true  |
-| Supports Different Table Correlation Names |  false  |
-| Supports Expressions In Order By |  true  |
-| Supports Extended SQLGrammar |  false  |
-| Supports Full Outer Joins |  true  |
-| Supports Get Generated Keys |  false  |
-| Supports Group By |  true  |
-| Supports Group By Beyond Select |  true  |
-| Supports Group By Unrelated |  true  |
-| Supports Integrity Enhancement Facility |  false |
-| Supports Like Escape Clause |  true  |
-| Supports Limited Outer Joins |  true  |
-| Supports Minimum SQLGrammar |  false  |
-| Supports Mixed Case Identifiers |  false  |
-| Supports Mixed Case Quoted Identifiers |  false |
-| Supports Multiple Open Results |  false  |
-| Supports Multiple Result Sets |  false  |
-| Supports Multiple Transactions |  false  |
-| Supports Named Parameters |  false  |
-| Supports Non Nullable Columns |  true  |
-| Supports Open Cursors Across Commit |  false  |
-| Supports Open Cursors Across Rollback |  false  |
-| Supports Open Statements Across Commit |  false  |
-| Supports Open Statements Across Rollback |  false  |
-| Supports Order By Unrelated |  true  |
-| Supports Outer Joins |  true  |
-| Supports Positioned Delete |  false  |
-| Supports Positioned Update |  false  |
-| Supports Savepoints |  false  |
-| Supports Schemas In Data Manipulation |  false  |
-| Supports Schemas In Index Definitions |  false  |
-| Supports Schemas In Privilege Definitions |  false  |
-| Supports Schemas In Procedure Calls |  false  |
-| Supports Schemas In Table Definitions |  false  |
-| Supports Select For Update |  false  |
-| Supports Statement Pooling |  false  |
-| Supports Stored Functions Using Call Syntax |  false  |
-| Supports Stored Procedures |  false  |
-| Supports Subqueries In Comparisons |  false  |
-| Supports Subqueries In Exists |  false  |
-| Supports Subqueries In Ins |  false  |
-| Supports Subqueries In Quantifieds |  false  |
-| Supports Table Correlation Names |  false  |
-| Supports Transactions |  false  |
-| Supports Union |  false  |
-| Supports Union All |  false  |
-| Uses Local File Per Table |  false  |
-| Uses Local Files |  false  |
+* [Driver capabilities](capabilities.md) reference guide.
+* ATSD [SQL API documentation](https://github.com/axibase/atsd-docs/tree/master/api/sql#overview).
 
 ## Usage
 
@@ -260,9 +154,9 @@ To set an [`endTime`](https://github.com/axibase/atsd-docs/blob/master/end-time-
 
 ## SQL Warnings
 
-In some circumstances such as unknown tag or tag value, the database may return SQL warnings as opposed to raising a non-recoverable error.
+The database may return SQL warnings as opposed to raising a non-recoverable error in some cases, such as unknown tag or tag value.
 
-To retrieve the warning, invoke `resultSet.getWarnings()` method:
+To retrieve SQL warnings, invoke `resultSet.getWarnings()` method:
 
 ```java
 	SQLWarning rsWarning = resultSet.getWarnings();
@@ -453,7 +347,9 @@ Schema: 	Axibase
 
 ## Spring Framework Integration
 
-We recommend [Spring Data JDBC](https://github.com/nurkiewicz/spring-data-jdbc-repository) library to integrate ATSD JDBC driver. You can find an example on how to use it [here](https://github.com/axibase/atsd-jdbc-test/tree/master/src/main/java/com/axibase/tsd/driver/jdbc/spring).
+We recommend [Spring Data JDBC](https://github.com/nurkiewicz/spring-data-jdbc-repository) library to integrate ATSD JDBC driver with Spring. 
+
+See an example [here](https://github.com/axibase/atsd-jdbc-test/tree/master/src/main/java/com/axibase/tsd/driver/jdbc/spring).
 
 [config file](https://github.com/axibase/atsd-jdbc-test/blob/master/src/main/java/com/axibase/tsd/driver/jdbc/spring/AtsdRepositoryConfig.java) gist:
 
@@ -506,8 +402,7 @@ We recommend [Spring Data JDBC](https://github.com/nurkiewicz/spring-data-jdbc-r
 }
 ```
 
-There is a sample how to use it with 
-[Spring Boot](https://github.com/axibase/atsd-jdbc-test/blob/master/src/main/java/com/axibase/tsd/driver/jdbc/spring/SampleDriverApplication.java):
+Usage example with [Spring Boot](https://github.com/axibase/atsd-jdbc-test/blob/master/src/main/java/com/axibase/tsd/driver/jdbc/spring/SampleDriverApplication.java):
 
 ```java
 
