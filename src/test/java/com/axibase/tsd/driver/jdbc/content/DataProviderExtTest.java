@@ -21,8 +21,6 @@ import org.junit.runner.RunWith;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.axibase.tsd.driver.jdbc.intf.IStoreStrategy;
 import com.axibase.tsd.driver.jdbc.protocol.SdkProtocolImpl;
@@ -30,8 +28,6 @@ import com.axibase.tsd.driver.jdbc.protocol.SdkProtocolImpl;
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(DataProvider.class)
 public class DataProviderExtTest extends AbstractFetchTest {
-	private static final Logger logger = LoggerFactory.getLogger(DataProviderExtTest.class);
-
 	@Before
 	public void setUp() throws Exception {
 		protocolImpl = PowerMockito.mock(SdkProtocolImpl.class);

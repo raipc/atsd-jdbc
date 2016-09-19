@@ -39,7 +39,7 @@ public class ContentMetadataTest {
 
 	private void checkMetadataList(String schema, int expectedSize) {
 		try (final InputStream is = this.getClass().getResourceAsStream(schema);
-				final Scanner scanner = new Scanner(is);) {
+			 final Scanner scanner = new Scanner(is)) {
 			scanner.useDelimiter("\\A");
 			String json = scanner.hasNext() ? scanner.next() : "";
 			assertTrue(json != null && json.length() != 0 && json.startsWith(CONTEXT_START));

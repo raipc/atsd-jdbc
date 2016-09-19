@@ -431,9 +431,8 @@ public class AtsdMeta extends MetaImpl {
 		contextMap.put(id, newContext);
 		final String login = info != null ? (String) info.get("user") : "";
 		final String password = info != null ? (String) info.get("password") : "";
-		int atsdVersion = 0;
 		try {
-			atsdVersion = connection.getMetaData().getDatabaseMajorVersion();
+			final int atsdVersion = connection.getMetaData().getDatabaseMajorVersion();
 			newContext.setVersion(atsdVersion);
 		} catch (SQLException e) {
 			if (log.isDebugEnabled()) {

@@ -46,26 +46,30 @@ public abstract class AbstractFetchTest extends AtsdProperties {
 			final StatementContext context = storeStrategy.getContext();
 			final SQLException exception = context.getException();
 			if (exception != null) {
-				if (logger.isDebugEnabled())
+				if (logger.isDebugEnabled()) {
 					logger.debug("SQLException: " + exception.getMessage());
+				}
 				throw exception;
 			}
-			if (logger.isDebugEnabled())
+			if (logger.isDebugEnabled()) {
 				logger.debug("Fetched: " + fetched.size());
+			}
 			assertTrue(fetched.size() == fetchSize);
 		} catch (final IOException e) {
 			logger.error(e.getMessage(), e);
 			throw new AtsdException(e.getMessage());
 		} finally {
-			if (mockIs != null)
+			if (mockIs != null) {
 				mockIs.close();
-			if (logger.isDebugEnabled())
+			}
+			if (logger.isDebugEnabled()) {
 				logger.debug(
 						"Test [ContentProvider->fetch] is done in " + (System.currentTimeMillis() - start) + " msecs");
+			}
 		}
 	}
 
-	public IStoreStrategy getMockStrategyObject() {
+	protected IStoreStrategy getMockStrategyObject() {
 		StatementContext context = new StatementContext();
 		return PowerMockito.spy(StrategyFactory.create(StrategyFactory.findClassByName(READ_STRATEGY), context));
 	}

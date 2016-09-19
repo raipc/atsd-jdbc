@@ -44,7 +44,7 @@ public abstract class AbstractTypeMock extends AbstractFetchTest {
 
 	protected String getSchema() throws IOException {
 		try (final InputStream is = this.getClass().getResourceAsStream(getJsonSchema());
-			 final Scanner scanner = new Scanner(is);) {
+			 final Scanner scanner = new Scanner(is)) {
 			scanner.useDelimiter("\\A");
 			String json = scanner.hasNext() ? scanner.next() : "";
 			assertTrue(json != null && json.length() != 0 && json.startsWith(CONTEXT_START));

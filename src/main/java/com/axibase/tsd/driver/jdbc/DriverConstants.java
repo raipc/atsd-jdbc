@@ -1,7 +1,6 @@
 package com.axibase.tsd.driver.jdbc;
 
 public final class DriverConstants {
-	private DriverConstants(){}
 	public static final String CONNECT_URL_PREFIX = "jdbc:axibase:atsd:";
 	public static final String DATABASE_PRODUCT_NAME = "Axibase";
 	public static final String DATABASE_PRODUCT_VERSION = "Axibase Time Series Database";
@@ -71,4 +70,6 @@ public final class DriverConstants {
 	public static final String START_LINK = "<data:application/csvm+json;base64,";
 	public static final String USER_AGENT = "User-Agent";
 	public static final String USER_AGENT_HEADER = "ATSD Client/1.0 axibase.com";
+
+	private DriverConstants(){}
 }
