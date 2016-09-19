@@ -19,6 +19,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
@@ -54,7 +55,7 @@ public class SdkProtocolImpl implements IContentProtocol {
 	private static final LoggingFacade logger = LoggingFacade.getLogger(SdkProtocolImpl.class);
 	private static final int UNSUCCESSFUL_SQL_RESULT_CODE = 400;
 	private static final int MILLIS = 1000;
-	private static final byte[] ENCODED_JSON_SCHEME_BEGIN = "#eyJAY29udGV4dCI6".getBytes(Charset.forName("UTF-8")); // #{"@context":
+	private static final byte[] ENCODED_JSON_SCHEME_BEGIN = "#eyJAY29udGV4dCI6".getBytes(StandardCharsets.UTF_8); // #{"@context":
 	private static final TrustManager[] DUMMY_TRUST_MANAGER = new TrustManager[]{new X509TrustManager() {
 		@Override
 		public X509Certificate[] getAcceptedIssuers() {
@@ -198,7 +199,7 @@ public class SdkProtocolImpl implements IContentProtocol {
 				logger.debug("[params] " + postParams);
 			}
 			try (OutputStream os = conn.getOutputStream();
-				 BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, Charset.defaultCharset().name()))) {
+				 BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8.name()))) {
 				writer.write(postParams);
 				writer.flush();
 			}
@@ -240,14 +241,13 @@ public class SdkProtocolImpl implements IContentProtocol {
 		}
 	}
 
-	private void retrieveJsonSchemeFromHeader(Map<String, List<String>> map) throws UnsupportedEncodingException {
+	private void retrieveJsonSchemeFromHeader(Map<String, List<String>> map) {
 		printHeaders(map);
 		List<String> list = map.get(SCHEME_HEADER);
 		String value = list != null && !list.isEmpty() ? list.get(0) : null;
-		if (value != null) {
-			assert value.startsWith(START_LINK) && value.endsWith(END_LINK);
-			final String enc = value.substring(START_LINK.length(), value.length() - END_LINK.length());
-			String json = new String(Base64.decodeBase64(enc), Charset.defaultCharset());
+		if (value != null && value.startsWith(START_LINK) && value.endsWith(END_LINK)) {
+			final String encoded = value.substring(START_LINK.length(), value.length() - END_LINK.length());
+			String json = new String(Base64.decodeBase64(encoded), StandardCharsets.UTF_8);
 			if (logger.isTraceEnabled()) {
 				logger.trace("JSON schema: " + json);
 			}
@@ -273,7 +273,7 @@ public class SdkProtocolImpl implements IContentProtocol {
 			} else {
 				result.write(buffer, 0, index);
 				final byte[] decoded = Base64.decodeBase64(result.toByteArray());
-				final String jsonScheme = new String(decoded, Charset.defaultCharset());
+				final String jsonScheme = new String(decoded, StandardCharsets.UTF_8);
 				contentDescription.setJsonScheme(jsonScheme);
 				if (logger.isTraceEnabled()) {
 					logger.trace("JSON scheme: " + jsonScheme);

@@ -7,6 +7,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -34,7 +35,7 @@ public class GeneralError {
 		while ((length = inputStream.read(buffer)) != -1) {
 			outputStream.write(buffer, 0, length);
 		}
-		final String json = outputStream.toString(String.valueOf(Charset.defaultCharset()));
+		final String json = outputStream.toString(StandardCharsets.UTF_8.name());
 		final GeneralError errorObject = new ObjectMapper().readValue(json, GeneralError.class);
 		return errorObject.getError();
 	}
