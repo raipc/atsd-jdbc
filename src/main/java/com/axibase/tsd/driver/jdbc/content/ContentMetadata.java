@@ -14,11 +14,10 @@
 */
 package com.axibase.tsd.driver.jdbc.content;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 import com.axibase.tsd.driver.jdbc.enums.AtsdType;
