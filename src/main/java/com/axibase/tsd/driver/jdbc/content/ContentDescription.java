@@ -17,6 +17,7 @@ package com.axibase.tsd.driver.jdbc.content;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -62,7 +63,7 @@ public class ContentDescription {
 				int delimiterPosition = param.indexOf('=');
 				if (delimiterPosition >= 0) {
 					paramsMap.put(param.substring(0, delimiterPosition),
-							param.substring(delimiterPosition + 1));
+							      param.substring(delimiterPosition + 1));
 				}
 			}
 		}
@@ -86,7 +87,7 @@ public class ContentDescription {
 
 	public String getEncodedQuery() {
 		try {
-			return URLEncoder.encode(query, Charset.defaultCharset().name());
+			return URLEncoder.encode(query, StandardCharsets.UTF_8.name());
 		} catch (UnsupportedEncodingException e) {
 			logger.error(e.getMessage());
 			return query;
