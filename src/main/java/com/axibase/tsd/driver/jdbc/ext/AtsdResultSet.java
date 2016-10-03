@@ -14,19 +14,18 @@
 */
 package com.axibase.tsd.driver.jdbc.ext;
 
+import com.axibase.tsd.driver.jdbc.content.StatementContext;
+import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
+import org.apache.calcite.avatica.*;
+import org.apache.calcite.avatica.Meta.Frame;
+import org.apache.calcite.avatica.Meta.Signature;
+
 import java.math.BigDecimal;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
 import java.sql.Types;
 import java.util.TimeZone;
-
-import org.apache.calcite.avatica.*;
-import org.apache.calcite.avatica.Meta.Frame;
-import org.apache.calcite.avatica.Meta.Signature;
-
-import com.axibase.tsd.driver.jdbc.content.StatementContext;
-import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
 
 public class AtsdResultSet extends AvaticaResultSet {
 	private static final LoggingFacade logger = LoggingFacade.getLogger(AtsdResultSet.class);
@@ -44,6 +43,21 @@ public class AtsdResultSet extends AvaticaResultSet {
 		if (logger.isTraceEnabled()) {
 			logger.trace("[ctor] " + this.handle.id);
 		}
+	}
+
+	@Override
+	public int getRow() throws SQLException {
+		return super.getRow() + 1; // TODO remove when Avatica fixes row positions
+	}
+
+	@Override
+	public boolean isFirst() throws SQLException {
+		return this.getRow() == 1;
+	}
+
+	@Override
+	public boolean isBeforeFirst() throws SQLException {
+		return this.getRow() < 1;
 	}
 
 	@Override
