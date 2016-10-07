@@ -1,3 +1,6 @@
+## 1.2.13
+* `ResultSet#getRow` now counts rows starting with 1 instead of 0.
+
 ## 1.2.12
 * Implemented `stream` fetching strategy. Old `stream` strategy renamed to `memory`.
 * Better support for screened values.

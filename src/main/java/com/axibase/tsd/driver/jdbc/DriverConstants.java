@@ -15,7 +15,7 @@ public final class DriverConstants {
 	public static final String DRIVER_VERSION_MINOR_KEY = "driver.version.minor";
 	public static final String DRIVER_PROPERTIES = "META-INF/axibase-atsd-jdbc.properties";
 	public static final String RETRIES_NUMBER = "1";
-	public static final String JDBC_DRIVER_VERSION_DEFAULT = "1.2.12";
+	public static final String JDBC_DRIVER_VERSION_DEFAULT = "1.2.13";
 	public static final int    DRIVER_VERSION_MAJOR_DEFAULT = 1;
 	public static final int    DRIVER_VERSION_MINOR_DEFAULT = 2;
 
