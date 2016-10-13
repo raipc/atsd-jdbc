@@ -14,6 +14,24 @@
 */
 package com.axibase.tsd.driver.jdbc.ext;
 
+
+
+import com.axibase.tsd.driver.jdbc.DriverConstants;
+import com.axibase.tsd.driver.jdbc.content.ContentDescription;
+import com.axibase.tsd.driver.jdbc.content.ContentMetadata;
+import com.axibase.tsd.driver.jdbc.content.DataProvider;
+import com.axibase.tsd.driver.jdbc.content.StatementContext;
+import com.axibase.tsd.driver.jdbc.enums.AtsdType;
+import com.axibase.tsd.driver.jdbc.enums.timedatesyntax.EndTime;
+import com.axibase.tsd.driver.jdbc.intf.IDataProvider;
+import com.axibase.tsd.driver.jdbc.intf.IStoreStrategy;
+import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
+import com.axibase.tsd.driver.jdbc.util.TimeDateExpression;
+import org.apache.calcite.avatica.*;
+import org.apache.calcite.avatica.remote.TypedValue;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.text.WordUtils;
+
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
@@ -27,23 +45,6 @@ import java.util.Date;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
-
-import com.axibase.tsd.driver.jdbc.enums.AtsdType;
-import com.axibase.tsd.driver.jdbc.enums.timedatesyntax.EndTime;
-import com.axibase.tsd.driver.jdbc.util.TimeDateExpression;
-import org.apache.calcite.avatica.*;
-import org.apache.calcite.avatica.remote.TypedValue;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.text.WordUtils;
-
-import com.axibase.tsd.driver.jdbc.DriverConstants;
-import com.axibase.tsd.driver.jdbc.content.ContentDescription;
-import com.axibase.tsd.driver.jdbc.content.ContentMetadata;
-import com.axibase.tsd.driver.jdbc.content.DataProvider;
-import com.axibase.tsd.driver.jdbc.content.StatementContext;
-import com.axibase.tsd.driver.jdbc.intf.IDataProvider;
-import com.axibase.tsd.driver.jdbc.intf.IStoreStrategy;
-import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
 
 public class AtsdMeta extends MetaImpl {
 	private static final LoggingFacade log = LoggingFacade.getLogger(AtsdMeta.class);
@@ -357,7 +358,9 @@ public class AtsdMeta extends MetaImpl {
 	@Override
 	public MetaResultSet getTables(ConnectionHandle connectionHandle, String catalog, Pat schemaPattern, Pat tableNamePattern,
 								   List<String> typeList) {
-		return super.getTables(connectionHandle, catalog, schemaPattern, tableNamePattern, typeList);
+		final Iterable<Object> iterable = Collections.<Object>singletonList(
+				new MetaTable(DriverConstants.DEFAULT_CATALOG_NAME, null, DriverConstants.DEFAULT_TABLE_NAME, "SYSTEM"));
+		return getResultSet(iterable, MetaTable.class, "TABLE_CAT", "TABLE_SCHEM", "TABLE_NAME", "TABLE_TYPE");
 	}
 
 	@Override
@@ -365,22 +368,22 @@ public class AtsdMeta extends MetaImpl {
 		assert connection instanceof AtsdConnection;
 		final Properties info = ((AtsdConnection) connection).getInfo();
 		String username = info != null ? (String) info.get("user") : "";
-		final Iterable<Object> iterable = new ArrayList<Object>(
-				Collections.singletonList(new MetaSchema(DriverConstants.DEFAULT_CATALOG_NAME, WordUtils.capitalize(username))));
+		final Iterable<Object> iterable = Collections.<Object>singletonList(
+				new MetaSchema(DriverConstants.DEFAULT_CATALOG_NAME, WordUtils.capitalize(username)));
 		return getResultSet(iterable, MetaSchema.class, "TABLE_SCHEM", "TABLE_CATALOG");
 	}
 
 	@Override
 	public MetaResultSet getCatalogs(ConnectionHandle ch) {
-		final Iterable<Object> iterable = new ArrayList<Object>(
-				Collections.singletonList(new MetaCatalog(DriverConstants.DEFAULT_CATALOG_NAME)));
+		final Iterable<Object> iterable = Collections.<Object>singletonList(
+				new MetaCatalog(DriverConstants.DEFAULT_CATALOG_NAME));
 		return getResultSet(iterable, MetaCatalog.class, "TABLE_CAT");
 	}
 
 	@Override
 	public MetaResultSet getTableTypes(ConnectionHandle ch) {
-		final Iterable<Object> iterable = new ArrayList<Object>(
-				Arrays.asList(new MetaTableType("TABLE"), new MetaTableType("VIEW"), new MetaTableType("SYSTEM")));
+		final Iterable<Object> iterable = Arrays.<Object>asList(
+				new MetaTableType("TABLE"), new MetaTableType("VIEW"), new MetaTableType("SYSTEM"));
 		return getResultSet(iterable, MetaTableType.class, "TABLE_TYPE");
 	}
 

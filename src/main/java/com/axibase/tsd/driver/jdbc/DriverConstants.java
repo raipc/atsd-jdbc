@@ -41,6 +41,7 @@ public final class DriverConstants {
 	public static final String COLUMNS_SCHEME = "columns";
 	public static final String DATATYPE_PROPERTY = "datatype";
 	public static final String DEFAULT_CATALOG_NAME = "atsd_";
+	public static final String DEFAULT_TABLE_NAME = "atsd_series";
 	public static final String INDEX_PROPERTY = "columnIndex";
 	public static final String NAME_PROPERTY = "name";
 	public static final String PUBLISHER_SECTION = "dc:publisher";
