@@ -29,7 +29,7 @@ public class EnumUtil {
 
 	private static Map<String, AtsdType> createColumnPrefixAtsdTypeMapping() {
 		Map<String, AtsdType> mapping = new HashMap<>();
-		for (DefaultColumns type : DefaultColumns.values()) {
+		for (DefaultColumn type : DefaultColumn.values()) {
 			mapping.put(type.getColumnNamePrefix(), type.getType());
 		}
 		return Collections.unmodifiableMap(mapping);

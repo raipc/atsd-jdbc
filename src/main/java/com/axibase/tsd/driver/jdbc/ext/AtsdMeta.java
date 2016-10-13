@@ -22,6 +22,7 @@ import com.axibase.tsd.driver.jdbc.content.ContentMetadata;
 import com.axibase.tsd.driver.jdbc.content.DataProvider;
 import com.axibase.tsd.driver.jdbc.content.StatementContext;
 import com.axibase.tsd.driver.jdbc.enums.AtsdType;
+import com.axibase.tsd.driver.jdbc.enums.DefaultColumn;
 import com.axibase.tsd.driver.jdbc.enums.timedatesyntax.EndTime;
 import com.axibase.tsd.driver.jdbc.intf.IDataProvider;
 import com.axibase.tsd.driver.jdbc.intf.IStoreStrategy;
@@ -401,6 +402,50 @@ public class AtsdMeta extends MetaImpl {
 				"LITERAL_PREFIX", "LITERAL_SUFFIX", "CREATE_PARAMS", "NULLABLE", "CASE_SENSITIVE", "SEARCHABLE",
 				"UNSIGNED_ATTRIBUTE", "FIXED_PREC_SCALE", "AUTO_INCREMENT", "LOCAL_TYPE_NAME", "MINIMUM_SCALE",
 				"MAXIMUM_SCALE", "NUM_PREC_RADIX");
+	}
+
+	@Override
+	public MetaResultSet getColumns(ConnectionHandle ch, String catalog, Pat schemaPattern, Pat tableNamePattern, Pat columnNamePattern) {
+		if (catalog != null && !DriverConstants.DEFAULT_CATALOG_NAME.equals(catalog)) {
+			throw new UnsupportedOperationException();
+		}
+		assert connection instanceof AtsdConnection;
+		final Properties info = ((AtsdConnection) connection).getInfo();
+		final String username = info != null ? (String) info.get("user") : "";
+		final String schema = WordUtils.capitalize(username);
+
+		DefaultColumn[] columns = DefaultColumn.values();
+		List<Object> columnData = new ArrayList<>(columns.length);
+		int position = 1;
+		for (DefaultColumn column : columns) {
+			columnData.add(createColumnMetaData(column, schema, position));
+			++position;
+		}
+
+		return getResultSet(columnData, MetaColumn.class,  "TABLE_CAT", "TABLE_SCHEM", "TABLE_NAME",
+				"COLUMN_NAME", "DATA_TYPE", "TYPE_NAME", "COLUMN_SIZE", "BUFFER_LENGTH",
+				"DECIMAL_DIGITS", "NUM_PREC_RADIX", "NULLABLE", "REMARKS", "COLUMN_DEF",
+				"SQL_DATA_TYPE", "SQL_DATETIME_SUB", "CHAR_OCTET_LENGTH", "ORDINAL_POSITION",
+				"IS_NULLABLE", "SCOPE_CATALOG", "SCOPE_SCHEMA", "SCOPE_TABLE", "SOURCE_DATA_TYPE",
+				"IS_AUTOINCREMENT", "IS_GENERATEDCOLUMN");
+	}
+
+	private static Object createColumnMetaData(DefaultColumn column, String schema, int ordinal) {
+		return new MetaColumn(
+				DriverConstants.DEFAULT_CATALOG_NAME,
+				schema,
+				DriverConstants.DEFAULT_TABLE_NAME,
+				column.getColumnNamePrefix(),
+				column.getType().sqlTypeCode,
+				column.getType().sqlType,
+				0,
+				null,
+				10,
+				2,
+				0,
+				ordinal,
+				""
+		);
 	}
 
 	private MetaResultSet getResultSet(Iterable<Object> iterable, Class<?> clazz, String... names) {
