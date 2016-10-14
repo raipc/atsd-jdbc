@@ -50,6 +50,42 @@ public class AtsdMeta extends MetaImpl {
 	private final Map<Integer, IDataProvider> providerCache = new ConcurrentHashMap<>();
 	private final Map<Integer, StatementContext> contextMap = new ConcurrentHashMap<>();
 	private final ReentrantLock lock = new ReentrantLock();
+	private static final ThreadLocal<SimpleDateFormat> DATE_FORMATTER = new ThreadLocal<SimpleDateFormat>() {
+		@Override
+		protected SimpleDateFormat initialValue() {
+			SimpleDateFormat sdt = new SimpleDateFormat("yyyy-MM-dd", Locale.UK);
+			sdt.setTimeZone(TimeZone.getTimeZone("UTC"));
+			return sdt;
+		}
+	};
+
+	public static final ThreadLocal<SimpleDateFormat> TIME_FORMATTER = new ThreadLocal<SimpleDateFormat>() {
+		@Override
+		protected SimpleDateFormat initialValue() {
+			SimpleDateFormat sdt = new SimpleDateFormat("HH:mm:ss", Locale.UK);
+			sdt.setTimeZone(TimeZone.getTimeZone("UTC"));
+			return sdt;
+		}
+	};
+
+	public static final ThreadLocal<SimpleDateFormat> TIMESTAMP_FORMATTER = new ThreadLocal<SimpleDateFormat>() {
+		@Override
+		protected SimpleDateFormat initialValue() {
+			SimpleDateFormat sdt = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.UK);
+			sdt.setTimeZone(TimeZone.getTimeZone("UTC"));
+			return sdt;
+		}
+	};
+
+	public static final ThreadLocal<SimpleDateFormat> TIMESTAMP_SHORT_FORMATTER = new ThreadLocal<SimpleDateFormat>() {
+		@Override
+		protected SimpleDateFormat initialValue() {
+			SimpleDateFormat sdt = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.UK);
+			sdt.setTimeZone(TimeZone.getTimeZone("UTC"));
+			return sdt;
+		}
+	};
+
 	private final String schema;
 
 	public AtsdMeta(final AvaticaConnection conn) {
@@ -391,8 +427,7 @@ public class AtsdMeta extends MetaImpl {
 		final List<Object> list = new ArrayList<>(atsdTypes.length - 2);
 		for (AtsdType type : atsdTypes) {
 			if (!(type == AtsdType.LONG_DATA_TYPE || type == AtsdType.SHORT_DATA_TYPE)) {
-				list.add(getTypeInfo(type.sqlType.toUpperCase(Locale.US), type.sqlTypeCode,
-						type == AtsdType.STRING_DATA_TYPE, type.maxPrecision));
+				list.add(getTypeInfo(type));
 			}
 		}
 		return getResultSet(list, MetaTypeInfo.class, "TYPE_NAME", "DATA_TYPE", "PRECISION",
@@ -531,57 +566,13 @@ public class AtsdMeta extends MetaImpl {
 		return row;
 	}
 
-	private static final ThreadLocal<SimpleDateFormat> DATE_FORMATTER = new ThreadLocal<SimpleDateFormat>() {
-		@Override
-		protected SimpleDateFormat initialValue() {
-			SimpleDateFormat sdt = new SimpleDateFormat("yyyy-MM-dd", Locale.UK);
-			sdt.setTimeZone(TimeZone.getTimeZone("UTC"));
-			return sdt;
-		}
-	};
-
-	public static final ThreadLocal<SimpleDateFormat> TIME_FORMATTER = new ThreadLocal<SimpleDateFormat>() {
-		@Override
-		protected SimpleDateFormat initialValue() {
-			SimpleDateFormat sdt = new SimpleDateFormat("HH:mm:ss", Locale.UK);
-			sdt.setTimeZone(TimeZone.getTimeZone("UTC"));
-			return sdt;
-		}
-	};
-
-	public static final ThreadLocal<SimpleDateFormat> TIMESTAMP_FORMATTER = new ThreadLocal<SimpleDateFormat>() {
-		@Override
-		protected SimpleDateFormat initialValue() {
-			SimpleDateFormat sdt = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.UK);
-			sdt.setTimeZone(TimeZone.getTimeZone("UTC"));
-			return sdt;
-		}
-	};
-
-	public static final ThreadLocal<SimpleDateFormat> TIMESTAMP_SHORT_FORMATTER = new ThreadLocal<SimpleDateFormat>() {
-		@Override
-		protected SimpleDateFormat initialValue() {
-			SimpleDateFormat sdt = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.UK);
-			sdt.setTimeZone(TimeZone.getTimeZone("UTC"));
-			return sdt;
-		}
-	};
-
-	private static MetaTypeInfo getTypeInfo(String name, int type, boolean isCaseSensitive, int maxPrecision) {
-		return new MetaTypeInfo(name, type, maxPrecision, getLiteral(type, true), getLiteral(type, false),
-				DatabaseMetaData.typeNullable, isCaseSensitive, DatabaseMetaData.typeSearchable, false, false, false, 0,
-				0, 10);
-	}
-
-	private static String getLiteral(int type, boolean isPrefix) {
-		switch (type) {
-			case Types.VARCHAR:
-				return "'";
-			case Types.TIMESTAMP:
-				return isPrefix ? "TIMESTAMP '" : "'";
-			default:
-				return null;
-		}
+	private static MetaTypeInfo getTypeInfo(AtsdType type) {
+		final int sqlTypeCode = type.sqlTypeCode;
+		return new MetaTypeInfo(type.sqlType.toUpperCase(Locale.US), sqlTypeCode, type.maxPrecision,
+				type.getLiteral(true), type.getLiteral(false),
+				DatabaseMetaData.typeNullable, type == AtsdType.STRING_DATA_TYPE,
+				DatabaseMetaData.typeSearchable, false, false, false,
+				0, 0, 10);
 	}
 
 	// Since Calcite 1.6.0

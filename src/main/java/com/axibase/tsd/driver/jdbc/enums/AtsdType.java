@@ -65,12 +65,22 @@ public enum AtsdType {
 	},
 	STRING_DATA_TYPE("string", "varchar", Types.VARCHAR, Rep.STRING, 2147483647, 128 * 1024) {
 		@Override
+		public String getLiteral(boolean isPrefix) {
+			return "'";
+		}
+
+		@Override
 		protected Object readValueHelper(String cell) {
 			return cell;
 		}
 	},
 	TIMESTAMP_DATA_TYPE("xsd:dateTimeStamp", "timestamp", Types.TIMESTAMP, Rep.JAVA_SQL_TIMESTAMP,
 			"2016-01-01T00:00:00.000".length(), 10) {
+		@Override
+		public String getLiteral(boolean isPrefix) {
+			return isPrefix ? "TIMESTAMP '" : "'";
+		}
+
 		@Override
 		protected Object readValueHelper(String cell) {
 			return null;
@@ -146,5 +156,9 @@ public enum AtsdType {
 			}
 			return null;
 		}
+	}
+
+	public String getLiteral(boolean isPrefix) {
+		return null;
 	}
 }
