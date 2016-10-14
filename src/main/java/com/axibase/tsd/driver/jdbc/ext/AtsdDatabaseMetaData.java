@@ -19,21 +19,22 @@ import java.net.UnknownHostException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.Properties;
 
-import com.axibase.tsd.driver.jdbc.util.EnumUtil;
-import org.apache.calcite.avatica.AvaticaConnection;
-import org.apache.calcite.avatica.AvaticaDatabaseMetaData;
-import org.apache.calcite.avatica.ConnectionConfig;
-
-import static com.axibase.tsd.driver.jdbc.DriverConstants.*;
 import com.axibase.tsd.driver.jdbc.content.ContentDescription;
 import com.axibase.tsd.driver.jdbc.content.json.Version;
 import com.axibase.tsd.driver.jdbc.intf.IContentProtocol;
 import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
 import com.axibase.tsd.driver.jdbc.protocol.ProtocolFactory;
 import com.axibase.tsd.driver.jdbc.protocol.SdkProtocolImpl;
+import com.axibase.tsd.driver.jdbc.util.EnumUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.calcite.avatica.AvaticaConnection;
+import org.apache.calcite.avatica.AvaticaDatabaseMetaData;
+import org.apache.calcite.avatica.ConnectionConfig;
+
+import static com.axibase.tsd.driver.jdbc.DriverConstants.*;
 
 public class AtsdDatabaseMetaData extends AvaticaDatabaseMetaData {
 	private static final LoggingFacade logger = LoggingFacade.getLogger(AtsdDatabaseMetaData.class);
@@ -73,8 +74,9 @@ public class AtsdDatabaseMetaData extends AvaticaDatabaseMetaData {
 			assert protocol != null;
 			final InputStream is = protocol.readInfo();
 			final Version version = mapper.readValue(is, Version.class);
-			if (logger.isTraceEnabled())
+			if (logger.isTraceEnabled()) {
 				logger.trace("[initVersions] " + version.toString());
+			}
 			edition = version.getLicense().getProductVersion();
 			revision = version.getBuildInfo().getRevisionNumber();
 			if (logger.isDebugEnabled()) {
@@ -82,12 +84,14 @@ public class AtsdDatabaseMetaData extends AvaticaDatabaseMetaData {
 				logger.debug("[initVersions] revision: " + revision);
 			}
 		} catch (UnknownHostException e) {
-			if (logger.isDebugEnabled())
+			if (logger.isDebugEnabled()) {
 				logger.debug(e.getMessage());
+			}
 			throw new SQLException("Unknown host specified", e);
 		} catch (final Exception e) {
-			if (logger.isDebugEnabled())
+			if (logger.isDebugEnabled()) {
 				logger.debug(e.getMessage());
+			}
 			throw new SQLException(e);
 		}
 	}
@@ -95,55 +99,76 @@ public class AtsdDatabaseMetaData extends AvaticaDatabaseMetaData {
 	@Override
 	public ResultSet getTables(String catalog, String schemaPattern, String tableNamePattern, String[] types)
 			throws SQLException {
-		if (logger.isDebugEnabled())
-			logger.debug("[getTables]");
+		if (logger.isDebugEnabled()) {
+			logger.debug("[getTables] catalog: {}, schemaPattern: {}, tableNamePattern: {}, types: {}",
+					catalog, schemaPattern, tableNamePattern, Arrays.toString(types));
+		}
 		return super.getTables(catalog, schemaPattern, tableNamePattern, types);
+
 	}
 
 	@Override
 	public ResultSet getSchemas(String catalog, String schemaPattern) throws SQLException {
-		if (logger.isDebugEnabled())
-			logger.debug("[getSchemas]");
+		if (logger.isDebugEnabled()) {
+			logger.debug("[getSchemas] catalog: {}, schemaPattern: {}", catalog, schemaPattern);
+		}
 		return super.getSchemas(catalog, schemaPattern);
 	}
 
 	@Override
 	public ResultSet getSchemas() throws SQLException {
-		if (logger.isDebugEnabled())
+		if (logger.isDebugEnabled()) {
 			logger.debug("[getSchemas]");
+		}
 		return super.getSchemas();
 	}
 
 	@Override
+	public ResultSet getColumnPrivileges(String catalog, String schema, String table, String columnNamePattern) throws SQLException {
+		if (logger.isDebugEnabled()) {
+			logger.debug("[getColumnPrivileges] catalog: {}, schema: {}, table: {}, columnNamePattern: {}",
+					catalog, schema, table, columnNamePattern);
+		}
+		return super.getColumnPrivileges(catalog, schema, table, columnNamePattern);
+	}
+
+	@Override
 	public ResultSet getCatalogs() throws SQLException {
-		if (logger.isDebugEnabled())
+		if (logger.isDebugEnabled()) {
 			logger.debug("[getCatalogs]");
+		}
 		return super.getCatalogs();
 	}
 
 	@Override
 	public ResultSet getTableTypes() throws SQLException {
-		if (logger.isDebugEnabled())
+		if (logger.isDebugEnabled()) {
 			logger.debug("[getTableTypes]");
+		}
 		return super.getTableTypes();
 	}
 
 	@Override
 	public ResultSet getTypeInfo() throws SQLException {
-		if (logger.isDebugEnabled())
+		if (logger.isDebugEnabled()) {
 			logger.debug("[getTypeInfo]");
+		}
 		return super.getTypeInfo();
 	}
 
 	@Override
 	public String getDatabaseProductName() throws SQLException {
+		if (logger.isDebugEnabled()) {
+			logger.debug("[getDatabaseProductName]");
+		}
 		return super.getDatabaseProductName();
 	}
 
 	@Override
 	public String getDatabaseProductVersion() throws SQLException {
-		if (logger.isDebugEnabled())
+		if (logger.isDebugEnabled()) {
 			logger.debug("[getDatabaseProductVersion]");
+		}
 		return String.format("%s, %s, %s: %s", super.getDatabaseProductVersion(), edition, REVISION_LINE, revision);
 	}
 
@@ -152,39 +177,58 @@ public class AtsdDatabaseMetaData extends AvaticaDatabaseMetaData {
 		try {
 			return Integer.parseInt(revision);
 		} catch (NumberFormatException e) {
-			if (logger.isDebugEnabled())
+			if (logger.isDebugEnabled()) {
 				logger.debug(e.getMessage());
+			}
 		}
 		return 1;
 	}
 
 	@Override
 	public String getSQLKeywords() throws SQLException {
+		if (logger.isDebugEnabled()) {
+			logger.debug("[getSQLKeywords]");
+		}
 		return EnumUtil.getSqlKeywords();
 	}
 
 	@Override
 	public String getNumericFunctions() throws SQLException {
+		if (logger.isDebugEnabled()) {
+			logger.debug("[getNumericFunctions]");
+		}
 		return EnumUtil.getNumericFunctions();
 	}
 
 	@Override
 	public boolean supportsBatchUpdates() throws SQLException {
+		if (logger.isDebugEnabled()) {
+			logger.debug("[supportsBatchUpdates]");
+		}
 		return false;
 	}
 
 	@Override
 	public String getStringFunctions() throws SQLException {
+		if (logger.isDebugEnabled()) {
+			logger.debug("[getStringFunctions]");
+		}
 		return EnumUtil.getStringFunctions();
 	}
 
 	@Override
 	public String getSystemFunctions() throws SQLException {
+		if (logger.isDebugEnabled()) {
+			logger.debug("[getSystemFunctions]");
+		}
 		return super.getSystemFunctions();
 	}
 
 	@Override
 	public String getTimeDateFunctions() throws SQLException {
+		if (logger.isDebugEnabled()) {
+			logger.debug("[getTimeDateFunctions]");
+		}
 		return EnumUtil.getSupportedTimeFunctions();
 	}
 
