@@ -1,3 +1,6 @@
+## 1.2.14
+* Better support for GUI tools working with custom databases
+
 ## 1.2.13
 * `ResultSet#getRow` now counts rows starting with 1 instead of 0.
 
