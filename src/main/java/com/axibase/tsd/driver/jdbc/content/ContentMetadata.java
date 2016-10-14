@@ -19,12 +19,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.nio.charset.Charset;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 import com.axibase.tsd.driver.jdbc.enums.AtsdType;
 import com.axibase.tsd.driver.jdbc.ext.AtsdException;
 import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
-import com.axibase.tsd.driver.jdbc.util.ContentMetadataGuessUtil;
 import com.axibase.tsd.driver.jdbc.util.EnumUtil;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
@@ -37,15 +39,12 @@ import org.apache.calcite.avatica.Meta.MetaResultSet;
 import org.apache.calcite.avatica.Meta.Signature;
 import org.apache.calcite.avatica.Meta.StatementType;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 
 import static com.axibase.tsd.driver.jdbc.DriverConstants.*;
 
 @SuppressWarnings("unchecked")
 public class ContentMetadata {
 	private static final LoggingFacade logger = LoggingFacade.getLogger(ContentMetadata.class);
-	private static final int DEFAULT_STRING_DISPLAY_SIZE = 128 * 1024;
-	private static final int DEFAULT_DISPLAY_SIZE = 10;
 
 	private final Signature sign;
 	private final List<MetaResultSet> list;
@@ -60,21 +59,6 @@ public class ContentMetadata {
 		list = Collections.unmodifiableList(
 				Collections.singletonList(MetaResultSet.create(connectionId, statementId, false, sign, null)));
 	}
-
-	private ContentMetadata(String sql, String connectionId, int statementId)
-			throws AtsdException, IOException {
-		metadataList = generateDefaultColumnMetaDataList(sql);
-		sign = new Signature(metadataList, sql, Collections.<AvaticaParameter>emptyList(), null, CursorFactory.LIST,
-				StatementType.SELECT);
-		list = Collections.unmodifiableList(
-				Collections.singletonList(MetaResultSet.create(connectionId, statementId, false, sign, null)));
-	}
-
-	public static ContentMetadata newDefaultMetaData(String query, String connectionId, int statementId)
-			throws IOException, AtsdException {
-		return new ContentMetadata(query, connectionId, statementId);
-	}
-
 
 	public Signature getSign() {
 		return sign;
@@ -124,31 +108,6 @@ public class ContentMetadata {
 		return Collections.unmodifiableList(Arrays.asList(sortedByOrdinal));
 	}
 
-	private static List<ColumnMetaData> generateDefaultColumnMetaDataList(String query) {
-		Pair<String, String[]> nameAndFields = ContentMetadataGuessUtil.findTableNameAndFields(query);
-		final String tableName = nameAndFields.getLeft();
-		final String[] fieldNames = nameAndFields.getRight();
-
-		List<ColumnMetaData> result = new ArrayList<>(fieldNames.length);
-		int columnCount = fieldNames.length;
-		for (int i = 0; i < columnCount; ++i) {
-			result.add(generateDefaultColumnMetadata(i, fieldNames[i], tableName));
-		}
-		return Collections.unmodifiableList(result);
-	}
-
-	private static ColumnMetaData generateDefaultColumnMetadata(int index, String name, String table) {
-		final AtsdType defaultType = EnumUtil.getAtsdTypeByColumnName(name);
-		return new ColumnMetaDataBuilder()
-				.withColumnIndex(index)
-				.withSchema(DEFAULT_SCHEMA)
-				.withTable(table)
-				.withName(name)
-				.withTitle(name)
-				.withAtsdType(defaultType)
-				.build();
-	}
-
 	private static ColumnMetaData getColumnMetaData(String schema, int ind, final Object obj) {
 		final Map<String, Object> property = (Map<String, Object>) obj;
 		final Integer index = (Integer) property.get(INDEX_PROPERTY);
@@ -193,7 +152,7 @@ public class ContentMetadata {
 		private String name;
 		private String title;
 		private String table;
-		private ColumnMetaData.AvaticaType atype;
+		private AtsdType atsdType;
 
 		private int columnIndex;
 		private String schema;
@@ -214,7 +173,7 @@ public class ContentMetadata {
 		}
 
 		public ColumnMetaDataBuilder withAtsdType(AtsdType atsdType) {
-			this.atype = getAvaticaType(atsdType);
+			this.atsdType = atsdType;
 			return this;
 		}
 
@@ -229,10 +188,9 @@ public class ContentMetadata {
 		}
 
 		public ColumnMetaData build() {
-			final int displaySize = atype.rep == ColumnMetaData.Rep.STRING ?
-					DEFAULT_STRING_DISPLAY_SIZE : DEFAULT_DISPLAY_SIZE;
+			final ColumnMetaData.AvaticaType atype = getAvaticaType(atsdType);
 			return new ColumnMetaData(columnIndex, false, false, false,
-					false, 0, false, displaySize, name, title, schema, 1, 1, table, DEFAULT_CATALOG_NAME, atype,
+					false, 0, false, atsdType.size, name, title, schema, 1, 1, table, DEFAULT_CATALOG_NAME, atype,
 					true, false, false, atype.rep.clazz.getCanonicalName());
 		}
 	}
