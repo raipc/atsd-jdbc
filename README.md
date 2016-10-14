@@ -73,7 +73,7 @@ Add dependency to `pom.xml` in your project. The JDBC driver will be imported au
 <dependency>
     <groupId>com.axibase</groupId>
     <artifactId>atsd-jdbc</artifactId>
-    <version>1.2.13</version>
+    <version>1.2.14</version>
 </dependency>
 ```
 
@@ -85,11 +85,11 @@ $ mvn clean install -DskipTests=true
 
 ### Classpath
 
-Download the driver [jar file](https://github.com/axibase/atsd-jdbc/releases/download/RELEASE-1.2.13/atsd-jdbc-1.2.13-DEPS.jar) with dependencies and add it to the classpath of your application.
+Download the driver [jar file](https://github.com/axibase/atsd-jdbc/releases/download/RELEASE-1.2.14/atsd-jdbc-1.2.14-DEPS.jar) with dependencies and add it to the classpath of your application.
 
 ```
-* Unix: java -cp "atsd-jdbc-1.2.13-DEPS.jar:lib/*" your.package.MainClass
-* Windows java -cp "atsd-jdbc-1.2.13-DEPS.jar;lib/*" your.package.MainClass
+* Unix: java -cp "atsd-jdbc-1.2.14-DEPS.jar:lib/*" your.package.MainClass
+* Windows java -cp "atsd-jdbc-1.2.14-DEPS.jar;lib/*" your.package.MainClass
 ```
 
 ### Database Tools
@@ -273,8 +273,7 @@ The following example shows how to extract metadata from the database:
     String password = System.getProperty("atsd.password");
     String sqlUrl = "jdbc:axibase:atsd:" + hostUrl + "/api/sql;trustServerCertificate=true";
 
-    try (Connection connection = DriverManager.getConnection(sqlUrl, userName, password);
-         Statement statement = connection.createStatement()) {
+    try (Connection connection = DriverManager.getConnection(sqlUrl, userName, password)) {
 
         DatabaseMetaData metaData = connection.getMetaData();
         String databaseProductName = metaData.getDatabaseProductName();
@@ -324,7 +323,7 @@ Results:
 Product Name:   	Axibase
 Product Version:	Axibase Time Series Database, <ATSD_EDITION>, Revision: <ATSD_REVISION_NUMBER>
 Driver Name:    	ATSD JDBC driver
-Driver Version: 	1.2.13
+Driver Version: 	1.2.14
 
 TypeInfo:
 	Name:BIGINT 	        CS: false 	Type: -5 	Precision: 19
@@ -341,8 +340,7 @@ TableTypes:
 	VIEW
 	SYSTEM
 	
-Catalog: 	atsd_
-Schema: 	Axibase
+Catalog: 	atsd
 ```
 
 ## Spring Framework Integration
