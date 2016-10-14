@@ -18,7 +18,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -129,8 +129,8 @@ public class ContentMetadata {
 
 	private static Map<String, Object> getJsonScheme(String json) throws IOException {
 		final MappingJsonFactory jsonFactory = new MappingJsonFactory();
-		try (final InputStream inputStream = new ByteArrayInputStream(json.getBytes(Charset.defaultCharset()));
-			 final JsonParser parser = jsonFactory.createParser(inputStream)) {
+		try (final InputStream inputStream = new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8));
+		     final JsonParser parser = jsonFactory.createParser(inputStream)) {
 			final JsonToken token = parser.nextToken();
 			Class<?> type;
 			if (token == JsonToken.START_OBJECT) {
