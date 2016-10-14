@@ -1,18 +1,19 @@
 package com.axibase.tsd.driver.jdbc.util;
 
+import java.util.*;
+
 import com.axibase.tsd.driver.jdbc.enums.*;
 import com.axibase.tsd.driver.jdbc.enums.timedatesyntax.*;
 import com.axibase.tsd.driver.jdbc.intf.ITimeDateConstant;
 import org.apache.commons.lang3.EnumUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.*;
-
 
 public class EnumUtil {
 
 	private static final Set<String> reservedWordsSql2003 = createSetFromEnum(ReservedWordsSQL2003.values());
 	private static final Map<String, AtsdType> atsdNameTypeMapping = createAtsdNameTypeMapping();
+	private static final Map<Integer, AtsdType> sqlAtsdTypesMaping = createSqlAtsdTypesMapping();
 	private static final Map<String, AtsdType> columnPrefixAtsdTypeMapping = createColumnPrefixAtsdTypeMapping();
 	private static final Map<String, ITimeDateConstant> tokenToTimeDateEnumConstant = initializeTimeDateMap();
 	private static final Map<String, Strategy> strategyMap = EnumUtils.getEnumMap(Strategy.class);
@@ -23,6 +24,14 @@ public class EnumUtil {
 		Map<String, AtsdType> mapping = new HashMap<>();
 		for (AtsdType type : AtsdType.values()) {
 			mapping.put(type.originalType, type);
+		}
+		return Collections.unmodifiableMap(mapping);
+	}
+
+	private static Map<Integer, AtsdType> createSqlAtsdTypesMapping() {
+		Map<Integer, AtsdType> mapping = new HashMap<>();
+		for (AtsdType type : AtsdType.values()) {
+			mapping.put(type.sqlTypeCode, type);
 		}
 		return Collections.unmodifiableMap(mapping);
 	}
@@ -53,6 +62,14 @@ public class EnumUtil {
 
 	public static AtsdType getAtsdTypeByOriginalName(String name) {
 		AtsdType result = atsdNameTypeMapping.get(name);
+		if (result == null) {
+			result = AtsdType.STRING_DATA_TYPE; // use string type by default
+		}
+		return result;
+	}
+
+	public static AtsdType getAtsdTypeBySqlType(int typeCode) {
+		AtsdType result = sqlAtsdTypesMaping.get(typeCode);
 		if (result == null) {
 			result = AtsdType.STRING_DATA_TYPE; // use string type by default
 		}

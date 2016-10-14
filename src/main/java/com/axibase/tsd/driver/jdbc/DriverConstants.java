@@ -40,7 +40,7 @@ public final class DriverConstants {
 	public static final String DEFAULT_SCHEMA = "Axibase Time-Series Database";
 	public static final String COLUMNS_SCHEME = "columns";
 	public static final String DATATYPE_PROPERTY = "datatype";
-	public static final String DEFAULT_CATALOG_NAME = "atsd_";
+	public static final String DEFAULT_CATALOG_NAME = "atsd";
 	public static final String DEFAULT_TABLE_NAME = "atsd_series";
 	public static final String INDEX_PROPERTY = "columnIndex";
 	public static final String NAME_PROPERTY = "name";

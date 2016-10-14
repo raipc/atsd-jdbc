@@ -14,15 +14,22 @@
 */
 package com.axibase.tsd.driver.jdbc.content;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 import com.axibase.tsd.driver.jdbc.enums.AtsdType;
+import com.axibase.tsd.driver.jdbc.ext.AtsdException;
+import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
 import com.axibase.tsd.driver.jdbc.util.ContentMetadataGuessUtil;
 import com.axibase.tsd.driver.jdbc.util.EnumUtil;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.databind.MappingJsonFactory;
 import org.apache.calcite.avatica.AvaticaParameter;
 import org.apache.calcite.avatica.ColumnMetaData;
 import org.apache.calcite.avatica.Meta.CursorFactory;
@@ -30,15 +37,9 @@ import org.apache.calcite.avatica.Meta.MetaResultSet;
 import org.apache.calcite.avatica.Meta.Signature;
 import org.apache.calcite.avatica.Meta.StatementType;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 
 import static com.axibase.tsd.driver.jdbc.DriverConstants.*;
-import com.axibase.tsd.driver.jdbc.ext.AtsdException;
-import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.databind.MappingJsonFactory;
-import org.apache.commons.lang3.tuple.Pair;
 
 @SuppressWarnings("unchecked")
 public class ContentMetadata {
@@ -138,18 +139,13 @@ public class ContentMetadata {
 
 	private static ColumnMetaData generateDefaultColumnMetadata(int index, String name, String table) {
 		final AtsdType defaultType = EnumUtil.getAtsdTypeByColumnName(name);
-		if (defaultType == null) {
-			throw new IllegalArgumentException("Found non-expected column name: " + name);
-		}
-		final String datatype = defaultType.originalType;
-		final ColumnMetaData.AvaticaType atype = getAvaticaType(datatype);
 		return new ColumnMetaDataBuilder()
 				.withColumnIndex(index)
 				.withSchema(DEFAULT_SCHEMA)
 				.withTable(table)
 				.withName(name)
 				.withTitle(name)
-				.withAtype(atype)
+				.withAtsdType(defaultType)
 				.build();
 	}
 
@@ -161,14 +157,14 @@ public class ContentMetadata {
 		String title = (String) property.get(TITLE_PROPERTY);
 		String table = (String) property.get(TABLE_PROPERTY);
 		String datatype = property.get(DATATYPE_PROPERTY).toString(); // may be represented as a json object (hashmap)
-		final ColumnMetaData.AvaticaType atype = getAvaticaType(datatype);
+		final AtsdType atsdType = EnumUtil.getAtsdTypeByOriginalName(datatype);
 		return new ColumnMetaDataBuilder()
 				.withColumnIndex(columnIndex)
 				.withSchema(schema)
 				.withTable(table)
 				.withName(name)
 				.withTitle(title)
-				.withAtype(atype)
+				.withAtsdType(atsdType)
 				.build();
 	}
 
@@ -189,8 +185,7 @@ public class ContentMetadata {
 		}
 	}
 
-	private static ColumnMetaData.AvaticaType getAvaticaType(String datatype) {
-		final AtsdType type = EnumUtil.getAtsdTypeByOriginalName(datatype);
+	private static ColumnMetaData.AvaticaType getAvaticaType(AtsdType type) {
 		return new ColumnMetaData.AvaticaType(type.sqlTypeCode, type.sqlType, type.avaticaType);
 	}
 
@@ -218,8 +213,8 @@ public class ContentMetadata {
 			return this;
 		}
 
-		public ColumnMetaDataBuilder withAtype(ColumnMetaData.AvaticaType atype) {
-			this.atype = atype;
+		public ColumnMetaDataBuilder withAtsdType(AtsdType atsdType) {
+			this.atype = getAvaticaType(atsdType);
 			return this;
 		}
 

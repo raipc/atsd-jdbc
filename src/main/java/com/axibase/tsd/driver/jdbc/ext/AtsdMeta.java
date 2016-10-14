@@ -16,6 +16,17 @@ package com.axibase.tsd.driver.jdbc.ext;
 
 
 
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Field;
+import java.security.GeneralSecurityException;
+import java.sql.*;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.ReentrantLock;
+
 import com.axibase.tsd.driver.jdbc.DriverConstants;
 import com.axibase.tsd.driver.jdbc.content.ContentDescription;
 import com.axibase.tsd.driver.jdbc.content.ContentMetadata;
@@ -27,25 +38,10 @@ import com.axibase.tsd.driver.jdbc.enums.timedatesyntax.EndTime;
 import com.axibase.tsd.driver.jdbc.intf.IDataProvider;
 import com.axibase.tsd.driver.jdbc.intf.IStoreStrategy;
 import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
+import com.axibase.tsd.driver.jdbc.util.EnumUtil;
 import com.axibase.tsd.driver.jdbc.util.TimeDateExpression;
 import org.apache.calcite.avatica.*;
 import org.apache.calcite.avatica.remote.TypedValue;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.text.WordUtils;
-
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Field;
-import java.math.BigDecimal;
-import java.security.GeneralSecurityException;
-import java.sql.*;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.Date;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.locks.ReentrantLock;
 
 public class AtsdMeta extends MetaImpl {
 	private static final LoggingFacade log = LoggingFacade.getLogger(AtsdMeta.class);
@@ -54,6 +50,7 @@ public class AtsdMeta extends MetaImpl {
 	private final Map<Integer, IDataProvider> providerCache = new ConcurrentHashMap<>();
 	private final Map<Integer, StatementContext> contextMap = new ConcurrentHashMap<>();
 	private final ReentrantLock lock = new ReentrantLock();
+	private final String schema;
 
 	public AtsdMeta(final AvaticaConnection conn) {
 		super(conn);
@@ -61,6 +58,7 @@ public class AtsdMeta extends MetaImpl {
 		this.connProps.setReadOnly(true);
 		this.connProps.setTransactionIsolation(Connection.TRANSACTION_NONE);
 		this.connProps.setDirty(false);
+		this.schema = null;
 	}
 
 	public StatementContext getContextFromMap(StatementHandle h) {
@@ -359,19 +357,18 @@ public class AtsdMeta extends MetaImpl {
 	@Override
 	public MetaResultSet getTables(ConnectionHandle connectionHandle, String catalog, Pat schemaPattern, Pat tableNamePattern,
 								   List<String> typeList) {
-		final Iterable<Object> iterable = Collections.<Object>singletonList(
-				new MetaTable(DriverConstants.DEFAULT_CATALOG_NAME, null, DriverConstants.DEFAULT_TABLE_NAME, "SYSTEM"));
-		return getResultSet(iterable, MetaTable.class, "TABLE_CAT", "TABLE_SCHEM", "TABLE_NAME", "TABLE_TYPE");
+		if (typeList == null || typeList.contains("TABLE")) {
+			final Iterable<Object> iterable = Collections.<Object>singletonList(
+					new MetaTable(DriverConstants.DEFAULT_CATALOG_NAME, this.schema, DriverConstants.DEFAULT_TABLE_NAME, "TABLE"));
+			return getResultSet(iterable, MetaTable.class, "TABLE_CAT", "TABLE_SCHEM", "TABLE_NAME", "TABLE_TYPE");
+		}
+		return createEmptyResultSet(MetaTable.class);
+
 	}
 
 	@Override
 	public MetaResultSet getSchemas(ConnectionHandle connectionHandle, String catalog, Pat schemaPattern) {
-		assert connection instanceof AtsdConnection;
-		final Properties info = ((AtsdConnection) connection).getInfo();
-		String username = info != null ? (String) info.get("user") : "";
-		final Iterable<Object> iterable = Collections.<Object>singletonList(
-				new MetaSchema(DriverConstants.DEFAULT_CATALOG_NAME, WordUtils.capitalize(username)));
-		return getResultSet(iterable, MetaSchema.class, "TABLE_SCHEM", "TABLE_CATALOG");
+		return createEmptyResultSet(MetaSchema.class);
 	}
 
 	@Override
@@ -406,45 +403,42 @@ public class AtsdMeta extends MetaImpl {
 
 	@Override
 	public MetaResultSet getColumns(ConnectionHandle ch, String catalog, Pat schemaPattern, Pat tableNamePattern, Pat columnNamePattern) {
-		if (catalog != null && !DriverConstants.DEFAULT_CATALOG_NAME.equals(catalog)) {
-			throw new UnsupportedOperationException();
-		}
-		assert connection instanceof AtsdConnection;
-		final Properties info = ((AtsdConnection) connection).getInfo();
-		final String username = info != null ? (String) info.get("user") : "";
-		final String schema = WordUtils.capitalize(username);
+		if ((catalog != null && !DriverConstants.DEFAULT_CATALOG_NAME.equals(catalog))
+				|| tableNamePattern.s != null && DriverConstants.DEFAULT_TABLE_NAME.equals(tableNamePattern.s)) {
+			DefaultColumn[] columns = DefaultColumn.values();
+			List<Object> columnData = new ArrayList<>(columns.length);
+			int position = 1;
+			for (DefaultColumn column : columns) {
+				columnData.add(createColumnMetaData(column, null, position));
+				++position;
+			}
 
-		DefaultColumn[] columns = DefaultColumn.values();
-		List<Object> columnData = new ArrayList<>(columns.length);
-		int position = 1;
-		for (DefaultColumn column : columns) {
-			columnData.add(createColumnMetaData(column, schema, position));
-			++position;
+			return getResultSet(columnData, MetaColumn.class,  "TABLE_CAT", "TABLE_SCHEM", "TABLE_NAME",
+					"COLUMN_NAME", "DATA_TYPE", "TYPE_NAME", "COLUMN_SIZE", "BUFFER_LENGTH",
+					"DECIMAL_DIGITS", "NUM_PREC_RADIX", "NULLABLE", "REMARKS", "COLUMN_DEF",
+					"SQL_DATA_TYPE", "SQL_DATETIME_SUB", "CHAR_OCTET_LENGTH", "ORDINAL_POSITION",
+					"IS_NULLABLE", "SCOPE_CATALOG", "SCOPE_SCHEMA", "SCOPE_TABLE", "SOURCE_DATA_TYPE",
+					"IS_AUTOINCREMENT", "IS_GENERATEDCOLUMN");
 		}
-
-		return getResultSet(columnData, MetaColumn.class,  "TABLE_CAT", "TABLE_SCHEM", "TABLE_NAME",
-				"COLUMN_NAME", "DATA_TYPE", "TYPE_NAME", "COLUMN_SIZE", "BUFFER_LENGTH",
-				"DECIMAL_DIGITS", "NUM_PREC_RADIX", "NULLABLE", "REMARKS", "COLUMN_DEF",
-				"SQL_DATA_TYPE", "SQL_DATETIME_SUB", "CHAR_OCTET_LENGTH", "ORDINAL_POSITION",
-				"IS_NULLABLE", "SCOPE_CATALOG", "SCOPE_SCHEMA", "SCOPE_TABLE", "SOURCE_DATA_TYPE",
-				"IS_AUTOINCREMENT", "IS_GENERATEDCOLUMN");
+		return createEmptyResultSet(MetaColumn.class);
 	}
 
 	private static Object createColumnMetaData(DefaultColumn column, String schema, int ordinal) {
+		final AtsdType columnType = column.getType();
 		return new MetaColumn(
 				DriverConstants.DEFAULT_CATALOG_NAME,
 				schema,
 				DriverConstants.DEFAULT_TABLE_NAME,
 				column.getColumnNamePrefix(),
-				column.getType().sqlTypeCode,
-				column.getType().sqlType,
-				0,
+				columnType.sqlTypeCode,
+				columnType.sqlType,
+				columnType.size,
 				null,
 				10,
-				2,
+				column.getNullable(),
 				0,
 				ordinal,
-				""
+				column.getNullableAsString()
 		);
 	}
 
@@ -529,90 +523,12 @@ public class AtsdMeta extends MetaImpl {
 	private List<Object> getFrameRow(final List<ColumnMetaData> metadataOrdered, final String[] strings) {
 		final int length = strings.length;
 		final List<Object> row = new ArrayList<>(length);
-		int sqlType;
-		String cell;
 		for (int i = 0; i < length; i++) {
-			sqlType = metadataOrdered.get(i).type.id;
-			cell = strings[i];
-
-			if (StringUtils.isEmpty(cell)) {
-				row.add(sqlType == Types.VARCHAR ? cell : null);
-			} else if (sqlType == Types.VARCHAR) {
-				row.add(cell);
-			} else if (sqlType == Types.TIMESTAMP) {
-				row.add(readTimestampValue(cell));
-			} else {
-				row.add(readNumberValue(strings, i, sqlType));
-			}
+			int sqlType = metadataOrdered.get(i).type.id;
+			AtsdType atsdType = EnumUtil.getAtsdTypeBySqlType(sqlType);
+			row.add(atsdType.readValue(strings, i));
 		}
 		return row;
-	}
-
-	private static Object readTimestampValue(String cell) {
-		Object value;
-		try {
-			Date date = TIMESTAMP_FORMATTER.get().parse(cell);
-			value = new Timestamp(date.getTime());
-		} catch (final ParseException e) {
-			if (log.isDebugEnabled()) {
-				log.debug("[getFrame] " + e.getMessage());
-			}
-			value = readShortTimestampValue(cell);
-		}
-		return value;
-	}
-
-	private static Object readShortTimestampValue(String cell) {
-		Object value = null;
-		try {
-			final Date date = TIMESTAMP_SHORT_FORMATTER.get().parse(cell);
-			value = new Timestamp(date.getTime());
-		} catch (ParseException parseException) {
-			if (log.isDebugEnabled()) {
-				log.debug("[getFrame] " + parseException.getMessage());
-			}
-		}
-		return value;
-	}
-
-	private static Object readNumberValue(String[] array, int index, int type) {
-		Object value = null;
-		String typeName = null;
-		try {
-			switch(type) {
-				case Types.SMALLINT:
-					typeName = "smallint";
-					value = Short.valueOf(array[index]);
-					break;
-				case Types.INTEGER:
-					typeName = "integer";
-					value = Integer.valueOf(array[index]);
-					break;
-				case Types.BIGINT:
-					typeName = "bigint";
-					value = Long.valueOf(array[index]);
-					break;
-				case Types.FLOAT:
-					typeName = "float";
-					value = Double.valueOf(array[index]);
-					break;
-				case Types.DOUBLE:
-					typeName = "double";
-					value = Double.valueOf(array[index]);
-					break;
-				case Types.DECIMAL:
-					typeName = "decimal";
-					value = new BigDecimal(array[index]);
-					break;
-				default:
-					throw new IllegalArgumentException("Numeric type expected");
-			}
-		} catch (final NumberFormatException e) {
-			if (log.isDebugEnabled()) {
-				log.debug("[getFrame] {} type mismatched: {} on {} position", typeName, Arrays.toString(array), index);
-			}
-		}
-		return value;
 	}
 
 	private static final ThreadLocal<SimpleDateFormat> DATE_FORMATTER = new ThreadLocal<SimpleDateFormat>() {
@@ -624,7 +540,7 @@ public class AtsdMeta extends MetaImpl {
 		}
 	};
 
-	private static final ThreadLocal<SimpleDateFormat> TIME_FORMATTER = new ThreadLocal<SimpleDateFormat>() {
+	public static final ThreadLocal<SimpleDateFormat> TIME_FORMATTER = new ThreadLocal<SimpleDateFormat>() {
 		@Override
 		protected SimpleDateFormat initialValue() {
 			SimpleDateFormat sdt = new SimpleDateFormat("HH:mm:ss", Locale.UK);
@@ -633,7 +549,7 @@ public class AtsdMeta extends MetaImpl {
 		}
 	};
 
-	private static final ThreadLocal<SimpleDateFormat> TIMESTAMP_FORMATTER = new ThreadLocal<SimpleDateFormat>() {
+	public static final ThreadLocal<SimpleDateFormat> TIMESTAMP_FORMATTER = new ThreadLocal<SimpleDateFormat>() {
 		@Override
 		protected SimpleDateFormat initialValue() {
 			SimpleDateFormat sdt = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.UK);
@@ -642,7 +558,7 @@ public class AtsdMeta extends MetaImpl {
 		}
 	};
 
-	private static final ThreadLocal<SimpleDateFormat> TIMESTAMP_SHORT_FORMATTER = new ThreadLocal<SimpleDateFormat>() {
+	public static final ThreadLocal<SimpleDateFormat> TIMESTAMP_SHORT_FORMATTER = new ThreadLocal<SimpleDateFormat>() {
 		@Override
 		protected SimpleDateFormat initialValue() {
 			SimpleDateFormat sdt = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.UK);
