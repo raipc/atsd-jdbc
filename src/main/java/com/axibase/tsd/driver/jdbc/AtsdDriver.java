@@ -52,8 +52,9 @@ public class AtsdDriver extends UnregisteredDriver {
 				return getDriverVersion(properties);
 			}
 		} catch (final IOException e) {
-			if (logger.isDebugEnabled())
+			if (logger.isDebugEnabled()) {
 				logger.debug("[createDriverVersion] " + e.getMessage());
+			}
 		}
 		return getDefaultDriverVersion();
 	}
@@ -74,23 +75,26 @@ public class AtsdDriver extends UnregisteredDriver {
 		int driverVersionMinor = StringUtils.isNoneEmpty(property) ? NumberUtils.toInt(property)
 				: DRIVER_VERSION_MINOR_DEFAULT;
 		final boolean jdbcCompliant = false;
-		if (logger.isDebugEnabled())
+		if (logger.isDebugEnabled()) {
 			logger.debug("[createDriverVersion] " + driverVersion);
+		}
 		return new DriverVersion(driverName, driverVersion, productName, productVersion, jdbcCompliant,
 				driverVersionMajor, driverVersionMinor, productVersionMajor, productVersionMinor);
 	}
 
 	@Override
 	protected String getConnectStringPrefix() {
-		if (logger.isDebugEnabled())
+		if (logger.isDebugEnabled()) {
 			logger.debug("[getConnectStringPrefix]");
+		}
 		return CONNECT_URL_PREFIX;
 	}
 
 	@Override
 	public Meta createMeta(AvaticaConnection connection) {
-		if (logger.isDebugEnabled())
+		if (logger.isDebugEnabled()) {
 			logger.debug("[createMeta] " + connection.id);
+		}
 		return new AtsdMeta(connection);
 	}
 
@@ -99,8 +103,9 @@ public class AtsdDriver extends UnregisteredDriver {
 		if (!acceptsURL(url)) {
 			return null;
 		}
-		if (logger.isDebugEnabled())
+		if (logger.isDebugEnabled()) {
 			logger.debug("[connect] " + url);
+		}
 		final String urlSuffix = url.substring(CONNECT_URL_PREFIX.length());
 		info.setProperty("url", urlSuffix);
 		info.setProperty("schema", CONNECT_URL_PREFIX);
@@ -117,14 +122,16 @@ public class AtsdDriver extends UnregisteredDriver {
 
 	@Override
 	public boolean acceptsURL(String url) throws SQLException {
-		if (logger.isDebugEnabled())
+		if (logger.isDebugEnabled()) {
 			logger.debug("[acceptsURL] " + url);
+		}
 		return url.startsWith(CONNECT_URL_PREFIX);
 	}
 
 	private DriverVersion getDefaultDriverVersion() {
-		if (logger.isDebugEnabled())
+		if (logger.isDebugEnabled()) {
 			logger.debug("[getDefaultDriverVersion]");
+		}
 		return new DriverVersion(JDBC_DRIVER_NAME, JDBC_DRIVER_VERSION_DEFAULT, DATABASE_PRODUCT_NAME,
 				DATABASE_PRODUCT_VERSION, true, DRIVER_VERSION_MAJOR_DEFAULT, DRIVER_VERSION_MINOR_DEFAULT, 1, 0);
 	}
