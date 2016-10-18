@@ -43,6 +43,8 @@ public class AtsdStatement extends AvaticaStatement {
 	@Override
 	public synchronized void cancel() throws SQLException {
 		super.cancel();
+		AtsdConnection atsdConnection = (AtsdConnection) this.connection;
+		atsdConnection.getMeta().closeStatement(this.handle);
 		if (logger.isTraceEnabled()) {
 			logger.trace("[AtsdStatement#cancel]");
 		}

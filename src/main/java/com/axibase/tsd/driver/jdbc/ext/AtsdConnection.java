@@ -47,7 +47,7 @@ public class AtsdConnection extends AvaticaConnection {
 		return true;
 	}
 
-	protected Meta getMeta(){
+	Meta getMeta(){
 		return TROJAN.getMeta(this);
 	}
 

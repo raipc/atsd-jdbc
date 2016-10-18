@@ -538,7 +538,6 @@ public class AtsdResultSet extends AvaticaResultSet {
 		if (logger.isTraceEnabled()) {
 			logger.trace("[AtsdResultSet#cancel]");
 		}
-		meta.cancelStatement(handle);
 	}
 
 }
