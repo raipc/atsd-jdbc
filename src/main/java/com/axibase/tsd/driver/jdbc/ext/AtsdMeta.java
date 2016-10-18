@@ -334,6 +334,9 @@ public class AtsdMeta extends MetaImpl {
 		if (!contextMap.isEmpty()) {
 			contextMap.remove(h.id);
 		}
+		if (log.isTraceEnabled()) {
+			log.trace("[closeProviderCaches]");
+		}
 
 	}
 
