@@ -1,22 +1,19 @@
 package com.axibase.tsd.driver.jdbc.content;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Scanner;
+
 import com.axibase.tsd.driver.jdbc.intf.IStoreStrategy;
 import com.axibase.tsd.driver.jdbc.protocol.SdkProtocolImpl;
 import org.junit.Before;
 import org.junit.Test;
 import org.powermock.api.mockito.PowerMockito;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Scanner;
 
 import static com.axibase.tsd.driver.jdbc.TestConstants.SELECT_ALL_CLAUSE;
 import static org.junit.Assert.assertTrue;
 
 public abstract class AbstractTypeMock extends AbstractFetchTest {
-	protected static final Logger logger = LoggerFactory.getLogger(AbstractTypeMock.class);
 	protected static final String CONTEXT_START = "{";
 	protected boolean isDefaultStrategy;
 
