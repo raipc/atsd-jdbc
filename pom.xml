@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.axibase</groupId>
 	<artifactId>atsd-jdbc</artifactId>
-	<version>1.2.14</version>
+	<version>1.2.15-SNAPSHOT</version>
 	<name>ATSD JDBC driver</name>
 	<description>JDBC driver for SQL API using</description>
 	<url>http://axibase.com</url>
@@ -47,7 +47,7 @@
 		<logback.version>1.1.7</logback.version>
 		<mockito.version>1.10.19</mockito.version>
 		<powermock.version>1.6.5</powermock.version>
-		<jackson.version>2.8.1</jackson.version>
+		<jackson.version>2.8.3</jackson.version>
 		<maven-assembly-plugin.version>2.6</maven-assembly-plugin.version>
 		<maven-compiler-plugin.version>3.5.1</maven-compiler-plugin.version>
 		<maven-dependency-plugin.version>2.10</maven-dependency-plugin.version>
@@ -59,8 +59,8 @@
 		<maven-resources-plugin.version>3.0.1</maven-resources-plugin.version>
 		<build-helper-plugin.version>1.12</build-helper-plugin.version>
 		<findbugs-maven-plugin.version>3.0.4</findbugs-maven-plugin.version>
-		<coveralls-maven-plugin.version>4.2.0</coveralls-maven-plugin.version>
-		<sonar-maven-plugin.version>3.0.2</sonar-maven-plugin.version>
+		<coveralls-maven-plugin.version>4.3.0</coveralls-maven-plugin.version>
+		<sonar-maven-plugin.version>3.2</sonar-maven-plugin.version>
 		<locale>en_US</locale>
 		<build.timestamp>${maven.build.timestamp}</build.timestamp>
 		<maven.build.timestamp.format>E dd-MM-yyyy HH:mm:ss z</maven.build.timestamp.format>
@@ -578,16 +578,9 @@
 	</distributionManagement>
 	<developers>
 		<developer>
-			<id>dev</id>
-			<name>Alexey Reztsov</name>
-			<email>alexey.reztsov@axibase.com</email>
-			<timezone>UTC+3</timezone>
-		</developer>
-		<developer>
 			<id>raipc</id>
 			<name>Anton Rybochkin</name>
 			<email>anton.rybochkin@axibase.com</email>
-			<timezone>UTC+3</timezone>
 		</developer>
 	</developers>
 </project>
