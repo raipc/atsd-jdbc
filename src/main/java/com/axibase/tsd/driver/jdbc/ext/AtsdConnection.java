@@ -55,7 +55,7 @@ public class AtsdConnection extends AvaticaConnection {
 	public void close() throws SQLException {
 		super.close();
 		AtsdMeta meta = (AtsdMeta) getMeta();
-		meta.close();
+		meta.closeConnection();
 	}
 
 }

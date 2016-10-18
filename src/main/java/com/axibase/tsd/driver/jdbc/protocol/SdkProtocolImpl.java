@@ -86,12 +86,12 @@ public class SdkProtocolImpl implements IContentProtocol {
 
 	@Override
 	public InputStream readInfo() throws AtsdException, GeneralSecurityException, IOException {
-		return executeRequest(GET_METHOD, 0);
+		return executeRequest(GET_METHOD, 0, contentDescription.getHost());
 	}
 
 	@Override
 	public InputStream readContent(int timeout) throws AtsdException, GeneralSecurityException, IOException {
-		InputStream inputStream = executeRequest(POST_METHOD, timeout);
+		InputStream inputStream = executeRequest(POST_METHOD, timeout, contentDescription.getHost());
 		if (MetadataFormat.EMBED.name().equals(contentDescription.getMetadataFormat())) {
 			inputStream = retrieveJsonSchemeAndSubstituteStream(inputStream);
 		}
@@ -104,18 +104,21 @@ public class SdkProtocolImpl implements IContentProtocol {
 	}
 
 	@Override
+	public void cancelQuery() throws AtsdException, GeneralSecurityException, IOException {
+		executeRequest(GET_METHOD, 0, contentDescription.getCancelQueryUrl());
+	}
+
+	@Override
 	public void close() throws Exception {
+		if (logger.isTraceEnabled()) {
+			logger.trace("[SdkProtocolImpl#close]");
+		}
 		if (this.conn != null) {
 			this.conn.disconnect();
 		}
 	}
 
-	private InputStream executeRequest(String method, int queryTimeout) throws AtsdException, IOException, GeneralSecurityException {
-		boolean isPost = method.equals(POST_METHOD);
-		String postParams;
-		postParams = contentDescription.getPostParams();
-
-		String url = contentDescription.getHost() + (isPost || StringUtils.isBlank(postParams) ? "" : '?' + postParams);
+	private InputStream executeRequest(String method, int queryTimeout, String url) throws AtsdException, IOException, GeneralSecurityException {
 		if (logger.isDebugEnabled()) {
 			logger.debug("[request] {} {}", method, url);
 		}
@@ -160,11 +163,8 @@ public class SdkProtocolImpl implements IContentProtocol {
 	}
 
 	private void setBaseProperties(String method, int queryTimeout) throws IOException {
-		boolean isHead = method.equals(HEAD_METHOD);
-		boolean isPost = method.equals(POST_METHOD);
-		String postParams = contentDescription.getPostParams();
-		String login = contentDescription.getLogin();
-		String password = contentDescription.getPassword();
+		final String login = contentDescription.getLogin();
+		final String password = contentDescription.getPassword();
 		if (!StringUtils.isEmpty(login) && !StringUtils.isEmpty(password)) {
 			final String basicCreds = login + ':' + password;
 			final byte[] encoded = Base64.encodeBase64(basicCreds.getBytes());
@@ -172,22 +172,23 @@ public class SdkProtocolImpl implements IContentProtocol {
 			conn.setRequestProperty(AUTHORIZATION_HEADER, authHeader);
 		}
 		conn.setAllowUserInteraction(false);
-		conn.setChunkedStreamingMode(100);
 		conn.setConnectTimeout(contentDescription.getConnectTimeout() * MILLIS);
 		conn.setDoInput(true);
-		conn.setDoOutput(!isHead);
 		conn.setInstanceFollowRedirects(true);
 		int timeoutInSeconds = queryTimeout == 0 ? contentDescription.getReadTimeout() : queryTimeout;
 		conn.setReadTimeout(timeoutInSeconds * MILLIS);
 		conn.setRequestMethod(method);
-		conn.setRequestProperty(ACCEPT_ENCODING, isPost ? COMPRESSION_ENCODING : DEFAULT_ENCODING);
 		conn.setRequestProperty(CONNECTION_HEADER, KEEP_ALIVE);
-		conn.setRequestProperty(CONTENT_TYPE, FORM_URLENCODED_TYPE);
 		conn.setRequestProperty(USER_AGENT, USER_AGENT_HEADER);
 		conn.setUseCaches(false);
-		if (isPost) {
+		if (method.equals(POST_METHOD)) {
+			final String postParams = contentDescription.getPostParams();
 			conn.setRequestProperty(ACCEPT_HEADER, CSV_MIME_TYPE);
+			conn.setRequestProperty(ACCEPT_ENCODING, COMPRESSION_ENCODING);
 			conn.setRequestProperty(CONTENT_LENGTH, Integer.toString(postParams.length()));
+			conn.setRequestProperty(CONTENT_TYPE, FORM_URLENCODED_TYPE);
+			conn.setChunkedStreamingMode(100);
+			conn.setDoOutput(true);
 			if (logger.isDebugEnabled()) {
 				logger.debug("[params] " + postParams);
 			}
@@ -196,6 +197,8 @@ public class SdkProtocolImpl implements IContentProtocol {
 				writer.write(postParams);
 				writer.flush();
 			}
+		} else {
+			conn.setRequestProperty(ACCEPT_ENCODING, DEFAULT_ENCODING);
 		}
 	}
 
@@ -285,6 +288,9 @@ public class SdkProtocolImpl implements IContentProtocol {
 			final int testHeaderLength = ENCODED_JSON_SCHEME_BEGIN.length;
 			byte[] testHeader = new byte[testHeaderLength];
 			length = inputStream.read(testHeader);
+			if (length == -1) {
+				throw new AtsdRuntimeException("Could not fetch result. Probably, server disconnect occurred");
+			}
 			if (!Arrays.equals(testHeader, ENCODED_JSON_SCHEME_BEGIN)) {
 				result.write(testHeader, 0, length);
 				ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(result.toByteArray());

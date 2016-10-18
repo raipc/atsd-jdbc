@@ -28,4 +28,5 @@ public interface IContentProtocol extends AutoCloseable {
 
 	InputStream readContent(int timeout) throws AtsdException, GeneralSecurityException, IOException;
 
+	void cancelQuery() throws AtsdException, GeneralSecurityException, IOException;
 }

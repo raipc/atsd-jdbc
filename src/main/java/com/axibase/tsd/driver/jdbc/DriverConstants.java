@@ -27,6 +27,7 @@ public final class DriverConstants {
 	public static final String LIMIT_PARAM_NAME = "limit";
 	public static final String PARAM_SEPARATOR = ";";
 	public static final String PROTOCOL_SEPARATOR = "://";
+	public static final String QUERY_ID_PARAM_NAME = "queryId";
 	public static final String Q_PARAM_NAME = "q";
 	public static final String REVISION_LINE = "Revision";
 	public static final String STRATEGY_PARAM_NAME = "strategy";
@@ -36,8 +37,8 @@ public final class DriverConstants {
 	public static final String READ_TIMEOUT_PARAM = "readTimeout";
 	public static final int DEFAULT_CONNECT_TIMEOUT_VALUE = 5;
 	public static final int DEFAULT_READ_TIMEOUT_VALUE = 0;
-	public static final String VERSION_ENDPOINT = "/version";
-	public static final String DEFAULT_SCHEMA = "Axibase Time-Series Database";
+	public static final String VERSION_ENDPOINT = "/api/v1/version";
+	public static final String CANCEL_METHOD = "/cancel";
 	public static final String COLUMNS_SCHEME = "columns";
 	public static final String DATATYPE_PROPERTY = "datatype";
 	public static final String DEFAULT_CATALOG_NAME = "atsd";
@@ -63,7 +64,6 @@ public final class DriverConstants {
 	public static final String DEFAULT_ENCODING = "identity";
 	public static final String END_LINK = ">; rel=\"describedBy\"; type=\"application/csvm+json\"";
 	public static final String GET_METHOD = "GET";
-	public static final String HEAD_METHOD = "HEAD";
 	public static final String POST_METHOD = "POST";
 	public static final String KEEP_ALIVE = "Keep-Alive";
 	public static final String FORM_URLENCODED_TYPE = "application/x-www-form-urlencoded";

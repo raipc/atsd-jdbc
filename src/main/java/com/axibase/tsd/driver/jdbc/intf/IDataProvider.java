@@ -28,4 +28,5 @@ public interface IDataProvider extends AutoCloseable {
 
 	void fetchData(long maxLimit, int timeout) throws AtsdException, GeneralSecurityException, IOException;
 
+	void cancelQuery();
 }

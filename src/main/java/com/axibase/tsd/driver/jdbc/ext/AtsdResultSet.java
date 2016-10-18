@@ -528,7 +528,7 @@ public class AtsdResultSet extends AvaticaResultSet {
 		context.setWarning(null);
 		context.setException(null);
 		if (logger.isTraceEnabled()) {
-			logger.trace("[closed]");
+			logger.trace("[AtsdResultSet#closed]");
 		}
 
 	}
@@ -536,8 +536,9 @@ public class AtsdResultSet extends AvaticaResultSet {
 	@Override
 	protected void cancel() {
 		if (logger.isTraceEnabled()) {
-			logger.trace("[cancel] stub");
+			logger.trace("[AtsdResultSet#cancel]");
 		}
+		meta.cancelStatement(handle);
 	}
 
 }

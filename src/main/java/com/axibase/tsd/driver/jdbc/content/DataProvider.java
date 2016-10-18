@@ -19,6 +19,7 @@ import java.io.InputStream;
 import java.security.GeneralSecurityException;
 
 import com.axibase.tsd.driver.jdbc.ext.AtsdException;
+import com.axibase.tsd.driver.jdbc.ext.AtsdRuntimeException;
 import com.axibase.tsd.driver.jdbc.intf.IContentProtocol;
 import com.axibase.tsd.driver.jdbc.intf.IDataProvider;
 import com.axibase.tsd.driver.jdbc.intf.IStoreStrategy;
@@ -34,6 +35,7 @@ public class DataProvider implements IDataProvider {
 	private final IContentProtocol contentProtocol;
 	private final StatementContext context;
 	private IStoreStrategy strategy;
+	private volatile boolean isHoldingConnection;
 
 	public DataProvider(String url, String query, String login, String password, StatementContext context) {
 		final String[] parts = url.split(PARAM_SEPARATOR);
@@ -45,7 +47,7 @@ public class DataProvider implements IDataProvider {
 			logger.trace("Host: " + parts[0]);
 			logger.trace("Params: " + params.length);
 		}
-		this.contentDescription = new ContentDescription(parts[0], query, login, password, context.getVersion(), params);
+		this.contentDescription = new ContentDescription(parts[0], query, login, password, context, params);
 		this.contentProtocol = ProtocolFactory.create(SdkProtocolImpl.class, contentDescription);
 		this.context = context;
 		this.strategy = defineStrategy();
@@ -64,7 +66,9 @@ public class DataProvider implements IDataProvider {
 	@Override
 	public void fetchData(long maxLimit, int timeout) throws AtsdException, GeneralSecurityException, IOException {
 		contentDescription.setMaxRowsCount(maxLimit);
+		this.isHoldingConnection = true;
 		final InputStream is = contentProtocol.readContent(timeout);
+		this.isHoldingConnection = false;
 		this.strategy = defineStrategy();
 		if (this.strategy != null) {
 			this.strategy.store(is);
@@ -72,9 +76,34 @@ public class DataProvider implements IDataProvider {
 	}
 
 	@Override
+	public void cancelQuery() {
+		if (logger.isTraceEnabled()) {
+			logger.trace("[cancelQuery]");
+		}
+		if (this.contentProtocol == null) {
+			throw new IllegalStateException("Cannot cancel query: contentProtocol is not created yet");
+		}
+		try {
+			this.contentProtocol.cancelQuery();
+		} catch (Exception e) {
+			throw new AtsdRuntimeException(e);
+		}
+		this.isHoldingConnection = false;
+	}
+
+	@Override
 	public void close() throws Exception {
+		if (this.isHoldingConnection) {
+			cancelQuery();
+		}
+		if (this.contentProtocol != null) {
+			this.contentProtocol.close();
+		}
 		if (this.strategy != null) {
 			this.strategy.close();
+		}
+		if (logger.isTraceEnabled()) {
+			logger.trace("[DataProvider#close]");
 		}
 	}
 

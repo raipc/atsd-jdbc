@@ -114,17 +114,9 @@ public class AtsdMeta extends MetaImpl {
 		if (log.isTraceEnabled()) {
 			log.trace("[prepare] locked: {} handle: {} query: {}", lock.getHoldCount(), id, query);
 		}
-		try {
-			initProvider(id, query);
-			Signature signature = new Signature(null, query, Collections.<AvaticaParameter>emptyList(), null,
+		Signature signature = new Signature(null, query, Collections.<AvaticaParameter>emptyList(), null,
 					CursorFactory.LIST, StatementType.SELECT);
-			return new StatementHandle(connectionHandle.id, id, signature);
-		} catch (IOException e) {
-			if (log.isDebugEnabled()) {
-				log.debug("[prepare]" + e.getMessage());
-			}
-		}
-		return null;
+		return new StatementHandle(connectionHandle.id, id, signature);
 	}
 
 	@Override
@@ -142,7 +134,7 @@ public class AtsdMeta extends MetaImpl {
 		final String query = substitutePlaceholders(statementHandle.signature.sql, parameterValues);
 		IDataProvider provider = null;
 		try {
-			provider = initProvider(statementHandle.id, query);
+			provider = initProvider(statementHandle, query);
 		} catch (IOException e) {
 			if (log.isDebugEnabled()) {
 				log.debug("[execute]" + e.getMessage());
@@ -249,7 +241,7 @@ public class AtsdMeta extends MetaImpl {
 					limit, statementHandle.toString(), query);
 		}
 		try {
-			final IDataProvider provider = initProvider(statementHandle.id, query);
+			final IDataProvider provider = initProvider(statementHandle, query);
 			final Statement statement = (Statement) callback.getMonitor();
 			provider.fetchData(limit, statement.getQueryTimeout());
 			final ContentMetadata contentMetadata = findMetadata(query, statementHandle.connectionId, statementHandle.id);
@@ -309,6 +301,13 @@ public class AtsdMeta extends MetaImpl {
 
 	}
 
+	public void cancelStatement(StatementHandle statementHandle) {
+		final IDataProvider provider = providerCache.get(statementHandle.id);
+		if (provider != null) {
+			provider.cancelQuery();
+		}
+	}
+
 	@Override
 	public void closeStatement(StatementHandle statementHandle) {
 		if (log.isDebugEnabled()) {
@@ -327,12 +326,12 @@ public class AtsdMeta extends MetaImpl {
 		}
 	}
 
-	private void closeProviderCaches(StatementHandle h) {
+	private void closeProviderCaches(StatementHandle statementHandle) {
 		if (!metaCache.isEmpty()) {
-			metaCache.remove(h.id);
+			metaCache.remove(statementHandle.id);
 		}
 		if (!contextMap.isEmpty()) {
-			contextMap.remove(h.id);
+			contextMap.remove(statementHandle.id);
 		}
 		if (log.isTraceEnabled()) {
 			log.trace("[closeProviderCaches]");
@@ -348,14 +347,14 @@ public class AtsdMeta extends MetaImpl {
 					provider.close();
 				} catch (final Exception e) {
 					if (log.isDebugEnabled()) {
-						log.debug("[closeStatement] " + e.getMessage());
+						log.debug("[closeProvider] " + e.getMessage());
 					}
 				}
 			}
 		}
 	}
 
-	public void close() {
+	public void closeConnection() {
 		closeCaches();
 		if (lock.isHeldByCurrentThread()) {
 			lock.unlock();
@@ -502,13 +501,13 @@ public class AtsdMeta extends MetaImpl {
 				CursorFactory.record(clazz, fields, fieldNames), new Frame(0, true, iterable));
 	}
 
-	private IDataProvider initProvider(Integer id, String sql) throws UnsupportedEncodingException {
+	private IDataProvider initProvider(StatementHandle statementHandle, String sql) throws UnsupportedEncodingException {
 		final ConnectionConfig config = connection.config();
 		assert config != null;
 		assert connection instanceof AtsdConnection;
 		final Properties info = ((AtsdConnection) connection).getInfo();
-		final StatementContext newContext = new StatementContext();
-		contextMap.put(id, newContext);
+		final StatementContext newContext = new StatementContext(statementHandle);
+		contextMap.put(statementHandle.id, newContext);
 		final String login = info != null ? (String) info.get("user") : "";
 		final String password = info != null ? (String) info.get("password") : "";
 		try {
@@ -520,7 +519,7 @@ public class AtsdMeta extends MetaImpl {
 			}
 		}
 		final IDataProvider dataProvider = new DataProvider(config.url(), sql, login, password, newContext);
-		providerCache.put(id, dataProvider);
+		providerCache.put(statementHandle.id, dataProvider);
 		return dataProvider;
 	}
 

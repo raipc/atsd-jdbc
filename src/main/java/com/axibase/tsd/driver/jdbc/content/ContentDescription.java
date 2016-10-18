@@ -17,11 +17,7 @@ package com.axibase.tsd.driver.jdbc.content;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
 import com.axibase.tsd.driver.jdbc.enums.MetadataFormat;
 import org.apache.commons.lang3.StringUtils;
@@ -43,12 +39,17 @@ public class ContentDescription {
 	private String jsonScheme;
 	private final String metadataFormat;
 	private long maxRowsCount;
+	private final String queryId;
 
 	public ContentDescription(String host, String query, String login, String password, String[] params) {
-		this(host, query, login, password, 0, params);
+		this(host, query, login, password, 0, "", params);
 	}
 
-	public ContentDescription(String host, String query, String login, String password, int atsdVersion, String[] params) {
+	public ContentDescription(String host, String query, String login, String password, StatementContext context, String[] params) {
+		this(host, query, login, password, context.getVersion(), context.getQueryId(), params);
+	}
+
+	private ContentDescription(String host, String query, String login, String password, int atsdVersion, String queryId, String[] params) {
 		this.host = host;
 		this.query = query;
 		this.login = login;
@@ -57,6 +58,7 @@ public class ContentDescription {
 				MetadataFormat.HEADER.name() : MetadataFormat.EMBED.name();
 		final int size = params == null ? 0 : params.length;
 		this.paramsMap = new HashMap<>(size);
+		this.queryId = queryId;
 		if (size > 0) {
 			for (String param : params) {
 				int delimiterPosition = param.indexOf('=');
@@ -141,23 +143,19 @@ public class ContentDescription {
 		if (StringUtils.isEmpty(query)) {
 			return "";
 		}
-		return Q_PARAM_NAME + '=' + getEncodedQuery() + '&' +
+		return QUERY_ID_PARAM_NAME + '=' + queryId + '&' +
+				Q_PARAM_NAME + '=' + getEncodedQuery() + '&' +
 				FORMAT_PARAM_NAME + '=' + FORMAT_PARAM_VALUE + '&' +
 				METADATA_FORMAT_PARAM_NAME + '=' + metadataFormat + '&' +
 				LIMIT_PARAM_NAME + '=' + maxRowsCount;
 	}
 
-	public String getMetadataFormat() {
-		return metadataFormat;
+	public String getCancelQueryUrl() {
+		return host + CANCEL_METHOD + '?' + QUERY_ID_PARAM_NAME + '=' + queryId;
 	}
 
-	public String getPostParamsForMetadata() {
-		if (StringUtils.isEmpty(query)) {
-			return "";
-		}
-		return Q_PARAM_NAME + '=' + getEncodedQuery() + '&' +
-				FORMAT_PARAM_NAME + '=' + FORMAT_PARAM_VALUE + '&' +
-				METADATA_FORMAT_PARAM_NAME + '=' + metadataFormat;
+	public String getMetadataFormat() {
+		return metadataFormat;
 	}
 
 	public Map<String, String> getQueryParamsAsMap() {
@@ -173,7 +171,7 @@ public class ContentDescription {
 	}
 
 	public boolean isSsl() {
-		return host.toLowerCase(Locale.US).startsWith("https://");
+		return StringUtils.startsWithIgnoreCase(host, "https://");
 	}
 
 	public boolean isTrusted() {

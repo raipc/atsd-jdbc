@@ -16,17 +16,26 @@ package com.axibase.tsd.driver.jdbc.content;
 
 import java.sql.SQLException;
 import java.sql.SQLWarning;
+import java.util.UUID;
+
+import org.apache.calcite.avatica.Meta;
 
 public class StatementContext {
 	private SQLException exception;
 	private SQLWarning warning;
+	private String queryId;
 	private int version;
 
 	public StatementContext() {
+		this.queryId = UUID.randomUUID().toString().substring(0, 10);
+	}
+
+	public StatementContext(Meta.StatementHandle statementHandle) {
+		this.queryId = statementHandle.connectionId.substring(0, 8) + Integer.toHexString(statementHandle.id);
 	}
 
 	public StatementContext(SQLException exception, SQLWarning warning) {
-		super();
+		this();
 		this.exception = exception;
 		this.warning = warning;
 	}
@@ -67,5 +76,9 @@ public class StatementContext {
 
 	public void setVersion(int version) {
 		this.version = version;
+	}
+
+	public String getQueryId() {
+		return queryId;
 	}
 }
