@@ -397,10 +397,12 @@ public class AtsdMeta extends MetaImpl {
 								   List<String> typeList) {
 		if (typeList == null || typeList.contains("TABLE")) {
 			final Iterable<Object> iterable = Collections.<Object>singletonList(
-					new MetaTable(DriverConstants.DEFAULT_CATALOG_NAME, this.schema, DriverConstants.DEFAULT_TABLE_NAME, "TABLE"));
-			return getResultSet(iterable, MetaTable.class);
+					new AtsdMetaResultSets.AtsdMetaTable(DriverConstants.DEFAULT_CATALOG_NAME, this.schema,
+							DriverConstants.DEFAULT_TABLE_NAME, "TABLE", "SELECT entity, metric, datetime, value " +
+							"FROM atsd_series WHERE metric = 'mpstat.cpu_busy AND datetime > current_hour"));
+			return getResultSet(iterable, AtsdMetaResultSets.AtsdMetaTable.class);
 		}
-		return createEmptyResultSet(MetaTable.class);
+		return createEmptyResultSet(AtsdMetaResultSets.AtsdMetaTable.class);
 
 	}
 
@@ -446,14 +448,14 @@ public class AtsdMeta extends MetaImpl {
 				columnData.add(createColumnMetaData(column, null, position));
 				++position;
 			}
-			return getResultSet(columnData, MetaColumn.class);
+			return getResultSet(columnData, AtsdMetaResultSets.AtsdMetaColumn.class);
 		}
-		return createEmptyResultSet(MetaColumn.class);
+		return createEmptyResultSet(AtsdMetaResultSets.AtsdMetaColumn.class);
 	}
 
 	private static Object createColumnMetaData(DefaultColumn column, String schema, int ordinal) {
 		final AtsdType columnType = column.getType();
-		return new MetaColumn(
+		return new AtsdMetaResultSets.AtsdMetaColumn(
 				DriverConstants.DEFAULT_CATALOG_NAME,
 				schema,
 				DriverConstants.DEFAULT_TABLE_NAME,
