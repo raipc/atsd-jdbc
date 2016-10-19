@@ -252,11 +252,11 @@ public class AtsdMeta extends MetaImpl {
 			final ExecuteResult result = new ExecuteResult(contentMetadata.getList());
 			callback.execute();
 			return result;
-		} catch (final AtsdException | IOException | SQLException | GeneralSecurityException e) {
+		} catch (final Exception e) {
 			if (log.isDebugEnabled()) {
 				log.debug("[prepareAndExecute] " + e.getMessage());
 			}
-			throw new NoSuchStatementException(statementHandle);
+			throw new AtsdRuntimeException(e);
 		}
 	}
 
