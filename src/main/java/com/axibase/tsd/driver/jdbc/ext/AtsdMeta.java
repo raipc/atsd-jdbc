@@ -398,7 +398,7 @@ public class AtsdMeta extends MetaImpl {
 		if (typeList == null || typeList.contains("TABLE")) {
 			final Iterable<Object> iterable = Collections.<Object>singletonList(
 					new MetaTable(DriverConstants.DEFAULT_CATALOG_NAME, this.schema, DriverConstants.DEFAULT_TABLE_NAME, "TABLE"));
-			return getResultSet(iterable, MetaTable.class, "TABLE_CAT", "TABLE_SCHEM", "TABLE_NAME", "TABLE_TYPE");
+			return getResultSet(iterable, MetaTable.class);
 		}
 		return createEmptyResultSet(MetaTable.class);
 
@@ -413,14 +413,14 @@ public class AtsdMeta extends MetaImpl {
 	public MetaResultSet getCatalogs(ConnectionHandle ch) {
 		final Iterable<Object> iterable = Collections.<Object>singletonList(
 				new MetaCatalog(DriverConstants.DEFAULT_CATALOG_NAME));
-		return getResultSet(iterable, MetaCatalog.class, "TABLE_CAT");
+		return getResultSet(iterable, MetaCatalog.class);
 	}
 
 	@Override
 	public MetaResultSet getTableTypes(ConnectionHandle ch) {
 		final Iterable<Object> iterable = Arrays.<Object>asList(
 				new MetaTableType("TABLE"), new MetaTableType("VIEW"), new MetaTableType("SYSTEM"));
-		return getResultSet(iterable, MetaTableType.class, "TABLE_TYPE");
+		return getResultSet(iterable, MetaTableType.class);
 	}
 
 	@Override
@@ -432,10 +432,7 @@ public class AtsdMeta extends MetaImpl {
 				list.add(getTypeInfo(type));
 			}
 		}
-		return getResultSet(list, MetaTypeInfo.class, "TYPE_NAME", "DATA_TYPE", "PRECISION",
-				"LITERAL_PREFIX", "LITERAL_SUFFIX", "CREATE_PARAMS", "NULLABLE", "CASE_SENSITIVE", "SEARCHABLE",
-				"UNSIGNED_ATTRIBUTE", "FIXED_PREC_SCALE", "AUTO_INCREMENT", "LOCAL_TYPE_NAME", "MINIMUM_SCALE",
-				"MAXIMUM_SCALE", "NUM_PREC_RADIX");
+		return getResultSet(list, MetaTypeInfo.class);
 	}
 
 	@Override
@@ -449,13 +446,7 @@ public class AtsdMeta extends MetaImpl {
 				columnData.add(createColumnMetaData(column, null, position));
 				++position;
 			}
-
-			return getResultSet(columnData, MetaColumn.class,  "TABLE_CAT", "TABLE_SCHEM", "TABLE_NAME",
-					"COLUMN_NAME", "DATA_TYPE", "TYPE_NAME", "COLUMN_SIZE", "BUFFER_LENGTH",
-					"DECIMAL_DIGITS", "NUM_PREC_RADIX", "NULLABLE", "REMARKS", "COLUMN_DEF",
-					"SQL_DATA_TYPE", "SQL_DATETIME_SUB", "CHAR_OCTET_LENGTH", "ORDINAL_POSITION",
-					"IS_NULLABLE", "SCOPE_CATALOG", "SCOPE_SCHEMA", "SCOPE_TABLE", "SOURCE_DATA_TYPE",
-					"IS_AUTOINCREMENT", "IS_GENERATEDCOLUMN");
+			return getResultSet(columnData, MetaColumn.class);
 		}
 		return createEmptyResultSet(MetaColumn.class);
 	}
@@ -479,26 +470,21 @@ public class AtsdMeta extends MetaImpl {
 		);
 	}
 
-	private MetaResultSet getResultSet(Iterable<Object> iterable, Class<?> clazz, String... names) {
-		final int length = names.length;
+	private MetaResultSet getResultSet(Iterable<Object> iterable, Class<?> clazz) {
+		final Field[] fields = clazz.getDeclaredFields();
+		final int length = fields.length;
 		final List<ColumnMetaData> columns = new ArrayList<>(length);
-		final List<Field> fields = new ArrayList<>(length);
 		final List<String> fieldNames = new ArrayList<>(length);
-		for (String name : names) {
-			final int index = fields.size();
-			final String fieldName = AvaticaUtils.toCamelCase(name);
-			final Field field;
-			try {
-				field = clazz.getField(fieldName);
-			} catch (NoSuchFieldException e) {
-				throw new RuntimeException(e);
-			}
+		int index = 0;
+		for (Field field : fields) {
+			final String name = AvaticaUtils.camelToUpper(field.getName());
 			columns.add(columnMetaData(name, index, field.getType()));
-			fields.add(field);
 			fieldNames.add(name);
+			++index;
 		}
+
 		return createResultSet(Collections.<String, Object>emptyMap(), columns,
-				CursorFactory.record(clazz, fields, fieldNames), new Frame(0, true, iterable));
+				CursorFactory.record(clazz, Arrays.asList(fields), fieldNames), new Frame(0, true, iterable));
 	}
 
 	private IDataProvider initProvider(StatementHandle statementHandle, String sql) throws UnsupportedEncodingException {
