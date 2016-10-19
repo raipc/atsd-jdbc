@@ -28,6 +28,8 @@ import com.axibase.tsd.driver.jdbc.protocol.ProtocolFactory;
 import com.axibase.tsd.driver.jdbc.protocol.SdkProtocolImpl;
 import com.axibase.tsd.driver.jdbc.strategies.StrategyFactory;
 
+import static com.axibase.tsd.driver.jdbc.DriverConstants.ATSD_VERSION_SUPPORTS_CANCEL_QUERIES;
+
 public class DataProvider implements IDataProvider {
 	private static final LoggingFacade logger = LoggingFacade.getLogger(DataProvider.class);
 	private static final String PARAM_SEPARATOR = ";";
@@ -77,27 +79,40 @@ public class DataProvider implements IDataProvider {
 
 	@Override
 	public void cancelQuery() {
-		if (logger.isTraceEnabled()) {
-			logger.trace("[cancelQuery]");
-		}
 		if (this.contentProtocol == null) {
 			throw new IllegalStateException("Cannot cancel query: contentProtocol is not created yet");
 		}
-		try {
-			this.contentProtocol.cancelQuery();
-		} catch (Exception e) {
-			throw new AtsdRuntimeException(e);
+		if (context.getVersion() >= ATSD_VERSION_SUPPORTS_CANCEL_QUERIES) {
+			if (logger.isTraceEnabled()) {
+				logger.trace("[cancelQuery] sending cancel queryId={}", context.getQueryId());
+			}
+			try {
+				this.contentProtocol.cancelQuery();
+			} catch (Exception e) {
+				throw new AtsdRuntimeException(e);
+			}
+		} else {
+			if (logger.isWarnEnabled()) {
+				logger.warn("[cancelQuery] cancel query unsupported: minimal ATSD version {} is required",
+						ATSD_VERSION_SUPPORTS_CANCEL_QUERIES);
+			}
 		}
+		closeWithRuntimeException();
 		this.isHoldingConnection = false;
+	}
+
+	private void closeWithRuntimeException() {
+		try {
+			this.contentProtocol.close();
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	@Override
 	public void close() throws Exception {
 		if (this.isHoldingConnection) {
 			cancelQuery();
-		}
-		if (this.contentProtocol != null) {
-			this.contentProtocol.close();
 		}
 		if (this.strategy != null) {
 			this.strategy.close();

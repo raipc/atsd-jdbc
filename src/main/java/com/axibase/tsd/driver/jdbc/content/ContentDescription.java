@@ -40,6 +40,7 @@ public class ContentDescription {
 	private final String metadataFormat;
 	private long maxRowsCount;
 	private final String queryId;
+	private final boolean supportsCancel;
 
 	public ContentDescription(String host, String query, String login, String password, String[] params) {
 		this(host, query, login, password, 0, "", params);
@@ -49,7 +50,8 @@ public class ContentDescription {
 		this(host, query, login, password, context.getVersion(), context.getQueryId(), params);
 	}
 
-	private ContentDescription(String host, String query, String login, String password, int atsdVersion, String queryId, String[] params) {
+	private ContentDescription(String host, String query, String login, String password, int atsdVersion,
+	                           String queryId, String[] params) {
 		this.host = host;
 		this.query = query;
 		this.login = login;
@@ -59,6 +61,7 @@ public class ContentDescription {
 		final int size = params == null ? 0 : params.length;
 		this.paramsMap = new HashMap<>(size);
 		this.queryId = queryId;
+		this.supportsCancel = atsdVersion >= ATSD_VERSION_SUPPORTS_CANCEL_QUERIES;
 		if (size > 0) {
 			for (String param : params) {
 				int delimiterPosition = param.indexOf('=');
@@ -143,11 +146,16 @@ public class ContentDescription {
 		if (StringUtils.isEmpty(query)) {
 			return "";
 		}
-		return QUERY_ID_PARAM_NAME + '=' + queryId + '&' +
-				Q_PARAM_NAME + '=' + getEncodedQuery() + '&' +
-				FORMAT_PARAM_NAME + '=' + FORMAT_PARAM_VALUE + '&' +
-				METADATA_FORMAT_PARAM_NAME + '=' + metadataFormat + '&' +
-				LIMIT_PARAM_NAME + '=' + maxRowsCount;
+		StringBuilder buffer = new StringBuilder();
+		if (supportsCancel) {
+			buffer.append(QUERY_ID_PARAM_NAME).append('=').append(queryId).append('&');
+		}
+		return buffer
+				.append(Q_PARAM_NAME).append('=').append(getEncodedQuery()).append('&')
+				.append(FORMAT_PARAM_NAME).append('=').append(FORMAT_PARAM_VALUE).append('&')
+				.append(METADATA_FORMAT_PARAM_NAME).append('=').append(metadataFormat).append('&')
+				.append(LIMIT_PARAM_NAME).append('=').append(maxRowsCount)
+				.toString();
 	}
 
 	public String getCancelQueryUrl() {

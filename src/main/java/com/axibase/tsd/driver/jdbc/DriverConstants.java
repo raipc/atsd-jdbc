@@ -39,6 +39,7 @@ public final class DriverConstants {
 
 	public static final int    ATSD_VERSION_SUPPORTING_BODY_METADATA = 13919;
 	public static final int    ATSD_VERSION_COMPRESSED_ERRORS = 14185;
+	public static final int    ATSD_VERSION_SUPPORTS_CANCEL_QUERIES = 14451;
 	public static final String REVISION_LINE = "Revision";
 
 	public static final String VERSION_ENDPOINT = "/api/v1/version";
