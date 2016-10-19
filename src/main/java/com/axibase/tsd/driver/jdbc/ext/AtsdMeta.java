@@ -97,8 +97,8 @@ public class AtsdMeta extends MetaImpl {
 		this.schema = null;
 	}
 
-	public StatementContext getContextFromMap(StatementHandle h) {
-		return contextMap.get(h.id);
+	public StatementContext getContextFromMap(StatementHandle statementHandle) {
+		return contextMap.get(statementHandle.id);
 	}
 
 	@Override

@@ -26,9 +26,9 @@ import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
 public class AtsdStatement extends AvaticaStatement {
 	private static final LoggingFacade logger = LoggingFacade.getLogger(AtsdStatement.class);
 
-	protected AtsdStatement(AvaticaConnection connection, StatementHandle h, int resultSetType,
+	protected AtsdStatement(AvaticaConnection connection, StatementHandle statementHandle, int resultSetType,
 			int resultSetConcurrency, int resultSetHoldability) {
-		super(connection, h, resultSetType, resultSetConcurrency, resultSetHoldability);
+		super(connection, statementHandle, resultSetType, resultSetConcurrency, resultSetHoldability);
 		if (logger.isTraceEnabled())
 			logger.trace("[AtsdStatement#new] " + this.handle.id);
 	}
@@ -43,8 +43,9 @@ public class AtsdStatement extends AvaticaStatement {
 	@Override
 	public synchronized void cancel() throws SQLException {
 		super.cancel();
-		AtsdConnection atsdConnection = (AtsdConnection) this.connection;
-		atsdConnection.getMeta().closeStatement(this.handle);
+		final AtsdConnection atsdConnection = (AtsdConnection) this.connection;
+		final AtsdMeta meta = (AtsdMeta) atsdConnection.getMeta();
+		meta.cancelStatement(this.handle);
 		if (logger.isTraceEnabled()) {
 			logger.trace("[AtsdStatement#cancel]");
 		}
