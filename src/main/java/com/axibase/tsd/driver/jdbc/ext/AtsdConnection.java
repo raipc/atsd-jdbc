@@ -14,12 +14,14 @@
 */
 package com.axibase.tsd.driver.jdbc.ext;
 
-import java.sql.*;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 import java.util.Properties;
 
-import org.apache.calcite.avatica.*;
-
+import com.axibase.tsd.driver.jdbc.DriverConstants;
 import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
+import org.apache.calcite.avatica.*;
 
 public class AtsdConnection extends AvaticaConnection {
 	@SuppressWarnings("unused")
@@ -49,6 +51,11 @@ public class AtsdConnection extends AvaticaConnection {
 
 	Meta getMeta(){
 		return TROJAN.getMeta(this);
+	}
+
+	@Override
+	public String getCatalog() {
+		return DriverConstants.DEFAULT_CATALOG_NAME;
 	}
 
 	@Override
