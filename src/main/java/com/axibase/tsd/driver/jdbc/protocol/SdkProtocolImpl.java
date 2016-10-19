@@ -16,7 +16,6 @@ package com.axibase.tsd.driver.jdbc.protocol;
 
 import java.io.*;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
@@ -25,9 +24,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
 import java.util.zip.GZIPInputStream;
 import javax.net.ssl.*;
 
@@ -38,8 +34,8 @@ import com.axibase.tsd.driver.jdbc.ext.AtsdException;
 import com.axibase.tsd.driver.jdbc.ext.AtsdRuntimeException;
 import com.axibase.tsd.driver.jdbc.intf.IContentProtocol;
 import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
+import org.apache.calcite.avatica.org.apache.http.HttpHeaders;
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import static com.axibase.tsd.driver.jdbc.DriverConstants.*;
@@ -48,7 +44,10 @@ public class SdkProtocolImpl implements IContentProtocol {
 	private static final LoggingFacade logger = LoggingFacade.getLogger(SdkProtocolImpl.class);
 	private static final int UNSUCCESSFUL_SQL_RESULT_CODE = 400;
 	private static final int MILLIS = 1000;
-	private static final byte[] ENCODED_JSON_SCHEME_BEGIN = "#eyJAY29udGV4dCI6".getBytes(StandardCharsets.UTF_8); // #{"@context":
+	private static final String POST_METHOD = "POST";
+	private static final String GET_METHOD = "GET";
+	private static final String CONTEXT_INSTANCE_TYPE = "SSL";
+
 	private static final TrustManager[] DUMMY_TRUST_MANAGER = new TrustManager[]{new X509TrustManager() {
 		@Override
 		public X509Certificate[] getAcceptedIssuers() {
@@ -72,16 +71,11 @@ public class SdkProtocolImpl implements IContentProtocol {
 		}
 	};
 
-	private static final byte LINEFEED = (byte)'\n';
-	private static final byte END_OF_INPUT = -1;
-	private static final int BUFFER_SIZE = 1024;
-
 	private final ContentDescription contentDescription;
 	private HttpURLConnection conn;
 
-	public SdkProtocolImpl(final ContentDescription cd)
-			throws IOException, KeyManagementException, MalformedURLException, NoSuchAlgorithmException {
-		this.contentDescription = cd;
+	public SdkProtocolImpl(final ContentDescription contentDescription) {
+		this.contentDescription = contentDescription;
 	}
 
 	@Override
@@ -93,7 +87,7 @@ public class SdkProtocolImpl implements IContentProtocol {
 	public InputStream readContent(int timeout) throws AtsdException, GeneralSecurityException, IOException {
 		InputStream inputStream = executeRequest(POST_METHOD, timeout, contentDescription.getHost());
 		if (MetadataFormat.EMBED.name().equals(contentDescription.getMetadataFormat())) {
-			inputStream = retrieveJsonSchemeAndSubstituteStream(inputStream);
+			inputStream = MetadataRetriever.retrieveJsonSchemeAndSubstituteStream(inputStream, contentDescription);
 		}
 		return inputStream;
 	}
@@ -129,7 +123,7 @@ public class SdkProtocolImpl implements IContentProtocol {
 		setBaseProperties(method, queryTimeout);
 		if (MetadataFormat.HEADER.name().equals(contentDescription.getMetadataFormat())
 				&& StringUtils.isEmpty(contentDescription.getJsonScheme())) {
-			retrieveJsonSchemeFromHeader(conn.getHeaderFields());
+			MetadataRetriever.retrieveJsonSchemeFromHeader(conn.getHeaderFields(), contentDescription);
 		}
 		long contentLength = conn.getContentLengthLong();
 		if (logger.isDebugEnabled()) {
@@ -168,8 +162,7 @@ public class SdkProtocolImpl implements IContentProtocol {
 		if (!StringUtils.isEmpty(login) && !StringUtils.isEmpty(password)) {
 			final String basicCreds = login + ':' + password;
 			final byte[] encoded = Base64.encodeBase64(basicCreds.getBytes());
-			final String authHeader = AUTHORIZATION_TYPE + new String(encoded);
-			conn.setRequestProperty(AUTHORIZATION_HEADER, authHeader);
+			conn.setRequestProperty(HttpHeaders.AUTHORIZATION, AUTHORIZATION_TYPE + new String(encoded));
 		}
 		conn.setAllowUserInteraction(false);
 		conn.setConnectTimeout(contentDescription.getConnectTimeout() * MILLIS);
@@ -178,15 +171,15 @@ public class SdkProtocolImpl implements IContentProtocol {
 		int timeoutInSeconds = queryTimeout == 0 ? contentDescription.getReadTimeout() : queryTimeout;
 		conn.setReadTimeout(timeoutInSeconds * MILLIS);
 		conn.setRequestMethod(method);
-		conn.setRequestProperty(CONNECTION_HEADER, KEEP_ALIVE);
-		conn.setRequestProperty(USER_AGENT, USER_AGENT_HEADER);
+		conn.setRequestProperty(HttpHeaders.CONNECTION, CONN_KEEP_ALIVE);
+		conn.setRequestProperty(HttpHeaders.USER_AGENT, USER_AGENT);
 		conn.setUseCaches(false);
 		if (method.equals(POST_METHOD)) {
 			final String postParams = contentDescription.getPostParams();
-			conn.setRequestProperty(ACCEPT_HEADER, CSV_MIME_TYPE);
-			conn.setRequestProperty(ACCEPT_ENCODING, COMPRESSION_ENCODING);
-			conn.setRequestProperty(CONTENT_LENGTH, Integer.toString(postParams.length()));
-			conn.setRequestProperty(CONTENT_TYPE, FORM_URLENCODED_TYPE);
+			conn.setRequestProperty(HttpHeaders.ACCEPT, CSV_MIME_TYPE);
+			conn.setRequestProperty(HttpHeaders.ACCEPT_ENCODING, COMPRESSION_ENCODING);
+			conn.setRequestProperty(HttpHeaders.CONTENT_LENGTH, "" + postParams.length());
+			conn.setRequestProperty(HttpHeaders.CONTENT_TYPE, FORM_URLENCODED_TYPE);
 			conn.setChunkedStreamingMode(100);
 			conn.setDoOutput(true);
 			if (logger.isDebugEnabled()) {
@@ -198,7 +191,7 @@ public class SdkProtocolImpl implements IContentProtocol {
 				writer.flush();
 			}
 		} else {
-			conn.setRequestProperty(ACCEPT_ENCODING, DEFAULT_ENCODING);
+			conn.setRequestProperty(HttpHeaders.ACCEPT_ENCODING, DEFAULT_ENCODING);
 		}
 	}
 
@@ -207,11 +200,10 @@ public class SdkProtocolImpl implements IContentProtocol {
 		return (HttpURLConnection) url.openConnection();
 	}
 
-	private  void doTrustToCertificates(final HttpsURLConnection sslConnection) {
-
-		final SSLContext sc;
+	private void doTrustToCertificates(final HttpsURLConnection sslConnection) {
+		final SSLContext sslContext;
 		try {
-			sc = SSLContext.getInstance(CONTEXT_INSTANCE_TYPE);
+			sslContext = SSLContext.getInstance(CONTEXT_INSTANCE_TYPE);
 		} catch (NoSuchAlgorithmException e) {
 			if (logger.isErrorEnabled()) {
 				logger.error(e.getMessage());
@@ -223,89 +215,18 @@ public class SdkProtocolImpl implements IContentProtocol {
 			logger.debug("[doTrustToCertificates] " + trusted);
 		}
 		try {
-			sc.init(null, trusted ? DUMMY_TRUST_MANAGER : null, new SecureRandom());
+			sslContext.init(null, trusted ? DUMMY_TRUST_MANAGER : null, new SecureRandom());
 		} catch (KeyManagementException e) {
 			if (logger.isErrorEnabled()) {
 				logger.error(e.getMessage());
 			}
 			return;
 		}
-		sslConnection.setSSLSocketFactory(sc.getSocketFactory());
+		sslConnection.setSSLSocketFactory(sslContext.getSocketFactory());
 
 		if (trusted) {
 			sslConnection.setHostnameVerifier(DUMMY_HOSTNAME_VERIFIER);
 		}
 	}
 
-	private void retrieveJsonSchemeFromHeader(Map<String, List<String>> map) {
-		printHeaders(map);
-		List<String> list = map.get(SCHEME_HEADER);
-		String value = list != null && !list.isEmpty() ? list.get(0) : null;
-		if (value != null && value.startsWith(START_LINK) && value.endsWith(END_LINK)) {
-			final String encoded = value.substring(START_LINK.length(), value.length() - END_LINK.length());
-			String json = new String(Base64.decodeBase64(encoded), StandardCharsets.UTF_8);
-			if (logger.isTraceEnabled()) {
-				logger.trace("JSON schema: " + json);
-			}
-			contentDescription.setJsonScheme(json);
-		}
-	}
-
-	private void printHeaders(Map<String, List<String>> map) {
-		if (logger.isTraceEnabled()) {
-			for (Map.Entry<String, List<String>> entry : map.entrySet()) {
-				logger.trace("Key: {} Value: {} ", entry.getKey(), entry.getValue());
-			}
-		}
-	}
-
-	private InputStream readJsonSchemeAndReturnRest(InputStream inputStream, ByteArrayOutputStream result) throws IOException {
-		final byte[] buffer = new byte[BUFFER_SIZE];
-		int length;
-		while ((length = inputStream.read(buffer)) != END_OF_INPUT) {
-			final int index = ArrayUtils.indexOf(buffer, LINEFEED);
-			if (index < 0) {
-				result.write(buffer, 0, length);
-			} else {
-				result.write(buffer, 0, index);
-				final byte[] decoded = Base64.decodeBase64(result.toByteArray());
-				final String jsonScheme = new String(decoded, StandardCharsets.UTF_8);
-				contentDescription.setJsonScheme(jsonScheme);
-				if (logger.isTraceEnabled()) {
-					logger.trace("JSON scheme: " + jsonScheme);
-				}
-				result.reset();
-				final int newSize = length - index - 1;
-				return new ByteArrayInputStream(buffer, index + 1, newSize);
-			}
-		}
-		return new ByteArrayInputStream(result.toByteArray());
-	}
-
-	private InputStream retrieveJsonSchemeAndSubstituteStream(InputStream inputStream) {
-		try (ByteArrayOutputStream result = new ByteArrayOutputStream()) {
-			int length;
-			final int testHeaderLength = ENCODED_JSON_SCHEME_BEGIN.length;
-			byte[] testHeader = new byte[testHeaderLength];
-			length = inputStream.read(testHeader);
-			if (length == -1) {
-				throw new AtsdRuntimeException("Could not fetch result. Probably, server disconnect occurred");
-			}
-			if (!Arrays.equals(testHeader, ENCODED_JSON_SCHEME_BEGIN)) {
-				result.write(testHeader, 0, length);
-				ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(result.toByteArray());
-				return new SequenceInputStream(byteArrayInputStream, inputStream);
-			}
-			result.write(testHeader, 1, length - 1);
-
-			InputStream readAfterScheme = readJsonSchemeAndReturnRest(inputStream, result);
-			return new SequenceInputStream(readAfterScheme, inputStream);
-
-		} catch (IOException e) {
-			if (logger.isErrorEnabled()) {
-				logger.error("Error while processing response body", e);
-			}
-			return inputStream;
-		}
-	}
 }
