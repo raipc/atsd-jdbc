@@ -22,18 +22,20 @@ import org.slf4j.helpers.NOPLogger;
 
 public class LoggingSlf4jImpl extends LoggingFacade {
 	private Logger logger;
-	private final PrintStream filterOut = new PrintStream(System.err) {
-	    public void println(String l) {
-	        if (! l.startsWith("SLF4J") )
-	            super.println(l);
-	    }
-	};
+
 	public LoggingSlf4jImpl(Class<?> clazz) {
+		final PrintStream filterOut = new PrintStream(System.err) {
+			public void println(String logger) {
+				if (!logger.startsWith("SLF4J"))
+					super.println(logger);
+			}
+		};
 		System.setErr(filterOut);
 		logger = LoggerFactory.getLogger(clazz);
 		System.setErr(System.err);
-		if (logger == null)
+		if (logger == null) {
 			logger = NOPLogger.NOP_LOGGER;
+		}
 	}
 
 	@Override

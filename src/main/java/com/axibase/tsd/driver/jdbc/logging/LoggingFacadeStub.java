@@ -28,42 +28,52 @@ public class LoggingFacadeStub extends LoggingFacade {
 
 	@Override
 	public void trace(String msg) {
+		stub(msg);
 	}
 
 	@Override
 	public void trace(String format, Object arg) {
+		stub(format, arg);
 	}
 
 	@Override
 	public void trace(String format, Object arg1, Object arg2) {
+		stub(format, arg1, arg2);
 	}
 
 	@Override
 	public void trace(String format, Object... arguments) {
+		stub(format, arguments);
 	}
 
 	@Override
 	public void trace(String msg, Throwable t) {
+		stub(msg, t);
 	}
 
 	@Override
 	public void debug(String msg) {
+		stub(msg);
 	}
 
 	@Override
 	public void debug(String format, Object arg) {
+		stub(format, arg);
 	}
 
 	@Override
 	public void debug(String format, Object arg1, Object arg2) {
+		stub(format, arg1, arg2);
 	}
 
 	@Override
 	public void debug(String format, Object... arguments) {
+		stub(format,  arguments);
 	}
 
 	@Override
 	public void debug(String msg, Throwable t) {
+		stub(msg, t);
 	}
 
 	@Override
@@ -78,22 +88,27 @@ public class LoggingFacadeStub extends LoggingFacade {
 
 	@Override
 	public void info(String msg) {
+		stub(msg);
 	}
 
 	@Override
 	public void info(String format, Object arg) {
+		stub(format,  arg);
 	}
 
 	@Override
 	public void info(String format, Object arg1, Object arg2) {
+		stub(format, arg1, arg2);
 	}
 
 	@Override
 	public void info(String format, Object... arguments) {
+		stub(format, arguments);
 	}
 
 	@Override
 	public void info(String msg, Throwable t) {
+		stub(msg, t);
 	}
 
 	@Override
@@ -103,22 +118,27 @@ public class LoggingFacadeStub extends LoggingFacade {
 
 	@Override
 	public void warn(String msg) {
+		stub(msg);
 	}
 
 	@Override
 	public void warn(String format, Object arg) {
+		stub(format, arg);
 	}
 
 	@Override
 	public void warn(String format, Object... arguments) {
+		stub(format, arguments);
 	}
 
 	@Override
 	public void warn(String format, Object arg1, Object arg2) {
+		stub(format, arg1, arg2);
 	}
 
 	@Override
 	public void warn(String msg, Throwable t) {
+		stub(msg, t);
 	}
 
 	@Override
@@ -128,22 +148,30 @@ public class LoggingFacadeStub extends LoggingFacade {
 
 	@Override
 	public void error(String msg) {
+		stub(msg);
 	}
 
 	@Override
 	public void error(String format, Object arg) {
+		stub(format, arg);
 	}
 
 	@Override
 	public void error(String format, Object arg1, Object arg2) {
+		stub(format, arg1, arg2);
 	}
 
 	@Override
 	public void error(String format, Object... arguments) {
+		stub(format, arguments);
 	}
 
 	@Override
 	public void error(String msg, Throwable t) {
+		stub(msg, t);
+	}
+
+	private static void stub(Object... args) {
 	}
 
 }

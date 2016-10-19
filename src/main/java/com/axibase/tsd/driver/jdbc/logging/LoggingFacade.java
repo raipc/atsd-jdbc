@@ -18,11 +18,10 @@ public abstract class LoggingFacade {
 
 	public static LoggingFacade getLogger(Class<?> clazz) {
 		try {
-			return (LoggingFacade) Class.forName("com.axibase.tsd.driver.jdbc.logging.LoggingSlf4jImpl")
-					.getDeclaredConstructor(Class.class).newInstance(clazz);
-		} catch (ReflectiveOperationException | IllegalArgumentException | SecurityException ignored) {
+			return new LoggingSlf4jImpl(clazz);
+		} catch (IllegalArgumentException | SecurityException ignored) {
+			return new LoggingFacadeStub();
 		}
-		return new LoggingFacadeStub();
 	}
 
 	public abstract String getName();
