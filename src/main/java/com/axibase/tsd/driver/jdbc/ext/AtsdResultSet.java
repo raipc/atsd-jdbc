@@ -91,7 +91,7 @@ public class AtsdResultSet extends AvaticaResultSet {
 		if (logger.isDebugEnabled()) {
 			logger.debug("[afterLast]");
 		}
-		return context.getWarning();
+		return context != null ? context.getWarning() : null;
 	}
 
 	@Override
@@ -99,7 +99,9 @@ public class AtsdResultSet extends AvaticaResultSet {
 		if (logger.isDebugEnabled()) {
 			logger.debug("[afterLast]");
 		}
-		context.setWarning(null);
+		if (context != null) {
+			context.setWarning(null);
+		}
 	}
 
 	@Override
@@ -515,9 +517,9 @@ public class AtsdResultSet extends AvaticaResultSet {
 		final boolean next = super.next();
 		if (!next) {
 			meta.closeStatement(handle);
-		}
-		if (!next && context != null && context.getException() != null) {
-			throw context.getException();
+			if (context != null && context.getException() != null) {
+				throw context.getException();
+			}
 		}
 		return next;
 	}
@@ -525,8 +527,10 @@ public class AtsdResultSet extends AvaticaResultSet {
 	@Override
 	public void close() {
 		super.close();
-		context.setWarning(null);
-		context.setException(null);
+		if (context != null) {
+			context.setWarning(null);
+			context.setException(null);
+		}
 		if (logger.isTraceEnabled()) {
 			logger.trace("[AtsdResultSet#closed]");
 		}
