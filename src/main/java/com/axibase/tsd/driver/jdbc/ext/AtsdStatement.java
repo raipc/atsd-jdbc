@@ -16,12 +16,12 @@ package com.axibase.tsd.driver.jdbc.ext;
 
 import java.sql.SQLException;
 
+import com.axibase.tsd.driver.jdbc.content.StatementContext;
+import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
 import org.apache.calcite.avatica.AvaticaConnection;
 import org.apache.calcite.avatica.AvaticaStatement;
 import org.apache.calcite.avatica.Meta.Signature;
 import org.apache.calcite.avatica.Meta.StatementHandle;
-
-import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
 
 public class AtsdStatement extends AvaticaStatement {
 	private static final LoggingFacade logger = LoggingFacade.getLogger(AtsdStatement.class);
@@ -42,12 +42,19 @@ public class AtsdStatement extends AvaticaStatement {
 
 	@Override
 	public synchronized void cancel() throws SQLException {
-		super.cancel();
 		final AtsdConnection atsdConnection = (AtsdConnection) this.connection;
 		final AtsdMeta meta = (AtsdMeta) atsdConnection.getMeta();
 		meta.cancelStatement(this.handle);
-		if (logger.isTraceEnabled()) {
-			logger.trace("[AtsdStatement#cancel]");
+		final StatementContext context = meta.getContextFromMap(handle);
+		if (context == null || !context.isAbleToCancelAtsdQueries()) {
+			if (logger.isTraceEnabled()) {
+				logger.trace("[AtsdStatement#cancel] close resultSet");
+			}
+			super.cancel();
+		} else {
+			if (logger.isTraceEnabled()) {
+				logger.trace("[AtsdStatement#cancel]");
+			}
 		}
 	}
 

@@ -202,6 +202,10 @@ public class ContentDescription {
 		return StringUtils.isNoneEmpty(strategy) ? strategy : null;
 	}
 
+	public String getQueryId() {
+		return queryId;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;

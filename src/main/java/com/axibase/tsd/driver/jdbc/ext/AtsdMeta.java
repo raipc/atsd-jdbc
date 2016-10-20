@@ -256,6 +256,9 @@ public class AtsdMeta extends MetaImpl {
 			if (log.isDebugEnabled()) {
 				log.debug("[prepareAndExecute] " + e.getMessage());
 			}
+			if (e instanceof RuntimeException) {
+				throw (RuntimeException) e;
+			}
 			throw new AtsdRuntimeException(e);
 		}
 	}
@@ -398,8 +401,9 @@ public class AtsdMeta extends MetaImpl {
 		if (typeList == null || typeList.contains("TABLE")) {
 			final Iterable<Object> iterable = Collections.<Object>singletonList(
 					new AtsdMetaResultSets.AtsdMetaTable(DriverConstants.DEFAULT_CATALOG_NAME, this.schema,
-							DriverConstants.DEFAULT_TABLE_NAME, "TABLE", "SELECT entity, metric, datetime, value " +
-							"FROM atsd_series WHERE metric = 'mpstat.cpu_busy AND datetime > current_hour"));
+							DriverConstants.DEFAULT_TABLE_NAME, "TABLE", "SELECT metric, entity, tags.collector, " +
+							"tags.host, datetime, time, value FROM atsd_series WHERE metric = 'gc_time_percent' " +
+							"AND entity = 'atsd' AND datetime >= now - 5*MINUTE ORDER BY datetime DESC LIMIT 10"));
 			return getResultSet(iterable, AtsdMetaResultSets.AtsdMetaTable.class);
 		}
 		return createEmptyResultSet(AtsdMetaResultSets.AtsdMetaTable.class);

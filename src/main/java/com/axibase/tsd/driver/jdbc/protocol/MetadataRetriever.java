@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 
 import com.axibase.tsd.driver.jdbc.content.ContentDescription;
-import com.axibase.tsd.driver.jdbc.ext.AtsdRuntimeException;
 import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.ArrayUtils;
@@ -50,14 +49,15 @@ public class MetadataRetriever {
 		return new ByteArrayInputStream(result.toByteArray());
 	}
 
-	public static InputStream retrieveJsonSchemeAndSubstituteStream(InputStream inputStream, ContentDescription contentDescription) {
+	public static InputStream retrieveJsonSchemeAndSubstituteStream(InputStream inputStream, ContentDescription contentDescription)
+			throws IOException {
 		try (ByteArrayOutputStream result = new ByteArrayOutputStream()) {
 			int length;
 			final int testHeaderLength = ENCODED_JSON_SCHEME_BEGIN.length;
 			byte[] testHeader = new byte[testHeaderLength];
 			length = inputStream.read(testHeader);
 			if (length == -1) {
-				throw new AtsdRuntimeException("Could not fetch result. Probably, server disconnect occurred");
+				throw new IOException("Stream is empty");
 			}
 			if (!Arrays.equals(testHeader, ENCODED_JSON_SCHEME_BEGIN)) {
 				result.write(testHeader, 0, length);
@@ -68,12 +68,6 @@ public class MetadataRetriever {
 
 			InputStream readAfterScheme = readJsonSchemeAndReturnRest(inputStream, result, contentDescription);
 			return new SequenceInputStream(readAfterScheme, inputStream);
-
-		} catch (IOException e) {
-			if (logger.isErrorEnabled()) {
-				logger.error("Error while processing response body", e);
-			}
-			return inputStream;
 		}
 	}
 

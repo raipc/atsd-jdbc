@@ -16,6 +16,7 @@ package com.axibase.tsd.driver.jdbc.protocol;
 
 import java.io.*;
 import java.net.HttpURLConnection;
+import java.net.SocketException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
@@ -29,16 +30,19 @@ import javax.net.ssl.*;
 
 import com.axibase.tsd.driver.jdbc.content.ContentDescription;
 import com.axibase.tsd.driver.jdbc.content.json.GeneralError;
+import com.axibase.tsd.driver.jdbc.content.json.QueryDescription;
 import com.axibase.tsd.driver.jdbc.enums.MetadataFormat;
 import com.axibase.tsd.driver.jdbc.ext.AtsdException;
 import com.axibase.tsd.driver.jdbc.ext.AtsdRuntimeException;
 import com.axibase.tsd.driver.jdbc.intf.IContentProtocol;
 import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.calcite.avatica.org.apache.http.HttpHeaders;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 
 import static com.axibase.tsd.driver.jdbc.DriverConstants.*;
+import static com.fasterxml.jackson.core.JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES;
 
 public class SdkProtocolImpl implements IContentProtocol {
 	private static final LoggingFacade logger = LoggingFacade.getLogger(SdkProtocolImpl.class);
@@ -73,6 +77,12 @@ public class SdkProtocolImpl implements IContentProtocol {
 
 	private final ContentDescription contentDescription;
 	private HttpURLConnection conn;
+	private String atsdQueryId;
+	private String queryId;
+
+	public void setQueryId(String queryId) {
+		this.queryId = queryId;
+	}
 
 	public SdkProtocolImpl(final ContentDescription contentDescription) {
 		this.contentDescription = contentDescription;
@@ -85,11 +95,33 @@ public class SdkProtocolImpl implements IContentProtocol {
 
 	@Override
 	public InputStream readContent(int timeout) throws AtsdException, GeneralSecurityException, IOException {
-		InputStream inputStream = executeRequest(POST_METHOD, timeout, contentDescription.getHost());
-		if (MetadataFormat.EMBED.name().equals(contentDescription.getMetadataFormat())) {
-			inputStream = MetadataRetriever.retrieveJsonSchemeAndSubstituteStream(inputStream, contentDescription);
+		InputStream inputStream = null;
+		try {
+			inputStream = executeRequest(POST_METHOD, timeout, contentDescription.getHost());
+			if (MetadataFormat.EMBED.name().equals(contentDescription.getMetadataFormat())) {
+				inputStream = MetadataRetriever.retrieveJsonSchemeAndSubstituteStream(inputStream, contentDescription);
+			}
+		} catch (IOException e) {
+			if (logger.isDebugEnabled()) {
+				logger.debug("Metadata retrieving error", e);
+			}
+			if (queryId != null) {
+				throw new AtsdRuntimeException(prepareCancelMessage());
+			}
+			if (e instanceof SocketException) {
+				throw e;
+			}
 		}
 		return inputStream;
+	}
+
+	private String prepareCancelMessage() {
+		if (atsdQueryId != null) {
+			return "Query with driver-generated id=" + queryId +
+					" has been cancelled. ATSD queryId is " + atsdQueryId;
+		} else {
+			return "Disconnect occurred while executing query with driver-generated id=" + queryId;
+		}
 	}
 
 	@Override
@@ -99,7 +131,21 @@ public class SdkProtocolImpl implements IContentProtocol {
 
 	@Override
 	public void cancelQuery() throws AtsdException, GeneralSecurityException, IOException {
-		executeRequest(GET_METHOD, 0, contentDescription.getCancelQueryUrl());
+		InputStream result = executeRequest(GET_METHOD, 0, contentDescription.getCancelQueryUrl());
+		final ObjectMapper mapper = new ObjectMapper();
+		mapper.configure(ALLOW_UNQUOTED_FIELD_NAMES, true);
+		try {
+			final QueryDescription[] descriptionArray = mapper.readValue(result, QueryDescription[].class);
+			if (descriptionArray.length > 0) {
+				atsdQueryId = descriptionArray[0].getAtsdQueryId();
+				queryId = descriptionArray[0].getQueryId();
+			}
+		} catch (IOException e){
+			if (logger.isDebugEnabled()) {
+				logger.debug("Wrong query description format", e);
+			}
+			queryId = contentDescription.getQueryId();
+		}
 	}
 
 	@Override

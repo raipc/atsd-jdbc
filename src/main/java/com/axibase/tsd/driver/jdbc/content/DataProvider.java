@@ -82,7 +82,7 @@ public class DataProvider implements IDataProvider {
 		if (this.contentProtocol == null) {
 			throw new IllegalStateException("Cannot cancel query: contentProtocol is not created yet");
 		}
-		if (context.getVersion() >= ATSD_VERSION_SUPPORTS_CANCEL_QUERIES) {
+		if (context.isAbleToCancelAtsdQueries()) {
 			if (logger.isTraceEnabled()) {
 				logger.trace("[cancelQuery] sending cancel queryId={}", context.getQueryId());
 			}
@@ -96,8 +96,9 @@ public class DataProvider implements IDataProvider {
 				logger.warn("[cancelQuery] cancel query unsupported: minimal ATSD version {} is required",
 						ATSD_VERSION_SUPPORTS_CANCEL_QUERIES);
 			}
+			((SdkProtocolImpl)this.contentProtocol).setQueryId(context.getQueryId());
+			closeWithRuntimeException();
 		}
-		closeWithRuntimeException();
 		this.isHoldingConnection = false;
 	}
 

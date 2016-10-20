@@ -18,6 +18,7 @@ import java.sql.SQLException;
 import java.sql.SQLWarning;
 import java.util.UUID;
 
+import com.axibase.tsd.driver.jdbc.DriverConstants;
 import org.apache.calcite.avatica.Meta;
 
 public class StatementContext {
@@ -80,5 +81,9 @@ public class StatementContext {
 
 	public String getQueryId() {
 		return queryId;
+	}
+
+	public boolean isAbleToCancelAtsdQueries() {
+		return version >= DriverConstants.ATSD_VERSION_SUPPORTS_CANCEL_QUERIES;
 	}
 }
