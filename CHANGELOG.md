@@ -1,3 +1,9 @@
+## 1.2.15
+* Fixed database metadata result sets generating. Better support of DbVis 9.2.
+* Connection#getCatalog method is implemented
+* Fixed NPE in AtsdResultSet#close for constant result sets.
+* Implemented Statement#cancel method. Since ATSD revision 14451 it will force ATSD to cancel the executed query. For older ATSD releases driver breaks the connection, manual query cancellation may be needed.
+
 ## 1.2.14
 * Better support for GUI tools working with custom databases
 
