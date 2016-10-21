@@ -14,24 +14,8 @@
 */
 package com.axibase.tsd.driver.jdbc.ext;
 
-import java.io.InputStream;
-import java.io.Reader;
-import java.math.BigDecimal;
-import java.net.URL;
-import java.sql.Array;
-import java.sql.Blob;
-import java.sql.Clob;
-import java.sql.Date;
-import java.sql.NClob;
-import java.sql.Ref;
-import java.sql.RowId;
-import java.sql.SQLException;
-import java.sql.SQLXML;
-import java.sql.Time;
-import java.sql.Timestamp;
-import java.util.*;
-import java.util.concurrent.ConcurrentSkipListMap;
-
+import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
+import com.axibase.tsd.driver.jdbc.util.ExceptionsUtil;
 import com.axibase.tsd.driver.jdbc.util.TimeDateExpression;
 import org.apache.calcite.avatica.AvaticaConnection;
 import org.apache.calcite.avatica.AvaticaPreparedStatement;
@@ -40,7 +24,16 @@ import org.apache.calcite.avatica.Meta.Signature;
 import org.apache.calcite.avatica.Meta.StatementHandle;
 import org.apache.calcite.avatica.remote.TypedValue;
 
-import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
+import java.io.InputStream;
+import java.io.Reader;
+import java.math.BigDecimal;
+import java.net.URL;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.ConcurrentSkipListMap;
 
 public class AtsdPreparedStatement extends AvaticaPreparedStatement {
 	private static final LoggingFacade logger = LoggingFacade.getLogger(AtsdPreparedStatement.class);
@@ -78,6 +71,27 @@ public class AtsdPreparedStatement extends AvaticaPreparedStatement {
 			}
 		}
 		return list;
+	}
+
+	@Override
+	public boolean execute() throws SQLException {
+		try {
+			return super.execute();
+		} catch (SQLException e) {
+			throw ExceptionsUtil.unboxException(e);
+		}
+	}
+
+	/*
+	Method should close current result set and return true if another one can be fetched.
+	As we always use one result set, always return false;
+	 */
+	@Override
+	public boolean getMoreResults() throws SQLException {
+		if (openResultSet != null) {
+			openResultSet.close();
+		}
+		return false;
 	}
 
 	@Override
