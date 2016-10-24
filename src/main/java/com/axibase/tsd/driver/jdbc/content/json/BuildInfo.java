@@ -14,15 +14,10 @@
 */
 package com.axibase.tsd.driver.jdbc.content.json;
 
+import com.fasterxml.jackson.annotation.*;
+
 import java.util.HashMap;
 import java.util.Map;
-
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
-import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
@@ -41,98 +36,37 @@ public class BuildInfo {
     @JsonIgnore
     private final Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
-    /**
-     * No args constructor for use in serialization
-     * 
-     */
     public BuildInfo() {
     }
 
-    /**
-     * 
-     * @param buildNumber
-     * @param revisionNumber
-     * @param buildId
-     */
-    public BuildInfo(String revisionNumber, String buildNumber, String buildId) {
-        this.revisionNumber = revisionNumber;
-        this.buildNumber = buildNumber;
-        this.buildId = buildId;
-    }
-
-    /**
-     * 
-     * @return
-     *     The revisionNumber
-     */
     @JsonProperty("revisionNumber")
     public String getRevisionNumber() {
         return revisionNumber;
     }
 
-    /**
-     * 
-     * @param revisionNumber
-     *     The revisionNumber
-     */
     @JsonProperty("revisionNumber")
     public void setRevisionNumber(String revisionNumber) {
         this.revisionNumber = revisionNumber;
     }
 
-    public BuildInfo withRevisionNumber(String revisionNumber) {
-        this.revisionNumber = revisionNumber;
-        return this;
-    }
-
-    /**
-     * 
-     * @return
-     *     The buildNumber
-     */
     @JsonProperty("buildNumber")
     public String getBuildNumber() {
         return buildNumber;
     }
 
-    /**
-     * 
-     * @param buildNumber
-     *     The buildNumber
-     */
     @JsonProperty("buildNumber")
     public void setBuildNumber(String buildNumber) {
         this.buildNumber = buildNumber;
     }
 
-    public BuildInfo withBuildNumber(String buildNumber) {
-        this.buildNumber = buildNumber;
-        return this;
-    }
-
-    /**
-     * 
-     * @return
-     *     The buildId
-     */
     @JsonProperty("buildId")
     public String getBuildId() {
         return buildId;
     }
 
-    /**
-     * 
-     * @param buildId
-     *     The buildId
-     */
     @JsonProperty("buildId")
     public void setBuildId(String buildId) {
         this.buildId = buildId;
-    }
-
-    public BuildInfo withBuildId(String buildId) {
-        this.buildId = buildId;
-        return this;
     }
 
     @JsonAnyGetter
@@ -143,11 +77,6 @@ public class BuildInfo {
     @JsonAnySetter
     public void setAdditionalProperty(String name, Object value) {
         this.additionalProperties.put(name, value);
-    }
-
-    public BuildInfo withAdditionalProperty(String name, Object value) {
-        this.additionalProperties.put(name, value);
-        return this;
     }
 
 	@Override

@@ -14,15 +14,10 @@
 */
 package com.axibase.tsd.driver.jdbc.content.json;
 
+import com.fasterxml.jackson.annotation.*;
+
 import java.util.HashMap;
 import java.util.Map;
-
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
-import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
@@ -40,64 +35,29 @@ public class Version {
 
     public Version() {}
 
-    /**
-     * 
-     * @param license
-     * @param buildInfo
-     */
     public Version(BuildInfo buildInfo, License license) {
         this.buildInfo = buildInfo;
         this.license = license;
     }
 
-    /**
-     * 
-     * @return
-     *     The buildInfo
-     */
     @JsonProperty("buildInfo")
     public BuildInfo getBuildInfo() {
         return buildInfo;
     }
 
-    /**
-     * 
-     * @param buildInfo
-     *     The buildInfo
-     */
     @JsonProperty("buildInfo")
     public void setBuildInfo(BuildInfo buildInfo) {
         this.buildInfo = buildInfo;
     }
 
-    public Version withBuildInfo(BuildInfo buildInfo) {
-        this.buildInfo = buildInfo;
-        return this;
-    }
-
-    /**
-     * 
-     * @return
-     *     The license
-     */
     @JsonProperty("license")
     public License getLicense() {
         return license;
     }
 
-    /**
-     * 
-     * @param license
-     *     The license
-     */
     @JsonProperty("license")
     public void setLicense(License license) {
         this.license = license;
-    }
-
-    public Version withLicense(License license) {
-        this.license = license;
-        return this;
     }
 
     @JsonAnyGetter
@@ -108,11 +68,6 @@ public class Version {
     @JsonAnySetter
     public void setAdditionalProperty(String name, Object value) {
         this.additionalProperties.put(name, value);
-    }
-
-    public Version withAdditionalProperty(String name, Object value) {
-        this.additionalProperties.put(name, value);
-        return this;
     }
 
 	@Override
