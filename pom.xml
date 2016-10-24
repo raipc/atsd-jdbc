@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.axibase</groupId>
 	<artifactId>atsd-jdbc</artifactId>
-	<version>1.2.15</version>
+	<version>1.2.16-SNAPSHOT</version>
 	<name>ATSD JDBC driver</name>
 	<description>JDBC driver for SQL API using</description>
 	<url>http://axibase.com</url>
@@ -414,10 +414,10 @@
 			<version>${slf4j.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>org.simpleflatmapper</groupId>
-			<artifactId>sfm</artifactId>
-			<version>2.12</version>
-			<classifier>jdk17</classifier>
+			<groupId>com.univocity</groupId>
+			<artifactId>univocity-parsers</artifactId>
+			<version>2.2.2</version>
+			<type>jar</type>
 		</dependency>
 		<!-- Test -->
 		<dependency>

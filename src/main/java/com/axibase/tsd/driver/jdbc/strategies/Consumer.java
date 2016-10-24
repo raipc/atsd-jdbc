@@ -64,7 +64,7 @@ public class Consumer implements IConsumer {
 
 	@Override
 	public String[] open(InputStream inputStream) throws IOException {
-		iterator = new RowIterator(inputStream, context.getVersion());
+		iterator = RowIterator.newDefaultIterator(inputStream);
 		return iterator.next();
 	}
 
