@@ -17,6 +17,7 @@ package com.axibase.tsd.driver.jdbc.content;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.GeneralSecurityException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.axibase.tsd.driver.jdbc.ext.AtsdException;
 import com.axibase.tsd.driver.jdbc.ext.AtsdRuntimeException;
@@ -37,7 +38,7 @@ public class DataProvider implements IDataProvider {
 	private final IContentProtocol contentProtocol;
 	private final StatementContext context;
 	private IStoreStrategy strategy;
-	private volatile boolean isHoldingConnection;
+	private AtomicBoolean isHoldingConnection = new AtomicBoolean();
 
 	public DataProvider(String url, String query, String login, String password, StatementContext context) {
 		final String[] parts = url.split(PARAM_SEPARATOR);
@@ -52,7 +53,6 @@ public class DataProvider implements IDataProvider {
 		this.contentDescription = new ContentDescription(parts[0], query, login, password, context, params);
 		this.contentProtocol = ProtocolFactory.create(SdkProtocolImpl.class, contentDescription);
 		this.context = context;
-		this.strategy = defineStrategy();
 	}
 
 	@Override
@@ -68,9 +68,9 @@ public class DataProvider implements IDataProvider {
 	@Override
 	public void fetchData(long maxLimit, int timeout) throws AtsdException, GeneralSecurityException, IOException {
 		contentDescription.setMaxRowsCount(maxLimit);
-		this.isHoldingConnection = true;
+		this.isHoldingConnection.set(true);
 		final InputStream is = contentProtocol.readContent(timeout);
-		this.isHoldingConnection = false;
+		this.isHoldingConnection.set(false);
 		this.strategy = defineStrategy();
 		if (this.strategy != null) {
 			this.strategy.store(is);
@@ -99,7 +99,7 @@ public class DataProvider implements IDataProvider {
 			((SdkProtocolImpl)this.contentProtocol).setQueryId(context.getQueryId());
 			closeWithRuntimeException();
 		}
-		this.isHoldingConnection = false;
+		this.isHoldingConnection.set(false);
 	}
 
 	private void closeWithRuntimeException() {
@@ -112,7 +112,7 @@ public class DataProvider implements IDataProvider {
 
 	@Override
 	public void close() throws Exception {
-		if (this.isHoldingConnection) {
+		if (this.isHoldingConnection.get()) {
 			cancelQuery();
 		}
 		if (this.strategy != null) {
