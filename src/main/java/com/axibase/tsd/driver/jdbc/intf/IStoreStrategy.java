@@ -20,15 +20,15 @@ import java.util.List;
 
 import com.axibase.tsd.driver.jdbc.content.StatementContext;
 import com.axibase.tsd.driver.jdbc.ext.AtsdException;
+import org.apache.calcite.avatica.ColumnMetaData;
 
 public interface IStoreStrategy extends AutoCloseable {
 
-	String[] openToRead() throws IOException;
+	String[] openToRead(List<ColumnMetaData> metadataList) throws IOException;
 
-	List<String[]> fetch(long from, int size) throws IOException, AtsdException;
+	List<Object[]> fetch(long from, int size) throws IOException, AtsdException;
 
 	void store(InputStream is) throws IOException;
 
 	StatementContext getContext();
-
 }

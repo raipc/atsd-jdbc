@@ -19,7 +19,6 @@ package com.axibase.tsd.driver.jdbc.ext;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
-import java.security.GeneralSecurityException;
 import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -38,7 +37,6 @@ import com.axibase.tsd.driver.jdbc.enums.timedatesyntax.EndTime;
 import com.axibase.tsd.driver.jdbc.intf.IDataProvider;
 import com.axibase.tsd.driver.jdbc.intf.IStoreStrategy;
 import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
-import com.axibase.tsd.driver.jdbc.util.EnumUtil;
 import com.axibase.tsd.driver.jdbc.util.TimeDateExpression;
 import org.apache.calcite.avatica.*;
 import org.apache.calcite.avatica.remote.TypedValue;
@@ -148,11 +146,14 @@ public class AtsdMeta extends MetaImpl {
 			provider.fetchData(maxRows, timeout);
 			final ContentMetadata contentMetadata = findMetadata(query, statementHandle.connectionId, statementHandle.id);
 			return new ExecuteResult(contentMetadata.getList());
-		} catch (final AtsdException | GeneralSecurityException | IOException e) {
+		} catch (final Exception e) {
 			if (log.isDebugEnabled()) {
 				log.debug("[execute] " + e.getMessage());
 			}
-			throw new NoSuchStatementException(statementHandle);
+			if (e instanceof RuntimeException) {
+				throw (RuntimeException) e;
+			}
+			throw new AtsdRuntimeException(e);
 		}
 	}
 
@@ -284,15 +285,19 @@ public class AtsdMeta extends MetaImpl {
 		assert provider != null;
 		final ContentDescription contentDescription = provider.getContentDescription();
 		final IStoreStrategy strategy = provider.getStrategy();
+		final ContentMetadata contentMetadata = metaCache.get(statementHandle.id);
+		if (contentMetadata == null) {
+			throw new MissingResultsException(statementHandle);
+		}
 		try {
 			if (offset == 0) {
-				final String[] headers = strategy.openToRead();
+				final String[] headers = strategy.openToRead(contentMetadata.getMetadataList());
 				if (headers == null || headers.length == 0) {
 					throw new MissingResultsException(statementHandle);
 				}
 				contentDescription.setHeaders(headers);
 			}
-			final List<String[]> subList = strategy.fetch(offset, fetchMaxRowCount);
+			final List<Object[]> subList = strategy.fetch(offset, fetchMaxRowCount);
 			final List<Object> rows = getFrame(statementHandle, fetchMaxRowCount, subList);
 			return new Meta.Frame(loffset, rows.size() < fetchMaxRowCount, rows);
 		} catch (final AtsdException | IOException e) {
@@ -527,37 +532,26 @@ public class AtsdMeta extends MetaImpl {
 		return contentMetadata;
 	}
 
-	private List<Object> getFrame(final StatementHandle handle, int fetchMaxRowCount, final List<String[]> subList) {
+	private List<Object> getFrame(final StatementHandle handle, int fetchMaxRowCount, final List<Object[]> subList) {
 		IDataProvider provider = providerCache.get(handle.id);
 		assert provider != null;
 		final String[] headers = provider.getContentDescription().getHeaders();
-		final ContentMetadata contentMetadata = metaCache.get(handle.id);
-		final List<ColumnMetaData> metadataList = contentMetadata.getMetadataList();
 		final List<Object> rows = new ArrayList<>(subList.size());
-		for (final String[] stringArray : subList) {
-			if (stringArray == null || headers == null || rows.size() == fetchMaxRowCount) {
+
+		for (final Object[] parsedObjects : subList) {
+			if (parsedObjects == null || headers == null || rows.size() == fetchMaxRowCount) {
 				break;
 			}
-			if (stringArray.length == headers.length) {
-				rows.add(getFrameRow(metadataList, stringArray));
+			if (parsedObjects.length == headers.length) {
+				rows.add(Arrays.asList(parsedObjects));
 			} else {
 				if (log.isDebugEnabled()) {
-					log.debug("[getFrame] array length discrepancy: " + Arrays.toString(stringArray));
+					log.debug("[getFrame] array length discrepancy: " + Arrays.toString(parsedObjects));
 				}
 			}
 		}
-		return rows;
-	}
 
-	private List<Object> getFrameRow(final List<ColumnMetaData> metadataOrdered, final String[] strings) {
-		final int length = strings.length;
-		final List<Object> row = new ArrayList<>(length);
-		for (int i = 0; i < length; i++) {
-			int sqlType = metadataOrdered.get(i).type.id;
-			AtsdType atsdType = EnumUtil.getAtsdTypeBySqlType(sqlType);
-			row.add(atsdType.readValue(strings, i));
-		}
-		return row;
+		return rows;
 	}
 
 	private static MetaTypeInfo getTypeInfo(AtsdType type) {

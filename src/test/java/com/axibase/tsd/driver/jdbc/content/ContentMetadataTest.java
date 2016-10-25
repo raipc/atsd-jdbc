@@ -14,19 +14,16 @@
 */
 package com.axibase.tsd.driver.jdbc.content;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Scanner;
 
+import com.axibase.tsd.driver.jdbc.ext.AtsdException;
 import org.apache.calcite.avatica.ColumnMetaData;
 import org.junit.Test;
 
-import com.axibase.tsd.driver.jdbc.ext.AtsdException;
+import static org.junit.Assert.*;
 
 public class ContentMetadataTest {
 	private static final String CONTEXT_START = "{\n   \"@context\":[";

@@ -21,6 +21,7 @@ import java.util.Properties;
 
 import com.axibase.tsd.driver.jdbc.DriverConstants;
 import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
+import com.axibase.tsd.driver.jdbc.util.ExceptionsUtil;
 import org.apache.calcite.avatica.*;
 
 public class AtsdConnection extends AvaticaConnection {
@@ -65,4 +66,12 @@ public class AtsdConnection extends AvaticaConnection {
 		meta.closeConnection();
 	}
 
+	@Override
+	protected ResultSet executeQueryInternal(AvaticaStatement statement, Meta.Signature signature, Meta.Frame firstFrame, QueryState state, boolean isUpdate) throws SQLException {
+		try {
+			return super.executeQueryInternal(statement, signature, firstFrame, state, isUpdate);
+		} catch (SQLException e) {
+			throw ExceptionsUtil.unboxException(e);
+		}
+	}
 }

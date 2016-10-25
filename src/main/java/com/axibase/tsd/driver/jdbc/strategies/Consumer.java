@@ -15,22 +15,22 @@
 package com.axibase.tsd.driver.jdbc.strategies;
 
 
-import com.axibase.tsd.driver.jdbc.content.StatementContext;
-import com.axibase.tsd.driver.jdbc.content.json.*;
-import com.axibase.tsd.driver.jdbc.ext.AtsdRuntimeException;
-import com.axibase.tsd.driver.jdbc.intf.IConsumer;
-import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.lang3.StringUtils;
-
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import static com.fasterxml.jackson.core.JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES;
+import com.axibase.tsd.driver.jdbc.content.StatementContext;
+import com.axibase.tsd.driver.jdbc.content.json.*;
+import com.axibase.tsd.driver.jdbc.ext.AtsdRuntimeException;
+import com.axibase.tsd.driver.jdbc.intf.IConsumer;
+import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
+import com.axibase.tsd.driver.jdbc.util.JsonMappingUtil;
+import org.apache.calcite.avatica.ColumnMetaData;
+import org.apache.commons.lang3.StringUtils;
 
 
 public class Consumer implements IConsumer {
@@ -63,13 +63,13 @@ public class Consumer implements IConsumer {
 	}
 
 	@Override
-	public String[] open(InputStream inputStream) throws IOException {
-		iterator = RowIterator.newDefaultIterator(inputStream);
+	public Object[] open(InputStream inputStream, List<ColumnMetaData> columnMetadataList) throws IOException {
+		iterator = RowIterator.newDefaultIterator(inputStream, columnMetadataList);
 		return iterator.next();
 	}
 
 	@Override
-	public Iterator<String[]> getIterator(){
+	public Iterator<Object[]> getIterator(){
 		if (iterator == null) {
 			assert source != null;
 			throw new IllegalStateException(source + " has not opened yet");
@@ -90,16 +90,13 @@ public class Consumer implements IConsumer {
 		if (logger.isTraceEnabled()) {
 			logger.trace(json);
 		}
-		final ObjectMapper mapper = new ObjectMapper();
-		mapper.configure(ALLOW_UNQUOTED_FIELD_NAMES, true);
-		final Comments commentsObject;
 		try {
-			commentsObject = mapper.readValue(json, Comments.class);
+			final Comments commentsObject = JsonMappingUtil.mapToComments(json);
 			fillWarnings(commentsObject.getWarnings(), context);
 			fillErrors(commentsObject.getErrors(), context);
 		} catch (IOException e){
 			if (logger.isDebugEnabled()) {
-				logger.debug("Wrong error format", e);
+				logger.debug("Wrong error format: {}", e.getMessage());
 			}
 		}
 	}

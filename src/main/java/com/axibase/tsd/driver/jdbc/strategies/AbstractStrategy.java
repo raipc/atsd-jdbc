@@ -14,12 +14,6 @@
 */
 package com.axibase.tsd.driver.jdbc.strategies;
 
-import com.axibase.tsd.driver.jdbc.content.StatementContext;
-import com.axibase.tsd.driver.jdbc.enums.Strategy;
-import com.axibase.tsd.driver.jdbc.intf.IConsumer;
-import com.axibase.tsd.driver.jdbc.intf.IStoreStrategy;
-import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -28,10 +22,17 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
+import com.axibase.tsd.driver.jdbc.content.StatementContext;
+import com.axibase.tsd.driver.jdbc.enums.Strategy;
+import com.axibase.tsd.driver.jdbc.intf.IConsumer;
+import com.axibase.tsd.driver.jdbc.intf.IStoreStrategy;
+import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
+import org.apache.calcite.avatica.ColumnMetaData;
+
 public abstract class AbstractStrategy implements IStoreStrategy {
 	private static final LoggingFacade logger = LoggingFacade.getLogger(AbstractStrategy.class);
 
-	protected IConsumer consumer;
+	protected final IConsumer consumer;
 	protected final StrategyStatus status;
 	protected long position;
 	protected InputStream inputStream;
@@ -45,16 +46,16 @@ public abstract class AbstractStrategy implements IStoreStrategy {
 
 	@Override
 	public StatementContext getContext() {
-		return consumer != null ? consumer.getContext() : null;
+		return consumer.getContext();
 	}
 
 	@Override
-	public List<String[]> fetch(long from, int limit) throws IOException {
-		final List<String[]> list = new ArrayList<>();
-		final Iterator<String[]> iterator = consumer.getIterator();
+	public List<Object[]> fetch(long from, int limit) throws IOException {
+		final List<Object[]> list = new ArrayList<>();
+		final Iterator<Object[]> iterator = consumer.getIterator();
 		int counter = 0;
 		while (iterator.hasNext() && counter < limit) {
-			final String[] next = iterator.next();
+			final Object[] next = iterator.next();
 			if (position < from) {
 				if (logger.isTraceEnabled()) {
 					logger.trace("[fetch] position less from: " + position + "->" + from);
@@ -79,7 +80,7 @@ public abstract class AbstractStrategy implements IStoreStrategy {
 	}
 
 	@Override
-	public String[] openToRead() throws IOException {
+	public String[] openToRead(List<ColumnMetaData> metadataList) throws IOException {
 		if (logger.isTraceEnabled()) {
 			logger.trace("[openToRead] " + status.getSyncLatch().getCount());
 		}
@@ -90,7 +91,7 @@ public abstract class AbstractStrategy implements IStoreStrategy {
 				logger.debug("[openToRead] " + e.getMessage());
 			}
 		}
-		final String[] header = consumer.open(inputStream);
+		final String[] header = (String[]) consumer.open(inputStream, metadataList);
 		consumer.fillComments();
 		return header;
 	}

@@ -45,6 +45,12 @@ public enum AtsdType {
 			return Integer.valueOf(cell);
 		}
 	},
+	JAVA_OBJECT_TYPE("java_object", "java_object", Types.JAVA_OBJECT, Rep.OBJECT, 2147483647, 128 * 1024) {
+		@Override
+		protected Object readValueHelper(String cell) {
+			return cell.startsWith("\"") ? cell : new BigDecimal(cell);
+		}
+	},
 	LONG_DATA_TYPE("long", "bigint", Types.BIGINT, Rep.LONG, 19, 10) {
 		@Override
 		protected Object readValueHelper(String cell) {
@@ -87,7 +93,7 @@ public enum AtsdType {
 		}
 
 		@Override
-		public Object readValue(String[] values, int index) {
+		public Object readValue(String[] values, int index, boolean nullable) {
 			Object value;
 			String cell = values[index];
 			if (StringUtils.isEmpty(cell)) {
@@ -143,10 +149,10 @@ public enum AtsdType {
 
 	protected abstract Object readValueHelper(String cell);
 
-	public Object readValue(String[] values, int index) {
+	public Object readValue(String[] values, int index, boolean nullable) {
 		final String cell = values[index];
 		if (StringUtils.isEmpty(values[index])) {
-			return this == AtsdType.STRING_DATA_TYPE ? cell : null;
+			return this == AtsdType.STRING_DATA_TYPE ? (nullable ? null : cell) : null;
 		}
 		try {
 			return readValueHelper(cell);

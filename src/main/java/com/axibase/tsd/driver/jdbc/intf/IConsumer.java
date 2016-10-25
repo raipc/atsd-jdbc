@@ -17,14 +17,16 @@ package com.axibase.tsd.driver.jdbc.intf;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
+import java.util.List;
 
 import com.axibase.tsd.driver.jdbc.content.StatementContext;
+import org.apache.calcite.avatica.ColumnMetaData;
 
 public interface IConsumer extends AutoCloseable {
 
-	String[] open(InputStream inputStream) throws IOException;
+	Object[] open(InputStream inputStream, List<ColumnMetaData> columnMetadataList) throws IOException;
 
-	Iterator<String[]> getIterator();
+	Iterator<Object[]> getIterator();
 
 	StatementContext getContext();
 

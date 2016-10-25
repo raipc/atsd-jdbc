@@ -1,87 +1,82 @@
 package com.axibase.tsd.driver.jdbc.strategies;
 
-import com.axibase.tsd.driver.jdbc.ext.AtsdRuntimeException;
-import com.univocity.parsers.csv.CsvParser;
-import com.univocity.parsers.csv.CsvParserSettings;
-
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
+import java.util.List;
 
-public class RowIterator implements Iterator<String[]>, AutoCloseable {
+import com.axibase.tsd.driver.jdbc.enums.AtsdType;
+import com.axibase.tsd.driver.jdbc.ext.AtsdRuntimeException;
+import com.axibase.tsd.driver.jdbc.util.EnumUtil;
+import com.univocity.parsers.csv.CsvParser;
+import com.univocity.parsers.csv.CsvParserSettings;
+import org.apache.calcite.avatica.ColumnMetaData;
+
+public class RowIterator implements Iterator<Object[]>, AutoCloseable {
 	private static final char COMMENT_SIGN = '#';
 	private static final CsvParserSettings DEFAULT_PARSER_SETTINGS;
-	private static final CsvParserSettings MANY_ROWS_PARSER_SETTINGS;
 	static {
 		DEFAULT_PARSER_SETTINGS = new CsvParserSettings();
 		DEFAULT_PARSER_SETTINGS.setInputBufferSize(16 * 1024);
 		DEFAULT_PARSER_SETTINGS.setReadInputOnSeparateThread(false);
 		DEFAULT_PARSER_SETTINGS.setCommentCollectionEnabled(false);
-
-		MANY_ROWS_PARSER_SETTINGS = new CsvParserSettings();
-		MANY_ROWS_PARSER_SETTINGS.setReadInputOnSeparateThread(true);
-		MANY_ROWS_PARSER_SETTINGS.setCommentCollectionEnabled(false);
+		DEFAULT_PARSER_SETTINGS.setEmptyValue("");
 	}
 
 	private CsvParser decoratedParser;
 	private final Reader decoratedReader;
-	private String[] nextRow;
-	private boolean[] columnIsTag;
+	private Object[] nextRow;
 	private String commentSection;
+	private AtsdType[] columnTypes;
+	private boolean[] nullable;
+	private int row = 0;
 
-	private RowIterator(Reader reader, CsvParserSettings settings) {
+	private RowIterator(Reader reader, List<ColumnMetaData> columnMetadata, CsvParserSettings settings) {
 		this.decoratedReader = reader;
 		try {
 			final int firstSymbol = reader.read();
 			if (firstSymbol == COMMENT_SIGN) {
 				fillCommentSectionWithReaderContent(reader);
 			} else if (firstSymbol != -1) {
+				fillFromMetadata(columnMetadata);
+
 				CsvParser parser = new CsvParser(settings);
 				this.decoratedParser = parser;
 				parser.beginParsing(reader);
-				this.nextRow = parser.parseNext();
-				if (nextRow != null) {
-					nextRow[0] = (char) firstSymbol + nextRow[0];
-					fillColumnIsTagArray();
-				}
+				parser.parseNext();
 			}
 		} catch (IOException e) {
 			throw new AtsdRuntimeException(e);
 		}
 	}
 
-	public static RowIterator newDefaultIterator(InputStream inputStream) {
-		Reader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
-		return newDefaultIterator(reader);
-	}
-
-	public static RowIterator newDefaultIterator(Reader reader) {
-		return new RowIterator(reader, DEFAULT_PARSER_SETTINGS);
-	}
-
-	public static RowIterator newManyRowsIterator(InputStream inputStream) {
-		Reader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
-		return newManyRowsIterator(reader);
-	}
-
-	public static RowIterator newManyRowsIterator(Reader reader) {
-		return new RowIterator(reader, MANY_ROWS_PARSER_SETTINGS);
-	}
-
-	private void fillColumnIsTagArray() {
-		final int length = this.nextRow.length;
-		columnIsTag = new boolean[length];
-		for (int i = 0; i < length; ++i) {
-			columnIsTag[i] = this.nextRow[i].startsWith("tag");
+	private static RowIterator createRowIteratorForReader(Reader reader, List<ColumnMetaData> metadata, CsvParserSettings settings) {
+		if (metadata == null) {
+			throw null;
 		}
+		return new RowIterator(reader, metadata, settings);
 	}
 
-	private void setEmptyTagsNull(String[] data) {
-		final int length = data.length;
-		for (int i = 0; i < length; ++i) {
-			if (columnIsTag[i] && "".equals(data[i])) {
-				data[i] = null;
-			}
+	public static RowIterator newDefaultIterator(InputStream inputStream, List<ColumnMetaData> metadata) {
+		Reader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
+		return newDefaultIterator(reader, metadata);
+	}
+
+	public static RowIterator newDefaultIterator(Reader reader, List<ColumnMetaData> metadata) {
+		return createRowIteratorForReader(reader, metadata, DEFAULT_PARSER_SETTINGS);
+	}
+
+	private void fillFromMetadata(List<ColumnMetaData> columnMetadata) {
+		final int length = columnMetadata.size();
+		this.nextRow = new String[length];
+		this.columnTypes = new AtsdType[length];
+		this.nullable = new boolean[length];
+		int i = 0;
+		for (ColumnMetaData metaData : columnMetadata) {
+			this.nextRow[i] = metaData.columnName;
+			this.columnTypes[i] = EnumUtil.getAtsdTypeBySqlType(metaData.type.id);
+			this.nullable[i] = metaData.nullable == 1;
+			++i;
 		}
 	}
 
@@ -123,21 +118,34 @@ public class RowIterator implements Iterator<String[]>, AutoCloseable {
 	}
 
 	@Override
-	public String[] next() {
+	public Object[] next() {
 		if (nextRow == null) {
 			return null;
 		}
-		String[] old = nextRow;
-		String[] data;
+		Object[] old = nextRow;
+		Object[] data;
 		data = decoratedParser.parseNext();
 		if (data == null) {
 			fillCommentSectionWithParsedComments();
 		} else {
-			setEmptyTagsNull(data);
+			data = parseValues((String[]) data);
+			++row;
 		}
 
 		nextRow = data;
 		return old;
+	}
+
+	private Object[] parseValues(String[] values) {
+		final int length = columnTypes.length;
+		if (columnTypes.length != values.length) {
+			throw new AtsdRuntimeException("Parsed number of columns doesn't match to header on row=" + row);
+		}
+		Object[] parsed = new Object[length];
+		for (int i = 0; i != length; ++i) {
+			parsed[i] = columnTypes[i].readValue(values, i, nullable[i]);
+		}
+		return parsed;
 	}
 
 	@Override
