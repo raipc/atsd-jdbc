@@ -1,14 +1,12 @@
 package com.axibase.tsd.driver.jdbc.content.json;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 
+import com.axibase.tsd.driver.jdbc.util.JsonMappingUtil;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -30,14 +28,10 @@ public class GeneralError {
 	}
 
 	public static String errorFromInputStream(InputStream inputStream) throws IOException {
-		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-		byte[] buffer = new byte[1024];
-		int length;
-		while ((length = inputStream.read(buffer)) != -1) {
-			outputStream.write(buffer, 0, length);
+		final GeneralError errorObject = JsonMappingUtil.mapToGeneralError(inputStream);
+		if (errorObject == null) {
+			return null;
 		}
-		final String json = outputStream.toString(StandardCharsets.UTF_8.name());
-		final GeneralError errorObject = new ObjectMapper().readValue(json, GeneralError.class);
 		return errorObject.getError();
 	}
 

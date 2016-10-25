@@ -29,7 +29,7 @@ import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
 import com.axibase.tsd.driver.jdbc.protocol.ProtocolFactory;
 import com.axibase.tsd.driver.jdbc.protocol.SdkProtocolImpl;
 import com.axibase.tsd.driver.jdbc.util.EnumUtil;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.axibase.tsd.driver.jdbc.util.JsonMappingUtil;
 import org.apache.calcite.avatica.AvaticaConnection;
 import org.apache.calcite.avatica.AvaticaDatabaseMetaData;
 import org.apache.calcite.avatica.ConnectionConfig;
@@ -38,7 +38,6 @@ import static com.axibase.tsd.driver.jdbc.DriverConstants.*;
 
 public class AtsdDatabaseMetaData extends AvaticaDatabaseMetaData {
 	private static final LoggingFacade logger = LoggingFacade.getLogger(AtsdDatabaseMetaData.class);
-	private static final ObjectMapper mapper = new ObjectMapper();
 	private String revision = "Unknown Revision";
 	private String edition = "Unknown Edition";
 
@@ -72,8 +71,8 @@ public class AtsdDatabaseMetaData extends AvaticaDatabaseMetaData {
 		final ContentDescription cd = new ContentDescription(host, "", user, pass, params);
 		try (final IContentProtocol protocol = ProtocolFactory.create(SdkProtocolImpl.class, cd)) {
 			assert protocol != null;
-			final InputStream is = protocol.readInfo();
-			final Version version = mapper.readValue(is, Version.class);
+			final InputStream inputStream = protocol.readInfo();
+			final Version version = JsonMappingUtil.mapToVersion(inputStream);
 			if (logger.isTraceEnabled()) {
 				logger.trace("[initVersions] " + version.toString());
 			}

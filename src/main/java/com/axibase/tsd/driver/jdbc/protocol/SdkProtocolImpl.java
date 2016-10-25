@@ -36,13 +36,12 @@ import com.axibase.tsd.driver.jdbc.ext.AtsdException;
 import com.axibase.tsd.driver.jdbc.ext.AtsdRuntimeException;
 import com.axibase.tsd.driver.jdbc.intf.IContentProtocol;
 import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.axibase.tsd.driver.jdbc.util.JsonMappingUtil;
 import org.apache.calcite.avatica.org.apache.http.HttpHeaders;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 
 import static com.axibase.tsd.driver.jdbc.DriverConstants.*;
-import static com.fasterxml.jackson.core.JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES;
 
 public class SdkProtocolImpl implements IContentProtocol {
 	private static final LoggingFacade logger = LoggingFacade.getLogger(SdkProtocolImpl.class);
@@ -132,10 +131,8 @@ public class SdkProtocolImpl implements IContentProtocol {
 	@Override
 	public void cancelQuery() throws AtsdException, GeneralSecurityException, IOException {
 		InputStream result = executeRequest(GET_METHOD, 0, contentDescription.getCancelQueryUrl());
-		final ObjectMapper mapper = new ObjectMapper();
-		mapper.configure(ALLOW_UNQUOTED_FIELD_NAMES, true);
 		try {
-			final QueryDescription[] descriptionArray = mapper.readValue(result, QueryDescription[].class);
+			final QueryDescription[] descriptionArray = JsonMappingUtil.mapToQueryDescriptionArray(result);
 			if (descriptionArray.length > 0) {
 				atsdQueryId = descriptionArray[0].getAtsdQueryId();
 				queryId = descriptionArray[0].getQueryId();
