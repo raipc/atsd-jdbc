@@ -52,10 +52,11 @@ public final class DriverConstants {
 	public static final String FORM_URLENCODED_TYPE = "application/x-www-form-urlencoded";
 	public static final String USER_AGENT = "ATSD Client/1.0 axibase.com";
 
-	public static final String DATATYPE_PROPERTY = "datatype";
 	public static final String DEFAULT_CATALOG_NAME = "atsd";
 	public static final String DEFAULT_TABLE_NAME = "atsd_series";
 
+	public static final String DATATYPE_PROPERTY = "datatype";
+	public static final String PROPERTY_URL = "propertyUrl";
 	public static final String COLUMNS_SCHEME = "columns";
 	public static final String INDEX_PROPERTY = "columnIndex";
 	public static final String NAME_PROPERTY = "name";

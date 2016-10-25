@@ -14,11 +14,8 @@
 */
 package com.axibase.tsd.driver.jdbc.content;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.MalformedURLException;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -28,10 +25,10 @@ import com.axibase.tsd.driver.jdbc.enums.AtsdType;
 import com.axibase.tsd.driver.jdbc.ext.AtsdException;
 import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
 import com.axibase.tsd.driver.jdbc.util.EnumUtil;
+import com.axibase.tsd.driver.jdbc.util.JsonMappingUtil;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.databind.MappingJsonFactory;
 import org.apache.calcite.avatica.AvaticaParameter;
 import org.apache.calcite.avatica.ColumnMetaData;
 import org.apache.calcite.avatica.Meta.CursorFactory;
@@ -112,11 +109,13 @@ public class ContentMetadata {
 		final Map<String, Object> property = (Map<String, Object>) obj;
 		final Integer index = (Integer) property.get(INDEX_PROPERTY);
 		final int columnIndex = index != null ? index - 1 : ind;
-		String name = (String) property.get(NAME_PROPERTY);
-		String title = (String) property.get(TITLE_PROPERTY);
-		String table = (String) property.get(TABLE_PROPERTY);
-		String datatype = property.get(DATATYPE_PROPERTY).toString(); // may be represented as a json object (hashmap)
+		final String name = (String) property.get(NAME_PROPERTY);
+		final String title = (String) property.get(TITLE_PROPERTY);
+		final String table = (String) property.get(TABLE_PROPERTY);
+		final String datatype = property.get(DATATYPE_PROPERTY).toString(); // may be represented as a json object (hashmap)
+		final String propertyUrl = (String) property.get(PROPERTY_URL);
 		final AtsdType atsdType = EnumUtil.getAtsdTypeByOriginalName(datatype);
+		final int nullable = StringUtils.endsWithIgnoreCase(propertyUrl, "Tag") ? 1 : 0;
 		return new ColumnMetaDataBuilder()
 				.withColumnIndex(columnIndex)
 				.withSchema(schema)
@@ -124,13 +123,12 @@ public class ContentMetadata {
 				.withName(name)
 				.withTitle(title)
 				.withAtsdType(atsdType)
+				.withNullable(nullable)
 				.build();
 	}
 
 	private static Map<String, Object> getJsonScheme(String json) throws IOException {
-		final MappingJsonFactory jsonFactory = new MappingJsonFactory();
-		try (final InputStream inputStream = new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8));
-		     final JsonParser parser = jsonFactory.createParser(inputStream)) {
+		try (final JsonParser parser = JsonMappingUtil.getParser(json)) {
 			final JsonToken token = parser.nextToken();
 			Class<?> type;
 			if (token == JsonToken.START_OBJECT) {
@@ -144,17 +142,18 @@ public class ContentMetadata {
 		}
 	}
 
-	private static ColumnMetaData.AvaticaType getAvaticaType(AtsdType type) {
+	public static ColumnMetaData.AvaticaType getAvaticaType(AtsdType type) {
 		return new ColumnMetaData.AvaticaType(type.sqlTypeCode, type.sqlType, type.avaticaType);
 	}
 
-	private static class ColumnMetaDataBuilder {
+	public static class ColumnMetaDataBuilder {
 		private String name;
 		private String title;
 		private String table;
 		private AtsdType atsdType;
 
 		private int columnIndex;
+		private int nullable;
 		private String schema;
 
 		public ColumnMetaDataBuilder withName(String name) {
@@ -187,10 +186,15 @@ public class ContentMetadata {
 			return this;
 		}
 
+		public ColumnMetaDataBuilder withNullable(int nullable) {
+			this.nullable = nullable;
+			return this;
+		}
+
 		public ColumnMetaData build() {
 			final ColumnMetaData.AvaticaType atype = getAvaticaType(atsdType);
 			return new ColumnMetaData(columnIndex, false, false, false,
-					false, 0, false, atsdType.size, name, title, schema, 1, 1, table, DEFAULT_CATALOG_NAME, atype,
+					false, nullable, false, atsdType.size, name, title, schema, 1, 1, table, DEFAULT_CATALOG_NAME, atype,
 					true, false, false, atype.rep.clazz.getCanonicalName());
 		}
 	}
