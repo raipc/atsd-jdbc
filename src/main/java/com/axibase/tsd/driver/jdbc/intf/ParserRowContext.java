@@ -14,7 +14,10 @@
 */
 package com.axibase.tsd.driver.jdbc.intf;
 
-public interface ITimeDateConstant {
-	void validateState(ITimeDateConstant firstPrevious, ITimeDateConstant secondPrevious);
-	String value();
+public interface ParserRowContext {
+	long getLine();
+
+	String getRowSource();
+
+	String getColumnSource(int column);
 }

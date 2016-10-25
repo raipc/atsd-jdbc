@@ -1,3 +1,17 @@
+/*
+* Copyright 2016 Axibase Corporation or its affiliates. All Rights Reserved.
+*
+* Licensed under the Apache License, Version 2.0 (the "License").
+* You may not use this file except in compliance with the License.
+* A copy of the License is located at
+*
+* https://www.axibase.com/atsd/axibase-apache-2.0.pdf
+*
+* or in the "license" file accompanying this file. This file is distributed
+* on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+* express or implied. See the License for the specific language governing
+* permissions and limitations under the License.
+*/
 package com.axibase.tsd.driver.jdbc.strategies;
 
 import java.io.*;
@@ -5,8 +19,10 @@ import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.List;
 
+import com.axibase.tsd.driver.jdbc.content.UnivocityParserRowContext;
 import com.axibase.tsd.driver.jdbc.enums.AtsdType;
 import com.axibase.tsd.driver.jdbc.ext.AtsdRuntimeException;
+import com.axibase.tsd.driver.jdbc.intf.ParserRowContext;
 import com.axibase.tsd.driver.jdbc.util.EnumUtil;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
@@ -21,12 +37,16 @@ public class RowIterator implements Iterator<Object[]>, AutoCloseable {
 		DEFAULT_PARSER_SETTINGS.setReadInputOnSeparateThread(false);
 		DEFAULT_PARSER_SETTINGS.setCommentCollectionEnabled(false);
 		DEFAULT_PARSER_SETTINGS.setEmptyValue("");
+		DEFAULT_PARSER_SETTINGS.setNumberOfRowsToSkip(1);
 	}
+
 
 	private CsvParser decoratedParser;
 	private final Reader decoratedReader;
-	private Object[] nextRow;
+	private ParserRowContext rowContext;
 	private String commentSection;
+	private Object[] nextRow;
+	private String[] header;
 	private AtsdType[] columnTypes;
 	private boolean[] nullable;
 	private int row = 0;
@@ -39,22 +59,17 @@ public class RowIterator implements Iterator<Object[]>, AutoCloseable {
 				fillCommentSectionWithReaderContent(reader);
 			} else if (firstSymbol != -1) {
 				fillFromMetadata(columnMetadata);
+				this.nextRow = this.header;
 
 				CsvParser parser = new CsvParser(settings);
 				this.decoratedParser = parser;
 				parser.beginParsing(reader);
-				parser.parseNext();
+				this.rowContext = new UnivocityParserRowContext(parser.getContext(), this.header.length);
+				next();
 			}
 		} catch (IOException e) {
 			throw new AtsdRuntimeException(e);
 		}
-	}
-
-	private static RowIterator createRowIteratorForReader(Reader reader, List<ColumnMetaData> metadata, CsvParserSettings settings) {
-		if (metadata == null) {
-			throw null;
-		}
-		return new RowIterator(reader, metadata, settings);
 	}
 
 	public static RowIterator newDefaultIterator(InputStream inputStream, List<ColumnMetaData> metadata) {
@@ -63,17 +78,28 @@ public class RowIterator implements Iterator<Object[]>, AutoCloseable {
 	}
 
 	public static RowIterator newDefaultIterator(Reader reader, List<ColumnMetaData> metadata) {
-		return createRowIteratorForReader(reader, metadata, DEFAULT_PARSER_SETTINGS);
+		return new RowIterator(reader, metadata, DEFAULT_PARSER_SETTINGS);
+	}
+
+	private static CsvParserSettings prepareParserSettings(String[] header) {
+		CsvParserSettings settings = new CsvParserSettings();
+		settings.setInputBufferSize(16 * 1024);
+		settings.setReadInputOnSeparateThread(false);
+		settings.setCommentCollectionEnabled(false);
+		settings.setEmptyValue("");
+		settings.setHeaders(header);
+		settings.selectFields(header);
+		return settings;
 	}
 
 	private void fillFromMetadata(List<ColumnMetaData> columnMetadata) {
 		final int length = columnMetadata.size();
-		this.nextRow = new String[length];
+		this.header = new String[length];
 		this.columnTypes = new AtsdType[length];
 		this.nullable = new boolean[length];
 		int i = 0;
 		for (ColumnMetaData metaData : columnMetadata) {
-			this.nextRow[i] = metaData.columnName;
+			this.header[i] = metaData.columnName;
 			this.columnTypes[i] = EnumUtil.getAtsdTypeBySqlType(metaData.type.id);
 			this.nullable[i] = metaData.nullable == 1;
 			++i;
@@ -92,6 +118,9 @@ public class RowIterator implements Iterator<Object[]>, AutoCloseable {
 
 	private void fillCommentSectionWithParsedComments() {
 		final String comments = decoratedParser.getContext().currentParsedContent();
+		if (comments == null) {
+			return;
+		}
 		int startIndex = comments.indexOf(COMMENT_SIGN) + 1;
 		if (startIndex > 0) {
 			final int length = comments.length();
@@ -123,16 +152,14 @@ public class RowIterator implements Iterator<Object[]>, AutoCloseable {
 			return null;
 		}
 		Object[] old = nextRow;
-		Object[] data;
-		data = decoratedParser.parseNext();
+		final String[] data = decoratedParser.parseNext();
 		if (data == null) {
 			fillCommentSectionWithParsedComments();
+			nextRow = null;
 		} else {
-			data = parseValues((String[]) data);
+			nextRow = parseValues(data);
 			++row;
 		}
-
-		nextRow = data;
 		return old;
 	}
 
@@ -143,7 +170,7 @@ public class RowIterator implements Iterator<Object[]>, AutoCloseable {
 		}
 		Object[] parsed = new Object[length];
 		for (int i = 0; i != length; ++i) {
-			parsed[i] = columnTypes[i].readValue(values, i, nullable[i]);
+			parsed[i] = columnTypes[i].readValue(values, i, nullable[i], this.rowContext);
 		}
 		return parsed;
 	}
@@ -165,5 +192,9 @@ public class RowIterator implements Iterator<Object[]>, AutoCloseable {
 
 	public CharSequence getCommentSection() {
 		return commentSection;
+	}
+
+	public String[] getHeader() {
+		return header;
 	}
 }

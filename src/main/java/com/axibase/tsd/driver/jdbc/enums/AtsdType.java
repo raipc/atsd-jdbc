@@ -7,6 +7,7 @@ import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Date;
 
+import com.axibase.tsd.driver.jdbc.intf.ParserRowContext;
 import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
 import org.apache.calcite.avatica.ColumnMetaData.Rep;
 import org.apache.commons.lang3.StringUtils;
@@ -46,6 +47,18 @@ public enum AtsdType {
 		}
 	},
 	JAVA_OBJECT_TYPE("java_object", "java_object", Types.JAVA_OBJECT, Rep.OBJECT, 2147483647, 128 * 1024) {
+		@Override
+		public Object readValue(String[] values, int index, boolean nullable, ParserRowContext context) {
+			final String cell = values[index];
+			if (StringUtils.isEmpty(cell)) {
+				return "";
+			}
+			if (cell.charAt(0) == '"' || context.getColumnSource(index).charAt(0) == '"') {
+				return cell;
+			}
+			return new BigDecimal(cell);
+		}
+
 		@Override
 		protected Object readValueHelper(String cell) {
 			return cell.startsWith("\"") ? cell : new BigDecimal(cell);
@@ -93,21 +106,19 @@ public enum AtsdType {
 		}
 
 		@Override
-		public Object readValue(String[] values, int index, boolean nullable) {
-			Object value;
+		public Object readValue(String[] values, int index, boolean nullable, ParserRowContext context) {
 			String cell = values[index];
 			if (StringUtils.isEmpty(cell)) {
 				return null;
 			}
 			try {
-				value = readTimestampValue(cell);
+				return readTimestampValue(cell);
 			} catch (final ParseException e) {
 				if (log.isDebugEnabled()) {
 					log.debug("[readValue] " + e.getMessage());
 				}
-				value = readShortTimestampValue(cell);
+				return readShortTimestampValue(cell);
 			}
-			return value;
 		}
 
 		private Object readTimestampValue(String cell) throws ParseException {
@@ -149,9 +160,9 @@ public enum AtsdType {
 
 	protected abstract Object readValueHelper(String cell);
 
-	public Object readValue(String[] values, int index, boolean nullable) {
+	public Object readValue(String[] values, int index, boolean nullable, ParserRowContext context) {
 		final String cell = values[index];
-		if (StringUtils.isEmpty(values[index])) {
+		if (StringUtils.isEmpty(cell)) {
 			return this == AtsdType.STRING_DATA_TYPE ? (nullable ? null : cell) : null;
 		}
 		try {

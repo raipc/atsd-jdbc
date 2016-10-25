@@ -63,9 +63,9 @@ public class Consumer implements IConsumer {
 	}
 
 	@Override
-	public Object[] open(InputStream inputStream, List<ColumnMetaData> columnMetadataList) throws IOException {
+	public String[] open(InputStream inputStream, List<ColumnMetaData> columnMetadataList) throws IOException {
 		iterator = RowIterator.newDefaultIterator(inputStream, columnMetadataList);
-		return iterator.next();
+		return iterator.getHeader();
 	}
 
 	@Override

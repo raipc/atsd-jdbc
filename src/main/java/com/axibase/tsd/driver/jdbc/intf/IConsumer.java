@@ -24,7 +24,7 @@ import org.apache.calcite.avatica.ColumnMetaData;
 
 public interface IConsumer extends AutoCloseable {
 
-	Object[] open(InputStream inputStream, List<ColumnMetaData> columnMetadataList) throws IOException;
+	String[] open(InputStream inputStream, List<ColumnMetaData> columnMetadataList) throws IOException;
 
 	Iterator<Object[]> getIterator();
 
