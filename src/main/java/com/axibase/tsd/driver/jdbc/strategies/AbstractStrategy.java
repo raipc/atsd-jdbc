@@ -52,7 +52,7 @@ public abstract class AbstractStrategy implements IStoreStrategy {
 	@Override
 	public List<Object[]> fetch(long from, int limit) throws IOException {
 		final List<Object[]> list = new ArrayList<>();
-		final Iterator<Object[]> iterator = consumer.getIterator();
+		final Iterator<Object[]> iterator = consumer.iterator();
 		int counter = 0;
 		while (iterator.hasNext() && counter < limit) {
 			final Object[] next = iterator.next();

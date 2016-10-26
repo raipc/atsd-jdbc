@@ -69,7 +69,7 @@ public class Consumer implements IConsumer {
 	}
 
 	@Override
-	public Iterator<Object[]> getIterator(){
+	public Iterator<Object[]> iterator(){
 		if (iterator == null) {
 			assert source != null;
 			throw new IllegalStateException(source + " has not opened yet");

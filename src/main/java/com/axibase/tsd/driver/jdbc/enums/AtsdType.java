@@ -53,10 +53,15 @@ public enum AtsdType {
 			if (StringUtils.isEmpty(cell)) {
 				return "";
 			}
-			if (cell.charAt(0) == '"' || context.getColumnSource(index).charAt(0) == '"') {
+			final char firstCharacter = cell.charAt(0);
+			if (!isNumberStart(firstCharacter) || firstCharacter == '"' || context.getColumnSource(index).charAt(0) == '"') {
 				return cell;
 			}
 			return new BigDecimal(cell);
+		}
+
+		private boolean isNumberStart(char character) {
+			return Character.isDigit(character) || character != 'N';
 		}
 
 		@Override

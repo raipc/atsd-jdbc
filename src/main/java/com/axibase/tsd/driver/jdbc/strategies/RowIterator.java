@@ -30,16 +30,7 @@ import org.apache.calcite.avatica.ColumnMetaData;
 
 public class RowIterator implements Iterator<Object[]>, AutoCloseable {
 	private static final char COMMENT_SIGN = '#';
-	private static final CsvParserSettings DEFAULT_PARSER_SETTINGS;
-	static {
-		DEFAULT_PARSER_SETTINGS = new CsvParserSettings();
-		DEFAULT_PARSER_SETTINGS.setInputBufferSize(16 * 1024);
-		DEFAULT_PARSER_SETTINGS.setReadInputOnSeparateThread(false);
-		DEFAULT_PARSER_SETTINGS.setCommentCollectionEnabled(false);
-		DEFAULT_PARSER_SETTINGS.setEmptyValue("");
-		DEFAULT_PARSER_SETTINGS.setNumberOfRowsToSkip(1);
-	}
-
+	private static final CsvParserSettings DEFAULT_PARSER_SETTINGS = prepareParserSettings();
 
 	private CsvParser decoratedParser;
 	private final Reader decoratedReader;
@@ -49,7 +40,6 @@ public class RowIterator implements Iterator<Object[]>, AutoCloseable {
 	private String[] header;
 	private AtsdType[] columnTypes;
 	private boolean[] nullable;
-	private int row = 0;
 
 	private RowIterator(Reader reader, List<ColumnMetaData> columnMetadata, CsvParserSettings settings) {
 		this.decoratedReader = reader;
@@ -61,7 +51,7 @@ public class RowIterator implements Iterator<Object[]>, AutoCloseable {
 				fillFromMetadata(columnMetadata);
 				this.nextRow = this.header;
 
-				CsvParser parser = new CsvParser(settings);
+				final CsvParser parser = new CsvParser(settings);
 				this.decoratedParser = parser;
 				parser.beginParsing(reader);
 				this.rowContext = new UnivocityParserRowContext(parser.getContext(), this.header.length);
@@ -81,14 +71,13 @@ public class RowIterator implements Iterator<Object[]>, AutoCloseable {
 		return new RowIterator(reader, metadata, DEFAULT_PARSER_SETTINGS);
 	}
 
-	private static CsvParserSettings prepareParserSettings(String[] header) {
-		CsvParserSettings settings = new CsvParserSettings();
+	private static CsvParserSettings prepareParserSettings() {
+		final CsvParserSettings settings = new CsvParserSettings();
 		settings.setInputBufferSize(16 * 1024);
 		settings.setReadInputOnSeparateThread(false);
 		settings.setCommentCollectionEnabled(false);
 		settings.setEmptyValue("");
-		settings.setHeaders(header);
-		settings.selectFields(header);
+		settings.setNumberOfRowsToSkip(1);
 		return settings;
 	}
 
@@ -158,7 +147,6 @@ public class RowIterator implements Iterator<Object[]>, AutoCloseable {
 			nextRow = null;
 		} else {
 			nextRow = parseValues(data);
-			++row;
 		}
 		return old;
 	}
@@ -166,7 +154,7 @@ public class RowIterator implements Iterator<Object[]>, AutoCloseable {
 	private Object[] parseValues(String[] values) {
 		final int length = columnTypes.length;
 		if (columnTypes.length != values.length) {
-			throw new AtsdRuntimeException("Parsed number of columns doesn't match to header on row=" + row);
+			throw new AtsdRuntimeException("Parsed number of columns doesn't match to header on row=" + this.rowContext.getLine());
 		}
 		Object[] parsed = new Object[length];
 		for (int i = 0; i != length; ++i) {
