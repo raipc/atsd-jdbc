@@ -14,37 +14,22 @@
 */
 package com.axibase.tsd.driver.jdbc;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-import org.apache.calcite.avatica.AvaticaConnection;
-import org.apache.calcite.avatica.Meta;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
 import com.axibase.tsd.driver.jdbc.ext.AtsdConnection;
 import com.axibase.tsd.driver.jdbc.ext.AtsdMeta;
 import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
+import org.apache.calcite.avatica.AvaticaConnection;
+import org.apache.calcite.avatica.Meta;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
 
 public class DriverTest extends AtsdProperties {
 	@SuppressWarnings("unused")
 	private static final LoggingFacade logger = LoggingFacade.getLogger(AtsdDriver.class);
-
-
-	@Before
-	public void setUp() throws Exception {
-	}
-
-	@After
-	public void tearDown() throws Exception {
-	}
 
 	@Test
 	public void testDriver() {
