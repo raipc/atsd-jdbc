@@ -77,6 +77,7 @@ public class RowIterator implements Iterator<Object[]>, AutoCloseable {
 		settings.setReadInputOnSeparateThread(false);
 		settings.setCommentCollectionEnabled(false);
 		settings.setEmptyValue("");
+		settings.setNullValue("");
 		settings.setNumberOfRowsToSkip(1);
 		return settings;
 	}

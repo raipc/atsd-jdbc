@@ -20,4 +20,6 @@ public interface ParserRowContext {
 	String getRowSource();
 
 	String getColumnSource(int column);
+
+	boolean hasQuote(int column);
 }

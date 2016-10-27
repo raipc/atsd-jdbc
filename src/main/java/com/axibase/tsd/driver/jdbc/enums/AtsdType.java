@@ -54,7 +54,7 @@ public enum AtsdType {
 				return "";
 			}
 			final char firstCharacter = cell.charAt(0);
-			if (!isNumberStart(firstCharacter) || firstCharacter == '"' || context.getColumnSource(index).charAt(0) == '"') {
+			if (!isNumberStart(firstCharacter) || firstCharacter == '"' || context.hasQuote(index)) {
 				return cell;
 			}
 			return new BigDecimal(cell);
