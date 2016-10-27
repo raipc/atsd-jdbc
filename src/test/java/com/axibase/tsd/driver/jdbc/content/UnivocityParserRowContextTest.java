@@ -4,6 +4,7 @@ import java.io.StringReader;
 import java.lang.reflect.Method;
 import java.util.List;
 
+import com.axibase.tsd.driver.jdbc.DriverConstants;
 import com.axibase.tsd.driver.jdbc.TestUtil;
 import com.axibase.tsd.driver.jdbc.intf.ParserRowContext;
 import com.axibase.tsd.driver.jdbc.strategies.RowIterator;
@@ -26,9 +27,9 @@ public class UnivocityParserRowContextTest {
 
 	private static CsvParserSettings prepareSettings() {
 		try {
-			Method method = RowIterator.class.getDeclaredMethod("prepareParserSettings");
+			Method method = RowIterator.class.getDeclaredMethod("prepareParserSettings", Integer.TYPE);
 			method.setAccessible(true);
-			return (CsvParserSettings) method.invoke(null);
+			return (CsvParserSettings) method.invoke(null, DriverConstants.ATSD_VERSION_DIFFERS_NULL_AND_EMPTY);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}

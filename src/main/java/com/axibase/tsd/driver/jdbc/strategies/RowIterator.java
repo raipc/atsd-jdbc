@@ -19,6 +19,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.List;
 
+import com.axibase.tsd.driver.jdbc.DriverConstants;
 import com.axibase.tsd.driver.jdbc.content.UnivocityParserRowContext;
 import com.axibase.tsd.driver.jdbc.enums.AtsdType;
 import com.axibase.tsd.driver.jdbc.ext.AtsdRuntimeException;
@@ -30,7 +31,6 @@ import org.apache.calcite.avatica.ColumnMetaData;
 
 public class RowIterator implements Iterator<Object[]>, AutoCloseable {
 	private static final char COMMENT_SIGN = '#';
-	private static final CsvParserSettings DEFAULT_PARSER_SETTINGS = prepareParserSettings();
 
 	private CsvParser decoratedParser;
 	private final Reader decoratedReader;
@@ -62,22 +62,22 @@ public class RowIterator implements Iterator<Object[]>, AutoCloseable {
 		}
 	}
 
-	public static RowIterator newDefaultIterator(InputStream inputStream, List<ColumnMetaData> metadata) {
+	public static RowIterator newDefaultIterator(InputStream inputStream, List<ColumnMetaData> metadata, int version) {
 		Reader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
-		return newDefaultIterator(reader, metadata);
+		return newDefaultIterator(reader, metadata, version);
 	}
 
-	public static RowIterator newDefaultIterator(Reader reader, List<ColumnMetaData> metadata) {
-		return new RowIterator(reader, metadata, DEFAULT_PARSER_SETTINGS);
+	public static RowIterator newDefaultIterator(Reader reader, List<ColumnMetaData> metadata, int version) {
+		return new RowIterator(reader, metadata, prepareParserSettings(version));
 	}
 
-	private static CsvParserSettings prepareParserSettings() {
+	private static CsvParserSettings prepareParserSettings(int version) {
 		final CsvParserSettings settings = new CsvParserSettings();
 		settings.setInputBufferSize(16 * 1024);
 		settings.setReadInputOnSeparateThread(false);
 		settings.setCommentCollectionEnabled(false);
 		settings.setEmptyValue("");
-		settings.setNullValue("");
+		settings.setNullValue(version >= DriverConstants.ATSD_VERSION_DIFFERS_NULL_AND_EMPTY ? null : "");
 		settings.setNumberOfRowsToSkip(1);
 		return settings;
 	}

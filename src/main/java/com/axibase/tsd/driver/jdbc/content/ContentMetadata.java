@@ -115,7 +115,8 @@ public class ContentMetadata {
 		final String datatype = property.get(DATATYPE_PROPERTY).toString(); // may be represented as a json object (hashmap)
 		final String propertyUrl = (String) property.get(PROPERTY_URL);
 		final AtsdType atsdType = EnumUtil.getAtsdTypeByOriginalName(datatype);
-		final int nullable = StringUtils.endsWithIgnoreCase(propertyUrl, "Tag") ? 1 : 0;
+		final boolean nullable = atsdType == AtsdType.JAVA_OBJECT_TYPE || (atsdType == AtsdType.STRING_DATA_TYPE
+				&& (StringUtils.endsWithIgnoreCase(propertyUrl, "Tag") || TEXT_TITLES.equals(title)));
 		return new ColumnMetaDataBuilder()
 				.withColumnIndex(columnIndex)
 				.withSchema(schema)
@@ -123,7 +124,7 @@ public class ContentMetadata {
 				.withName(name)
 				.withTitle(title)
 				.withAtsdType(atsdType)
-				.withNullable(nullable)
+				.withNullable(nullable ? 1 : 0)
 				.build();
 	}
 
