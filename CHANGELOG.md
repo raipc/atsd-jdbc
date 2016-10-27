@@ -1,3 +1,8 @@
+## 1.2.16
+* Added support for ATSD java_object type
+* Improved performance
+* Driver correctly recognizes NULL and empty values since ATSD version 14540.
+
 ## 1.2.15
 * Fixed database metadata result sets generating. Better support of DbVis 9.2.
 * Connection#getCatalog method is implemented

@@ -31,6 +31,7 @@ The project is released under [Apache 2.0 License](http://www.apache.org/license
 | 14126 | 1.2.10 |
 | 14220 | 1.2.12 |
 | 14451 | 1.2.15 |
+| 14540 | 1.2.16 |
 
 The above table specifies, given the database version, a range of compatible driver versions.
 
@@ -74,7 +75,7 @@ Add dependency to `pom.xml` in your project. The JDBC driver will be imported au
 <dependency>
     <groupId>com.axibase</groupId>
     <artifactId>atsd-jdbc</artifactId>
-    <version>1.2.15</version>
+    <version>1.2.16</version>
 </dependency>
 ```
 
@@ -86,11 +87,11 @@ $ mvn clean install -DskipTests=true
 
 ### Classpath
 
-Download the driver [jar file](https://github.com/axibase/atsd-jdbc/releases/download/RELEASE-1.2.15/atsd-jdbc-1.2.15-DEPS.jar) with dependencies and add it to the classpath of your application.
+Download the driver [jar file](https://github.com/axibase/atsd-jdbc/releases/download/RELEASE-1.2.16/atsd-jdbc-1.2.16-DEPS.jar) with dependencies and add it to the classpath of your application.
 
 ```
-* Unix: java -cp "atsd-jdbc-1.2.15-DEPS.jar:lib/*" your.package.MainClass
-* Windows java -cp "atsd-jdbc-1.2.15-DEPS.jar;lib/*" your.package.MainClass
+* Unix: java -cp "atsd-jdbc-1.2.16-DEPS.jar:lib/*" your.package.MainClass
+* Windows java -cp "atsd-jdbc-1.2.16-DEPS.jar;lib/*" your.package.MainClass
 ```
 
 ### Database Tools
@@ -111,6 +112,7 @@ Follow instructions in the manager's user guide to create a custom driver based 
 | SMALLINT | 5 | 5 |
 | VARCHAR | 12 | 2147483647 |
 | TIMESTAMP | 93 | 23 |
+| JAVA_OBJECT | 2000 | 2147483647 |
 
 ## Capabilities
 
@@ -324,17 +326,18 @@ Results:
 Product Name:   	Axibase
 Product Version:	Axibase Time Series Database, <ATSD_EDITION>, Revision: <ATSD_REVISION_NUMBER>
 Driver Name:    	ATSD JDBC driver
-Driver Version: 	1.2.15
+Driver Version: 	1.2.16
 
 TypeInfo:
-	Name:BIGINT 	        CS: false 	Type: -5 	Precision: 19
-    Name:DECIMAL 	        CS: false 	Type: 3 	Precision: -1
-    Name:DOUBLE 	        CS: false 	Type: 8 	Precision: 52
-    Name:FLOAT 	            CS: false 	Type: 6 	Precision: 23
-    Name:INTEGER 	        CS: false 	Type: 4 	Precision: 10
-    Name:SMALLINT 	        CS: false 	Type: 5 	Precision: 5
-    Name:VARCHAR 	        CS: true 	Type: 12 	Precision: 2147483647
-    Name:TIMESTAMP 	        CS: false 	Type: 93 	Precision: 23
+	Name:BIGINT 	    CS: false 	Type: -5 	Precision: 19
+	Name:DECIMAL 	    CS: false 	Type: 3 	Precision: -1
+	Name:DOUBLE 	    CS: false 	Type: 8 	Precision: 52
+	Name:FLOAT 	        CS: false 	Type: 6 	Precision: 23
+	Name:INTEGER 	    CS: false 	Type: 4 	Precision: 10
+	Name:JAVA_OBJECT 	CS: false 	Type: 2000 	Precision: 2147483647
+	Name:SMALLINT 	    CS: false 	Type: 5 	Precision: 5
+	Name:VARCHAR 	    CS: true 	Type: 12 	Precision: 2147483647
+	Name:TIMESTAMP 	    CS: false 	Type: 93 	Precision: 23
 
 TableTypes:
 	TABLE
