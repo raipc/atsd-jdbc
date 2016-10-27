@@ -57,7 +57,7 @@ public enum AtsdType {
 			if (!isNumberStart(firstCharacter) || firstCharacter == '"' || context.hasQuote(index)) {
 				return cell;
 			}
-			return new BigDecimal(cell);
+			return Double.valueOf(cell);
 		}
 
 		private boolean isNumberStart(char character) {
@@ -168,7 +168,7 @@ public enum AtsdType {
 	public Object readValue(String[] values, int index, boolean nullable, ParserRowContext context) {
 		final String cell = values[index];
 		if (StringUtils.isEmpty(cell)) {
-			return this == AtsdType.STRING_DATA_TYPE ? (nullable ? null : cell) : null;
+			return this == AtsdType.STRING_DATA_TYPE && !nullable ? cell : null;
 		}
 		try {
 			return readValueHelper(cell);
