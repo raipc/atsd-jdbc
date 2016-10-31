@@ -18,6 +18,7 @@ import org.powermock.api.mockito.PowerMockito;
 import static com.axibase.tsd.driver.jdbc.content.UnivocityParserRowContext.lastCharForColumn;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.fail;
 
 public class UnivocityParserRowContextTest {
 	private static final String CSV = TestUtil.resourceToString("/csv/csvWithQuotes.csv", UnivocityParserRowContext.class);
@@ -31,7 +32,8 @@ public class UnivocityParserRowContextTest {
 			method.setAccessible(true);
 			return (CsvParserSettings) method.invoke(null, DriverConstants.ATSD_VERSION_DIFFERS_NULL_AND_EMPTY);
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+			fail(e.getMessage());
+			return null;
 		}
 	}
 
