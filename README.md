@@ -4,13 +4,13 @@
 
 # JDBC driver
 
-The JDBC driver provides a convenient way to query Axibase Time Series Database via SQL. 
+The JDBC driver provides a convenient way to query the Axibase Time Series Database via SQL. 
 
-The internal communication is implemented by means of transferring results in CSV format via HTTP or HTTPS protocols. See the [SQL API Documentation](https://github.com/axibase/atsd-docs/tree/master/api/sql#overview) for a description of the query syntax and examples.
+Internal communication is implemented by means of transferring results in CSV format via HTTP or HTTPS protocols. See the [SQL API Documentation](https://github.com/axibase/atsd-docs/tree/master/api/sql#overview) for a description of the query syntax and examples.
 
 ## JDBC URL
 
-ATSD JDBC driver prefix is **"jdbc:axibase:atsd:"**, followed by http/https URL of the ATSD SQL API endpoint and optional driver properties.
+The ATSD JDBC driver prefix is `jdbc:axibase:atsd:`, followed by the http/https URL of the ATSD SQL API endpoint, and optional driver properties.
 
 ```ls
 jdbc:axibase:atsd:http://atsd_hostname:8088/api/sql
@@ -33,7 +33,7 @@ The project is released under [Apache 2.0 License](http://www.apache.org/license
 | 14451 | 1.2.15 |
 | 14540 | 1.2.16 |
 
-The above table specifies, given the database version, a range of compatible driver versions.
+For a given the database version, the above table specifies a range of compatible driver versions.
 
 For example, database versions 14150 supports driver versions between 1.2.10 (inclusive) and 1.2.12 (exclusive).
 
@@ -46,20 +46,20 @@ For example, database versions 14150 supports driver versions between 1.2.10 (in
 | readTimeout | number | 0 | Read timeout, in seconds. |
 | strategy | `file`, `memory`, `stream` | `stream` | Resultset processing strategy. |
 
-Properties can be included as part of JDBC url using semi-colon as a separator, for example `jdbc:axibase:atsd:https://10.102.0.6:8443/api/sql;trustServerCertificate=true;strategy=file`.
+Properties can be included as part of the JDBC url using a semi-colon as a separator. For example: `jdbc:axibase:atsd:https://10.102.0.6:8443/api/sql;trustServerCertificate=true;strategy=file`.
 
 ## Resultset Processing Strategy
 
 |**Name**|**Description**|
 |:--|---|
 |`stream`| Reads data received from the database in batches when triggered by `ResultSet.next()` invocations. Keeps the connection open until all rows are processed by the client.|
-|`file`| Buffers data received from the database to a temporary file on the local file system and reads rows from the file on `ResultSet.next()` invocation. |
-|`memory`| Buffers data received from the database into the application memory and returns rows on `ResultSet.next()` invocation directly from a memory structure. |
+|`file`| Buffers data received from the database to a temporary file on the local file system and reads rows from the file on the `ResultSet.next()` invocation. |
+|`memory`| Buffers data received from the database into the application memory and returns rows on the `ResultSet.next()` invocation directly from a memory structure. |
 
 * The `stream` strategy is faster than alternatives at the expense of keeping the database connection open. It is not recommended if row processing may take a long time. 
-* While `memory` strategy may be more efficient than `file`, it requires more memory. Generally, `memory` strategy is better suited to queries returning thousands of rows, whereas the `file`/`stream` strategy can process millions of rows provided disk space is available.
+* While the `memory` strategy may be more efficient than `file`, it requires more memory. Generally speaking, the `memory` strategy is better suited to queries returning thousands of rows, whereas the `file`/`stream` strategy can process millions of rows (provided disk space is available).
 
-Applications are advised to choose the right strategy based on available Java heap memory, disk space and expected row counts produced by typical queries.
+Choose the appropriate strategy based on available Java heap memory, disk space, and expected row counts produced by typical queries.
 
 ## Integration
 
@@ -69,7 +69,7 @@ Applications are advised to choose the right strategy based on available Java he
 
 ### Apache Maven
 
-Add dependency to `pom.xml` in your project. The JDBC driver will be imported automatically since the project is hosted in MavenCentral/SonaType repositories. 
+Add dependency to `pom.xml` in your project. The JDBC driver will be imported automatically since the project is hosted in the MavenCentral/SonaType repositories. 
 
 ```xml
 <dependency>
@@ -96,9 +96,9 @@ Download the driver [jar file](https://github.com/axibase/atsd-jdbc/releases/dow
 
 ### Database Tools
 
-Download the jar file with dependencies above and import into your database manager, for example [DbVisualizer](https://www.dbvis.com). 
+Download the jar file with the dependencies from above and import into your database manager. For example [DbVisualizer](https://www.dbvis.com). 
 
-Follow instructions in the manager's user guide to create a custom driver based on ATSD jar file.
+Follow the instructions in the manager's user guide to create a custom driver based on the ATSD jar file.
 
 ## Supported Data Types
 
@@ -121,7 +121,7 @@ Follow instructions in the manager's user guide to create a custom driver based 
 
 ## Usage
 
-To execute a query, load the driver class, open a connection, create an SQL statement, execute the query and process the resultset:
+To execute a query, load the driver class, open a connection, create a SQL statement, execute the query, and process the result set:
 
 ```java
 	Class.forName("com.axibase.tsd.driver.jdbc.AtsdDriver");
@@ -146,7 +146,7 @@ Initialize a prepared statement, set placeholder parameters, and execute the que
 
 > Supported in 1.2.9+.
 
-To set an [`endTime`](https://github.com/axibase/atsd-docs/blob/master/end-time-syntax.md) expression as a parameter in prepared statement, cast statement to `AtsdPreparedStatement` and invoke `setTimeExpression` method.
+To set an [`endTime`](https://github.com/axibase/atsd-docs/blob/master/end-time-syntax.md) expression as a parameter in a prepared statement, cast the statement to `AtsdPreparedStatement` and invoke the `setTimeExpression` method.
 
 ```java
     String query = "SELECT * FROM df.disk_used WHERE datetime > ? LIMIT 1";
@@ -159,7 +159,7 @@ To set an [`endTime`](https://github.com/axibase/atsd-docs/blob/master/end-time-
 
 The database may return SQL warnings as opposed to raising a non-recoverable error in some cases, such as unknown tag or tag value.
 
-To retrieve SQL warnings, invoke `resultSet.getWarnings()` method:
+To retrieve SQL warnings, invoke the `resultSet.getWarnings()` method:
 
 ```java
 	SQLWarning rsWarning = resultSet.getWarnings();
@@ -349,7 +349,7 @@ Catalog: 	atsd
 
 ## Spring Framework Integration
 
-We recommend [Spring Data JDBC](https://github.com/nurkiewicz/spring-data-jdbc-repository) library to integrate ATSD JDBC driver with Spring. 
+We recommend the [Spring Data JDBC](https://github.com/nurkiewicz/spring-data-jdbc-repository) library to integrate ATSD JDBC driver with Spring. 
 
 See an example [here](https://github.com/axibase/atsd-jdbc-test/tree/master/src/main/java/com/axibase/tsd/driver/jdbc/spring).
 
