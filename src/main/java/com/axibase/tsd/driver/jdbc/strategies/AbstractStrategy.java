@@ -16,10 +16,7 @@ package com.axibase.tsd.driver.jdbc.strategies;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
 
 import com.axibase.tsd.driver.jdbc.content.StatementContext;
@@ -50,24 +47,24 @@ public abstract class AbstractStrategy implements IStoreStrategy {
 	}
 
 	@Override
-	public List<Object[]> fetch(long from, int limit) throws IOException {
-		final List<Object[]> list = new ArrayList<>();
-		final Iterator<Object[]> iterator = consumer.iterator();
-		int counter = 0;
-		while (iterator.hasNext() && counter < limit) {
-			final Object[] next = iterator.next();
+	public List<List<Object>> fetch(long from, int limit) throws IOException {
+		final List<List<Object>> list = new ArrayList<>();
+		int size = 0;
+		for (Object[] next : consumer) {
 			if (position < from) {
 				if (logger.isTraceEnabled()) {
 					logger.trace("[fetch] position less from: " + position + "->" + from);
 				}
 				position++;
 			} else {
-				list.add(next);
-				++counter;
+				list.add(Arrays.asList(next));
+				++size;
+				if (size == limit) {
+					break;
+				}
 			}
 		}
 		consumer.fillComments();
-		final int size = list.size();
 		if (logger.isTraceEnabled()) {
 			logger.trace("[fetch] sublist size: " + size);
 		}

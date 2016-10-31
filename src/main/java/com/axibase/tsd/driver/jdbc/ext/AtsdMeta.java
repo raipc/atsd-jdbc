@@ -297,9 +297,9 @@ public class AtsdMeta extends MetaImpl {
 				}
 				contentDescription.setHeaders(headers);
 			}
-			final List<Object[]> subList = strategy.fetch(offset, fetchMaxRowCount);
-			final List<Object> rows = getFrame(statementHandle, fetchMaxRowCount, subList);
-			return new Meta.Frame(loffset, rows.size() < fetchMaxRowCount, rows);
+			@SuppressWarnings("unchecked")
+			final List<Object> subList = (List) strategy.fetch(offset, fetchMaxRowCount);
+			return new Meta.Frame(loffset, subList.size() < fetchMaxRowCount, subList);
 		} catch (final AtsdException | IOException e) {
 			if (log.isDebugEnabled()) {
 				log.debug("[fetch] " + e.getMessage());
@@ -532,31 +532,8 @@ public class AtsdMeta extends MetaImpl {
 		return contentMetadata;
 	}
 
-	private List<Object> getFrame(final StatementHandle handle, int fetchMaxRowCount, final List<Object[]> subList) {
-		IDataProvider provider = providerCache.get(handle.id);
-		assert provider != null;
-		final String[] headers = provider.getContentDescription().getHeaders();
-		final List<Object> rows = new ArrayList<>(subList.size());
-
-		for (final Object[] parsedObjects : subList) {
-			if (parsedObjects == null || headers == null || rows.size() == fetchMaxRowCount) {
-				break;
-			}
-			if (parsedObjects.length == headers.length) {
-				rows.add(Arrays.asList(parsedObjects));
-			} else {
-				if (log.isDebugEnabled()) {
-					log.debug("[getFrame] array length discrepancy: " + Arrays.toString(parsedObjects));
-				}
-			}
-		}
-
-		return rows;
-	}
-
 	private static MetaTypeInfo getTypeInfo(AtsdType type) {
-		final int sqlTypeCode = type.sqlTypeCode;
-		return new MetaTypeInfo(type.sqlType.toUpperCase(Locale.US), sqlTypeCode, type.maxPrecision,
+		return new MetaTypeInfo(type.sqlType.toUpperCase(Locale.US), type.sqlTypeCode, type.maxPrecision,
 				type.getLiteral(true), type.getLiteral(false),
 				DatabaseMetaData.typeNullable, type == AtsdType.STRING_DATA_TYPE,
 				DatabaseMetaData.typeSearchable, false, false, false,

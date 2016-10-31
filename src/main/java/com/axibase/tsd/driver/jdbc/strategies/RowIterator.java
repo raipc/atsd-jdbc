@@ -18,6 +18,7 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import com.axibase.tsd.driver.jdbc.DriverConstants;
 import com.axibase.tsd.driver.jdbc.content.UnivocityParserRowContext;
@@ -25,6 +26,8 @@ import com.axibase.tsd.driver.jdbc.enums.AtsdType;
 import com.axibase.tsd.driver.jdbc.ext.AtsdRuntimeException;
 import com.axibase.tsd.driver.jdbc.intf.ParserRowContext;
 import com.axibase.tsd.driver.jdbc.util.EnumUtil;
+import com.univocity.parsers.common.ParsingContext;
+import com.univocity.parsers.common.processor.RowProcessor;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
 import org.apache.calcite.avatica.ColumnMetaData;
@@ -40,6 +43,7 @@ public class RowIterator implements Iterator<Object[]>, AutoCloseable {
 	private String[] header;
 	private AtsdType[] columnTypes;
 	private boolean[] nullable;
+	private AtsdRowProcessor processor;
 
 	private RowIterator(Reader reader, List<ColumnMetaData> columnMetadata, CsvParserSettings settings) {
 		this.decoratedReader = reader;
@@ -50,11 +54,11 @@ public class RowIterator implements Iterator<Object[]>, AutoCloseable {
 			} else if (firstSymbol != -1) {
 				fillFromMetadata(columnMetadata);
 				this.nextRow = this.header;
-
-				final CsvParser parser = new CsvParser(settings);
-				this.decoratedParser = parser;
-				parser.beginParsing(reader);
-				this.rowContext = new UnivocityParserRowContext(parser.getContext(), this.header.length);
+				this.processor = new AtsdRowProcessor();
+				settings.setProcessor(this.processor);
+				this.decoratedParser = new CsvParser(settings);
+				this.decoratedParser.beginParsing(reader);
+				this.rowContext = new UnivocityParserRowContext(this.decoratedParser.getContext(), this.header.length);
 				next();
 			}
 		} catch (IOException e) {
@@ -69,6 +73,31 @@ public class RowIterator implements Iterator<Object[]>, AutoCloseable {
 
 	public static RowIterator newDefaultIterator(Reader reader, List<ColumnMetaData> metadata, int version) {
 		return new RowIterator(reader, metadata, prepareParserSettings(version));
+	}
+
+	protected final class AtsdRowProcessor implements RowProcessor {
+		private Object[] parsed;
+
+		Object[] getParsed() {
+			return parsed;
+		}
+
+		@Override
+		public void processStarted(ParsingContext context) {
+			// do nothing
+		}
+
+		@Override
+		public void rowProcessed(String[] row, ParsingContext context) {
+			final Object[] old = nextRow;
+			nextRow = parseValues(row);
+			parsed = old;
+		}
+
+		@Override
+		public void processEnded(ParsingContext context) {
+			// do nothing
+		}
 	}
 
 	private static CsvParserSettings prepareParserSettings(int version) {
@@ -139,17 +168,13 @@ public class RowIterator implements Iterator<Object[]>, AutoCloseable {
 	@Override
 	public Object[] next() {
 		if (nextRow == null) {
-			return null;
+			throw new NoSuchElementException();
 		}
-		Object[] old = nextRow;
-		final String[] data = decoratedParser.parseNext();
-		if (data == null) {
+		if (decoratedParser.parseNext() == null) {
 			fillCommentSectionWithParsedComments();
 			nextRow = null;
-		} else {
-			nextRow = parseValues(data);
 		}
-		return old;
+		return processor.getParsed();
 	}
 
 	private Object[] parseValues(String[] values) {

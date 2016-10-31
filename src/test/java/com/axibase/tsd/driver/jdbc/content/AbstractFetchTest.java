@@ -37,7 +37,7 @@ public abstract class AbstractFetchTest extends AtsdProperties {
 			final InputStream inputStream = protocolImpl.readContent();
 			storeStrategy.store(inputStream);
 			storeStrategy.openToRead(TestUtil.prepareMetadata(resource, thisClass));
-			final List<Object[]> fetched = storeStrategy.fetch(0L, fetchSize);
+			final List<List<Object>> fetched = storeStrategy.fetch(0L, fetchSize);
 			final StatementContext context = storeStrategy.getContext();
 			final SQLException exception = context.getException();
 			if (exception != null) {

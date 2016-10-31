@@ -26,7 +26,7 @@ public interface IStoreStrategy extends AutoCloseable {
 
 	String[] openToRead(List<ColumnMetaData> metadataList) throws IOException;
 
-	List<Object[]> fetch(long from, int size) throws IOException, AtsdException;
+	List<List<Object>> fetch(long from, int size) throws IOException, AtsdException;
 
 	void store(InputStream is) throws IOException;
 
