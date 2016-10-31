@@ -51,26 +51,29 @@ public class TestUtil {
 	public static List<ColumnMetaData> prepareMetadata(String relativePathToResource, Class<?> clazz) {
 		try (InputStream inputStream = getInputStreamForResource(relativePathToResource, clazz);
 			 BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))){
-			String header = reader.readLine();
-			if (header.startsWith("#")) {
-				return Collections.singletonList(ColumnMetaData.dummy(getAvaticaType(AtsdType.STRING_DATA_TYPE), false));
-			} else {
-				String[] columnNames = header.split(",");
-				ColumnMetaData[] meta = new ColumnMetaData[columnNames.length];
-				for (int i = 0; i < columnNames.length; i++) {
-					final String columnName = columnNames[i];
-					meta[i] = new ContentMetadata.ColumnMetaDataBuilder()
-							.withName(columnName)
-							.withTitle(columnName)
-							.withColumnIndex(i)
-							.withNullable(columnName.startsWith("tag") ? 1 : 0)
-							.withAtsdType(EnumUtil.getAtsdTypeByColumnName(columnName))
-							.build();
-				}
-				return Arrays.asList(meta);
-			}
+			return prepareMetadata(reader.readLine());
 		} catch (IOException e) {
 			throw new RuntimeException(e);
+		}
+	}
+
+	public static List<ColumnMetaData> prepareMetadata(String header) {
+		if (header.startsWith("#")) {
+			return Collections.singletonList(ColumnMetaData.dummy(getAvaticaType(AtsdType.STRING_DATA_TYPE), false));
+		} else {
+			String[] columnNames = header.split(",");
+			ColumnMetaData[] meta = new ColumnMetaData[columnNames.length];
+			for (int i = 0; i < columnNames.length; i++) {
+				final String columnName = columnNames[i];
+				meta[i] = new ContentMetadata.ColumnMetaDataBuilder()
+						.withName(columnName)
+						.withTitle(columnName)
+						.withColumnIndex(i)
+						.withNullable(columnName.startsWith("tag") ? 1 : 0)
+						.withAtsdType(EnumUtil.getAtsdTypeByColumnName(columnName))
+						.build();
+			}
+			return Arrays.asList(meta);
 		}
 	}
 }
