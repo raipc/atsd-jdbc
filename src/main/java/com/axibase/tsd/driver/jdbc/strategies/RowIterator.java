@@ -89,9 +89,7 @@ public class RowIterator implements Iterator<Object[]>, AutoCloseable {
 
 		@Override
 		public void rowProcessed(String[] row, ParsingContext context) {
-			final Object[] old = nextRow;
-			nextRow = parseValues(row);
-			parsed = old;
+			parsed = parseValues(row);
 		}
 
 		@Override
@@ -170,11 +168,14 @@ public class RowIterator implements Iterator<Object[]>, AutoCloseable {
 		if (nextRow == null) {
 			throw new NoSuchElementException();
 		}
+		final Object[] result = nextRow;
 		if (decoratedParser.parseNext() == null) {
 			fillCommentSectionWithParsedComments();
 			nextRow = null;
+		} else {
+			nextRow = processor.getParsed();
 		}
-		return processor.getParsed();
+		return result;
 	}
 
 	private Object[] parseValues(String[] values) {
