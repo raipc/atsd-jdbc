@@ -62,7 +62,7 @@ public class RowIterator implements Iterator<Object[]>, AutoCloseable {
 				next();
 			}
 		} catch (IOException e) {
-			throw new AtsdRuntimeException(e);
+			throw new AtsdRuntimeException(e.getMessage(), e);
 		}
 	}
 
