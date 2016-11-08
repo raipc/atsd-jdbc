@@ -35,8 +35,11 @@ public class ContentMetadataTest {
 	}
 
 	private void checkMetadataList(String schema, int expectedSize) {
-		try (final InputStream is = this.getClass().getResourceAsStream(schema);
-			 final Scanner scanner = new Scanner(is)) {
+		InputStream is = null;
+		Scanner scanner = null;
+		try {
+			is = this.getClass().getResourceAsStream(schema);
+			scanner = new Scanner(is);
 			scanner.useDelimiter("\\A");
 			String json = scanner.hasNext() ? scanner.next() : "";
 			assertTrue(json != null && json.length() != 0 && json.startsWith(CONTEXT_START));
@@ -46,8 +49,21 @@ public class ContentMetadataTest {
 			for (int i = 0; i < metadataList.size(); i++) {
 				assertEquals(expectedColumnNames[i], metadataList.get(i).columnName);
 			}
-		} catch (final IOException | AtsdException e) {
+		} catch (final IOException e) {
 			fail(e.getMessage());
+		} catch (final AtsdException e) {
+			fail(e.getMessage());
+		} finally {
+			try {
+				if (scanner != null) {
+					scanner.close();
+				}
+				if (is != null) {
+					is.close();
+				}
+			} catch (IOException e) {
+				fail(e.getMessage());
+			}
 		}
 	}
 

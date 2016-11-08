@@ -48,7 +48,7 @@ public abstract class AbstractStrategy implements IStoreStrategy {
 
 	@Override
 	public List<List<Object>> fetch(long from, int limit) throws IOException {
-		final List<List<Object>> list = new ArrayList<>();
+		final List<List<Object>> list = new ArrayList<List<Object>>();
 		int size = 0;
 		for (Object[] next : consumer) {
 			if (position < from) {
@@ -107,7 +107,7 @@ public abstract class AbstractStrategy implements IStoreStrategy {
 	}
 
 	@Override
-	public void close() throws Exception {
+	public void close() throws IOException {
 		status.setInProgress(false);
 		if (consumer != null) {
 			consumer.close();

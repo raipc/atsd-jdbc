@@ -35,50 +35,92 @@ public class DataProviderExtTest extends AbstractFetchTest {
 
 	@Test
 	public void testStrategyOnOne() throws Exception {
-		try (final IStoreStrategy storeStrategy = getMockStrategyObject()) {
+		IStoreStrategy storeStrategy = null;
+		try {
+			storeStrategy = getMockStrategyObject();
 			fetch(storeStrategy, "/csv/1.csv", 1);
+		} finally {
+			if (storeStrategy != null) {
+				storeStrategy.close();
+			}
 		}
 	}
 
 	@Test
 	public void testStrategyStrategyOn143() throws Exception {
-		try (final IStoreStrategy storeStrategy = getMockStrategyObject()) {
+		IStoreStrategy storeStrategy = null;
+		try {
+			storeStrategy = getMockStrategyObject();
 			fetch(storeStrategy, "/csv/143.csv", 143);
+		} finally {
+			if (storeStrategy != null) {
+				storeStrategy.close();
+			}
 		}
 	}
 
 	@Test
 	public void testStrategyOn20001() throws Exception {
-		try (final IStoreStrategy storeStrategy = getMockStrategyObject()) {
+		IStoreStrategy storeStrategy = null;
+		try {
+			storeStrategy = getMockStrategyObject();
 			fetch(storeStrategy, "/csv/20001.csv", 20001);
+		} finally {
+			if (storeStrategy != null) {
+				storeStrategy.close();
+			}
 		}
 	}
 
 	@Test
 	public void testStrategyOnTags() throws Exception {
-		try (final IStoreStrategy storeStrategy = getMockStrategyObject()) {
+		IStoreStrategy storeStrategy = null;
+		try {
+			storeStrategy = getMockStrategyObject();
 			fetch(storeStrategy, "/csv/tags.csv", 6);
+		} finally {
+			if (storeStrategy != null) {
+				storeStrategy.close();
+			}
 		}
 	}
 
 	@Test(expected = AtsdRuntimeException.class)
 	public void testStrategyOnSqleWithoutRecords() throws Exception {
-		try (final IStoreStrategy storeStrategy = getMockStrategyObject()) {
+		IStoreStrategy storeStrategy = null;
+		try {
+			storeStrategy = getMockStrategyObject();
 			fetch(storeStrategy, "/csv/docker.network.eth0.rxerrors.csv", 1);
+		} finally {
+			if (storeStrategy != null) {
+				storeStrategy.close();
+			}
 		}
 	}
 
 	@Test(expected = AtsdRuntimeException.class)
 	public void testStrategyOnSqleWithRecords() throws Exception {
-		try (final IStoreStrategy storeStrategy = getMockStrategyObject()) {
-			fetch(storeStrategy, "/csv/df.bytes.free.csv.zip", 18835);
+		IStoreStrategy storeStrategy = null;
+		try {
+			storeStrategy = getMockStrategyObject();
+			fetch(storeStrategy, "/csv/gc_time_persent.csv.zip", 323115);
+		} finally {
+			if (storeStrategy != null) {
+				storeStrategy.close();
+			}
 		}
 	}
 
 	@Test(expected = AtsdRuntimeException.class)
 	public void testStrategyOnSqleWithManyRecords() throws Exception {
-		try (final IStoreStrategy storeStrategy = getMockStrategyObject()) {
+		IStoreStrategy storeStrategy = null;
+		try {
+			storeStrategy = getMockStrategyObject();
 			fetch(storeStrategy, "/csv/gc_time_persent.csv.zip", 323115);
+		} finally {
+			if (storeStrategy != null) {
+				storeStrategy.close();
+			}
 		}
 	}
 }

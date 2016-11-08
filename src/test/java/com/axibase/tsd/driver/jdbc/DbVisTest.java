@@ -14,17 +14,12 @@
 */
 package com.axibase.tsd.driver.jdbc;
 
-import static org.junit.Assert.assertNotNull;
-
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-
-import org.junit.Test;
+import java.sql.*;
 
 import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
+import org.junit.Test;
+
+import static org.junit.Assert.assertNotNull;
 
 public class DbVisTest extends AtsdProperties {
 	private static final LoggingFacade logger = LoggingFacade.getLogger(DbVisTest.class);
@@ -32,7 +27,9 @@ public class DbVisTest extends AtsdProperties {
 	@Test
 	public void checkDatabaseMetadata() throws ClassNotFoundException, SQLException {
 		Class.forName("com.axibase.tsd.driver.jdbc.AtsdDriver");
-		try (Connection connection = DriverManager.getConnection(JDBC_ATSD_URL, LOGIN_NAME, LOGIN_PASSWORD)) {
+		Connection connection = null;
+		try {
+			connection = DriverManager.getConnection(JDBC_ATSD_URL, LOGIN_NAME, LOGIN_PASSWORD);
 			assertNotNull(connection);
 			if (logger.isDebugEnabled())
 				logger.debug(connection.toString());
@@ -83,7 +80,10 @@ public class DbVisTest extends AtsdProperties {
 						logger.debug("Schema: " + schema);
 				}
 			}
-
+		} finally {
+			if (connection != null) {
+				connection.close();
+			}
 		}
 	}
 

@@ -19,7 +19,9 @@ public abstract class LoggingFacade {
 	public static LoggingFacade getLogger(Class<?> clazz) {
 		try {
 			return new LoggingSlf4jImpl(clazz);
-		} catch (IllegalArgumentException | SecurityException ignored) {
+		} catch (IllegalArgumentException ignored) {
+			return new LoggingFacadeStub();
+		} catch (SecurityException ignored) {
 			return new LoggingFacadeStub();
 		}
 	}

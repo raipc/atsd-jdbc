@@ -111,7 +111,7 @@ public class DataProvider implements IDataProvider {
 	}
 
 	@Override
-	public void close() throws Exception {
+	public void close() throws IOException {
 		if (this.isHoldingConnection.get()) {
 			cancelQuery();
 		}

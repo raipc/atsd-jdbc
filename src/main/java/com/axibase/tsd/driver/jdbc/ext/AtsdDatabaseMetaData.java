@@ -14,6 +14,7 @@
 */
 package com.axibase.tsd.driver.jdbc.ext;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.UnknownHostException;
 import java.sql.Connection;
@@ -69,8 +70,12 @@ public class AtsdDatabaseMetaData extends AvaticaDatabaseMetaData {
 
 	private void initVersions(final String host, String user, String pass, String[] params) throws SQLException {
 		final ContentDescription cd = new ContentDescription(host, "", user, pass, params);
-		try (final IContentProtocol protocol = ProtocolFactory.create(SdkProtocolImpl.class, cd)) {
-			assert protocol != null;
+		IContentProtocol protocol = null;
+		try {
+			protocol = ProtocolFactory.create(SdkProtocolImpl.class, cd);
+			if (protocol == null) {
+				throw new IllegalStateException("IContentProtocol is null");
+			}
 			final InputStream inputStream = protocol.readInfo();
 			final Version version = JsonMappingUtil.mapToVersion(inputStream);
 			if (logger.isTraceEnabled()) {
@@ -92,6 +97,14 @@ public class AtsdDatabaseMetaData extends AvaticaDatabaseMetaData {
 				logger.debug(e.getMessage());
 			}
 			throw new SQLException(e);
+		} finally {
+			if (protocol != null) {
+				try {
+					protocol.close();
+				} catch (IOException e) {
+					logger.error("[initVersions] error on protocol.close()", e);
+				}
+			}
 		}
 	}
 

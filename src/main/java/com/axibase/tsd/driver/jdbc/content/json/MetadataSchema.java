@@ -36,7 +36,7 @@ import com.fasterxml.jackson.annotation.*;
 public class MetadataSchema {
 
     @JsonProperty("@context")
-    private List<String> Context = new ArrayList<>();
+    private List<String> Context = new ArrayList<String>();
     @JsonProperty("dc:created")
     private DcCreated dcCreated;
     @JsonProperty("dc:publisher")
@@ -54,7 +54,7 @@ public class MetadataSchema {
     @JsonProperty("dialect")
     private Dialect dialect;
     @JsonIgnore
-    private final Map<String, Object> additionalProperties = new HashMap<>();
+    private final Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     @JsonProperty("dc:publisher")
     public DcPublisher getDcPublisher() {

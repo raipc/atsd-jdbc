@@ -28,8 +28,14 @@ public abstract class AbstractTypeMock extends AbstractFetchTest {
 
 	@Test
 	public void testType() throws Exception {
-		try (final IStoreStrategy storeStrategy = getMockStrategyObject()) {
+		IStoreStrategy storeStrategy = null;
+		try {
+			storeStrategy = getMockStrategyObject();
 			fetch(storeStrategy, String.format("/csv/%s.csv", getTable()), 1);
+		} finally {
+			if (storeStrategy != null) {
+				storeStrategy.close();
+			}
 		}
 	}
 
@@ -40,12 +46,22 @@ public abstract class AbstractTypeMock extends AbstractFetchTest {
 	}
 
 	protected String getSchema() throws IOException {
-		try (final InputStream is = this.getClass().getResourceAsStream(getJsonSchema());
-			 final Scanner scanner = new Scanner(is)) {
+		InputStream is = null;
+		Scanner scanner = null;
+		try {
+			is = this.getClass().getResourceAsStream(getJsonSchema());
+			scanner = new Scanner(is);
 			scanner.useDelimiter("\\A");
 			String json = scanner.hasNext() ? scanner.next() : "";
 			assertTrue(json != null && json.length() != 0 && json.startsWith(CONTEXT_START));
 			return json;
+		} finally {
+			if (scanner != null) {
+				scanner.close();
+			}
+			if (is != null) {
+				is.close();
+			}
 		}
 	}
 }

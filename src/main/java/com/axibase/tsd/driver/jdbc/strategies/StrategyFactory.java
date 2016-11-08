@@ -28,7 +28,7 @@ public class StrategyFactory {
 	public static <T extends IStoreStrategy> T create(Class<T> type, StatementContext context) {
 		try {
 			return type.getDeclaredConstructor(StatementContext.class).newInstance(context);
-		} catch (final IllegalArgumentException | ReflectiveOperationException | SecurityException e) {
+		} catch (final Exception e) {
 			if (logger.isErrorEnabled())
 				logger.error("Cannot get a store instance from the factory: " + e.getMessage());
 		}

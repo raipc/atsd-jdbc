@@ -10,7 +10,7 @@ public class ProtocolFactory {
 	public static <T extends IContentProtocol> T create(Class<T> type, ContentDescription cd) {
 		try {
 			return type.getDeclaredConstructor(ContentDescription.class).newInstance(cd);
-		} catch (final IllegalArgumentException | ReflectiveOperationException | SecurityException e) {
+		} catch (final Exception e) {
 			if (logger.isErrorEnabled())
 				logger.error("Cannot get an instance from the factory: " + e.getMessage());
 		}

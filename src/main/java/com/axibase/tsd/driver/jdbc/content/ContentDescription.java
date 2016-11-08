@@ -16,7 +16,6 @@ package com.axibase.tsd.driver.jdbc.content;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 import com.axibase.tsd.driver.jdbc.enums.MetadataFormat;
@@ -59,7 +58,7 @@ public class ContentDescription {
 		this.metadataFormat = atsdVersion < ATSD_VERSION_SUPPORTING_BODY_METADATA ?
 				MetadataFormat.HEADER.name() : MetadataFormat.EMBED.name();
 		final int size = params == null ? 0 : params.length;
-		this.paramsMap = new HashMap<>(size);
+		this.paramsMap = new HashMap<String, String>(size);
 		this.queryId = queryId;
 		this.supportsCancel = atsdVersion >= ATSD_VERSION_SUPPORTS_CANCEL_QUERIES;
 		if (size > 0) {
@@ -91,7 +90,7 @@ public class ContentDescription {
 
 	public String getEncodedQuery() {
 		try {
-			return URLEncoder.encode(query, StandardCharsets.UTF_8.name());
+			return URLEncoder.encode(query, DEFAULT_CHARSET.name());
 		} catch (UnsupportedEncodingException e) {
 			logger.error(e.getMessage());
 			return query;
@@ -170,7 +169,7 @@ public class ContentDescription {
 		if (StringUtils.isEmpty(query)) {
 			return Collections.emptyMap();
 		}
-		Map<String, String> map = new HashMap<>();
+		Map<String, String> map = new HashMap<String,String >();
 		map.put(Q_PARAM_NAME, query);
 		map.put(FORMAT_PARAM_NAME, FORMAT_PARAM_VALUE);
 		map.put(METADATA_FORMAT_PARAM_NAME, metadataFormat);

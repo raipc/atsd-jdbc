@@ -1,14 +1,7 @@
 package com.axibase.tsd.driver.jdbc;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -26,15 +19,28 @@ public class TestUtil {
 	}
 
 	public static String resourceToString(String relativePath, Class<?> clazz) {
+		DataInputStream dataIs = null;
 		try {
 			final URL url = clazz.getResource(relativePath);
 			if (url == null) {
 				throw new IOException("File not found by given relative path");
 			}
-			final Path path = Paths.get(url.toURI());
-			return new String(Files.readAllBytes(path), StandardCharsets.UTF_8);
+			final File path = new File(url.toURI());
+
+			byte[] fileAsBytes = new byte[(int)path.length()];
+			dataIs = new DataInputStream(new FileInputStream(path));
+			dataIs.readFully(fileAsBytes);
+			return new String(fileAsBytes, DriverConstants.DEFAULT_CHARSET);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
+		} finally {
+			if (dataIs != null) {
+				try {
+					dataIs.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
 		}
 	}
 
@@ -49,11 +55,25 @@ public class TestUtil {
 	}
 
 	public static List<ColumnMetaData> prepareMetadata(String relativePathToResource, Class<?> clazz) {
-		try (InputStream inputStream = getInputStreamForResource(relativePathToResource, clazz);
-			 BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))){
+		InputStream inputStream = null;
+		BufferedReader reader = null;
+		try {
+			inputStream = getInputStreamForResource(relativePathToResource, clazz);
+			reader = new BufferedReader(new InputStreamReader(inputStream));
 			return prepareMetadata(reader.readLine());
 		} catch (IOException e) {
 			throw new RuntimeException(e);
+		} finally {
+			try {
+				if (reader != null) {
+					reader.close();
+				}
+				if (inputStream != null) {
+					inputStream.close();
+				}
+			} catch (IOException ioe) {
+				// do nothing
+			}
 		}
 	}
 

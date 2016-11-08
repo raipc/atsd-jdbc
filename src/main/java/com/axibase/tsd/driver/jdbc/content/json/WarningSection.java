@@ -36,11 +36,11 @@ public class WarningSection implements AtsdExceptionRepresentation {
     @JsonProperty("state")
     private String state;
     @JsonProperty("exception")
-    private List<ExceptionSection> exception = new ArrayList<>();
+    private List<ExceptionSection> exception = new ArrayList<ExceptionSection>();
     @JsonProperty("message")
     private String message;
     @JsonIgnore
-    private final Map<String, Object> additionalProperties = new HashMap<>();
+    private final Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     /**
      * 

@@ -14,11 +14,12 @@
 */
 package com.axibase.tsd.driver.jdbc.intf;
 
+import java.io.Closeable;
+import java.io.File;
 import java.io.IOException;
 import java.nio.channels.ReadableByteChannel;
-import java.nio.file.Path;
 
-public interface IProducer extends AutoCloseable {
+public interface IProducer extends Closeable {
 
-	void produce(Path tmp, ReadableByteChannel inputChannel) throws IOException;
+	void produce(File tmp, ReadableByteChannel inputChannel) throws IOException;
 }

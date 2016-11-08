@@ -129,7 +129,9 @@ public class ContentMetadata {
 	}
 
 	private static Map<String, Object> getJsonScheme(String json) throws IOException {
-		try (final JsonParser parser = JsonMappingUtil.getParser(json)) {
+		JsonParser parser = null;
+		try {
+			parser = JsonMappingUtil.getParser(json);
 			final JsonToken token = parser.nextToken();
 			Class<?> type;
 			if (token == JsonToken.START_OBJECT) {
@@ -140,6 +142,10 @@ public class ContentMetadata {
 				type = String.class;
 			}
 			return (Map<String, Object>) parser.readValueAs(type);
+		} finally {
+			if (parser != null) {
+				parser.close();
+			}
 		}
 	}
 

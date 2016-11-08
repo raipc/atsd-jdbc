@@ -21,7 +21,7 @@ public class EnumUtil {
 	private EnumUtil() {}
 
 	private static Map<String, AtsdType> createAtsdNameTypeMapping() {
-		Map<String, AtsdType> mapping = new HashMap<>();
+		Map<String, AtsdType> mapping = new HashMap<String, AtsdType>();
 		for (AtsdType type : AtsdType.values()) {
 			mapping.put(type.originalType, type);
 		}
@@ -29,7 +29,7 @@ public class EnumUtil {
 	}
 
 	private static Map<Integer, AtsdType> createSqlAtsdTypesMapping() {
-		Map<Integer, AtsdType> mapping = new HashMap<>();
+		Map<Integer, AtsdType> mapping = new HashMap<Integer, AtsdType>();
 		for (AtsdType type : AtsdType.values()) {
 			mapping.put(type.sqlTypeCode, type);
 		}
@@ -37,7 +37,7 @@ public class EnumUtil {
 	}
 
 	private static Map<String, AtsdType> createColumnPrefixAtsdTypeMapping() {
-		Map<String, AtsdType> mapping = new HashMap<>();
+		Map<String, AtsdType> mapping = new HashMap<String, AtsdType>();
 		for (DefaultColumn type : DefaultColumn.values()) {
 			mapping.put(type.getColumnNamePrefix(), type.getType());
 		}
@@ -45,7 +45,7 @@ public class EnumUtil {
 	}
 
 	private static <T extends Enum<T>> Set<String> createSetFromEnum(T[] array ) {
-		Set<String> set = new HashSet<>(array.length);
+		Set<String> set = new HashSet<String>(array.length);
 		for (T item : array) {
 			set.add(item.name());
 		}
@@ -98,7 +98,7 @@ public class EnumUtil {
 	}
 
 	private static Map<String, ITimeDateConstant> initializeTimeDateMap() {
-		Map<String, ITimeDateConstant> map = new HashMap<>();
+		Map<String, ITimeDateConstant> map = new HashMap<String, ITimeDateConstant>();
 		for (ITimeDateConstant timeConstant : buildTimeConstantsArray()) {
 			map.put(timeConstant.value(), timeConstant);
 		}

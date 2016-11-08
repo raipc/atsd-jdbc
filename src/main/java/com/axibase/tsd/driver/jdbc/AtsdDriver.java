@@ -21,17 +21,16 @@ import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.Properties;
 
+import com.axibase.tsd.driver.jdbc.ext.AtsdDatabaseMetaData;
+import com.axibase.tsd.driver.jdbc.ext.AtsdFactory;
+import com.axibase.tsd.driver.jdbc.ext.AtsdMeta;
+import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
 import org.apache.calcite.avatica.AvaticaConnection;
 import org.apache.calcite.avatica.DriverVersion;
 import org.apache.calcite.avatica.Meta;
 import org.apache.calcite.avatica.UnregisteredDriver;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
-
-import com.axibase.tsd.driver.jdbc.ext.AtsdDatabaseMetaData;
-import com.axibase.tsd.driver.jdbc.ext.AtsdFactory;
-import com.axibase.tsd.driver.jdbc.ext.AtsdMeta;
-import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
 
 import static com.axibase.tsd.driver.jdbc.DriverConstants.*;
 
@@ -45,7 +44,9 @@ public class AtsdDriver extends UnregisteredDriver {
 	@Override
 	protected DriverVersion createDriverVersion() {
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-		try (final InputStream is = classLoader.getResourceAsStream(DRIVER_PROPERTIES)) {
+		InputStream is = null;
+		try {
+			is = classLoader.getResourceAsStream(DRIVER_PROPERTIES);
 			if (is != null) {
 				final Properties properties = new Properties();
 				properties.load(is);
@@ -54,6 +55,14 @@ public class AtsdDriver extends UnregisteredDriver {
 		} catch (final IOException e) {
 			if (logger.isDebugEnabled()) {
 				logger.debug("[createDriverVersion] " + e.getMessage());
+			}
+		} finally {
+			if (is != null) {
+				try {
+					is.close();
+				} catch (IOException e) {
+					logger.error("[createDriverVersion] is.close() error", e);
+				}
 			}
 		}
 		return getDefaultDriverVersion();

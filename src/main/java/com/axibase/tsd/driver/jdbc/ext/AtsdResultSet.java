@@ -506,7 +506,7 @@ public class AtsdResultSet extends AvaticaResultSet {
 		Object result = super.getObject(columnIndex);
 		final ColumnMetaData metaData = columnMetaDataList.get(columnIndex - 1);
 		if (metaData.type.id == Types.FLOAT && result != null) {
-			double primitiveDouble = (double) result;
+			double primitiveDouble = (Double) result;
 			return (float) primitiveDouble;
 		}
 		return result;

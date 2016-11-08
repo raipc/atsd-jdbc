@@ -37,7 +37,7 @@ import org.apache.calcite.avatica.remote.TypedValue;
 public class AtsdPreparedStatement extends AvaticaPreparedStatement {
 	private static final LoggingFacade logger = LoggingFacade.getLogger(AtsdPreparedStatement.class);
 
-	private final ConcurrentSkipListMap<Integer, TypedValue> parameters = new ConcurrentSkipListMap<>();
+	private final ConcurrentSkipListMap<Integer, TypedValue> parameters = new ConcurrentSkipListMap<Integer, TypedValue>();
 
 	protected AtsdPreparedStatement(AvaticaConnection connection, StatementHandle h, Signature signature,
 									int resultSetType, int resultSetConcurrency, int resultSetHoldability) throws SQLException {
@@ -63,7 +63,7 @@ public class AtsdPreparedStatement extends AvaticaPreparedStatement {
 					String.format("Number of specified parameters [%d] is lower than the last key [%d]",
 							parameters.size(), parameters.lastKey()));
 		}
-		final List<TypedValue> list = new ArrayList<>(parameters.values());
+		final List<TypedValue> list = new ArrayList<TypedValue>(parameters.values());
 		if (logger.isDebugEnabled()) {
 			for (TypedValue tv : list) {
 				logger.debug("[TypedValue] " + tv.value);

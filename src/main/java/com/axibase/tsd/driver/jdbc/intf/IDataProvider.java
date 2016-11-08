@@ -14,13 +14,14 @@
 */
 package com.axibase.tsd.driver.jdbc.intf;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 
 import com.axibase.tsd.driver.jdbc.content.ContentDescription;
 import com.axibase.tsd.driver.jdbc.ext.AtsdException;
 
-public interface IDataProvider extends AutoCloseable {
+public interface IDataProvider extends Closeable {
 
 	ContentDescription getContentDescription();
 

@@ -18,7 +18,6 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.SocketException;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
@@ -146,7 +145,7 @@ public class SdkProtocolImpl implements IContentProtocol {
 	}
 
 	@Override
-	public void close() throws Exception {
+	public void close() {
 		if (logger.isTraceEnabled()) {
 			logger.trace("[SdkProtocolImpl#close]");
 		}
@@ -168,7 +167,8 @@ public class SdkProtocolImpl implements IContentProtocol {
 				&& StringUtils.isEmpty(contentDescription.getJsonScheme())) {
 			MetadataRetriever.retrieveJsonSchemeFromHeader(conn.getHeaderFields(), contentDescription);
 		}
-		long contentLength = conn.getContentLengthLong();
+
+		final int contentLength = conn.getContentLength();
 		if (logger.isDebugEnabled()) {
 			logger.debug("[response] " + contentLength);
 		}
@@ -228,10 +228,20 @@ public class SdkProtocolImpl implements IContentProtocol {
 			if (logger.isDebugEnabled()) {
 				logger.debug("[params] " + postParams);
 			}
-			try (OutputStream os = conn.getOutputStream();
-				 BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8.name()))) {
+			OutputStream os = null;
+			BufferedWriter writer = null;
+			try {
+				os = conn.getOutputStream();
+				writer = new BufferedWriter(new OutputStreamWriter(os, DEFAULT_CHARSET));
 				writer.write(postParams);
 				writer.flush();
+			} finally {
+				if (writer != null) {
+					writer.close();
+				}
+				if (os != null) {
+					os.close();
+				}
 			}
 		} else {
 			conn.setRequestProperty(HttpHeaders.ACCEPT_ENCODING, DEFAULT_ENCODING);

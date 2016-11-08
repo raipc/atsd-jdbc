@@ -129,7 +129,7 @@ public class Consumer implements IConsumer {
 
 	private static List<StackTraceElement> getStackTrace(AtsdExceptionRepresentation section) {
 		final List<ExceptionSection> exceptions = section.getException();
-		final List<StackTraceElement> list = new ArrayList<>(exceptions.size());
+		final List<StackTraceElement> list = new ArrayList<StackTraceElement>(exceptions.size());
 		for (ExceptionSection exc : exceptions) {
 			list.add(new StackTraceElement(exc.getClassName(), exc.getMethodName(), exc.getFileName(),
 					exc.getLineNumber()));

@@ -14,6 +14,7 @@
 */
 package com.axibase.tsd.driver.jdbc.intf;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -21,7 +22,7 @@ import java.util.List;
 import com.axibase.tsd.driver.jdbc.content.StatementContext;
 import org.apache.calcite.avatica.ColumnMetaData;
 
-public interface IConsumer extends AutoCloseable, Iterable<Object[]> {
+public interface IConsumer extends Closeable, Iterable<Object[]> {
 
 	String[] open(InputStream inputStream, List<ColumnMetaData> columnMetadataList) throws IOException;
 

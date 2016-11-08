@@ -44,9 +44,9 @@ import org.apache.calcite.avatica.remote.TypedValue;
 public class AtsdMeta extends MetaImpl {
 	private static final LoggingFacade log = LoggingFacade.getLogger(AtsdMeta.class);
 	private final AtomicInteger idGenerator = new AtomicInteger(1);
-	private final Map<Integer, ContentMetadata> metaCache = new ConcurrentHashMap<>();
-	private final Map<Integer, IDataProvider> providerCache = new ConcurrentHashMap<>();
-	private final Map<Integer, StatementContext> contextMap = new ConcurrentHashMap<>();
+	private final Map<Integer, ContentMetadata> metaCache = new ConcurrentHashMap<Integer, ContentMetadata>();
+	private final Map<Integer, IDataProvider> providerCache = new ConcurrentHashMap<Integer, IDataProvider>();
+	private final Map<Integer, StatementContext> contextMap = new ConcurrentHashMap<Integer, StatementContext>();
 	private final ReentrantLock lock = new ReentrantLock();
 	private static final ThreadLocal<SimpleDateFormat> DATE_FORMATTER = new ThreadLocal<SimpleDateFormat>() {
 		@Override
@@ -300,7 +300,12 @@ public class AtsdMeta extends MetaImpl {
 			@SuppressWarnings("unchecked")
 			final List<Object> subList = (List) strategy.fetch(offset, fetchMaxRowCount);
 			return new Meta.Frame(loffset, subList.size() < fetchMaxRowCount, subList);
-		} catch (final AtsdException | IOException e) {
+		} catch (final AtsdException e) {
+			if (log.isDebugEnabled()) {
+				log.debug("[fetch] " + e.getMessage());
+			}
+			throw new MissingResultsException(statementHandle);
+		} catch (final IOException e) {
 			if (log.isDebugEnabled()) {
 				log.debug("[fetch] " + e.getMessage());
 			}
@@ -437,7 +442,7 @@ public class AtsdMeta extends MetaImpl {
 	@Override
 	public MetaResultSet getTypeInfo(ConnectionHandle ch) {
 		AtsdType[] atsdTypes = AtsdType.values();
-		final List<Object> list = new ArrayList<>(atsdTypes.length - 2);
+		final List<Object> list = new ArrayList<Object>(atsdTypes.length - 2);
 		for (AtsdType type : atsdTypes) {
 			if (!(type == AtsdType.LONG_DATA_TYPE || type == AtsdType.SHORT_DATA_TYPE)) {
 				list.add(getTypeInfo(type));
@@ -451,7 +456,7 @@ public class AtsdMeta extends MetaImpl {
 		if ((catalog != null && !DriverConstants.DEFAULT_CATALOG_NAME.equals(catalog))
 				|| tableNamePattern.s != null && DriverConstants.DEFAULT_TABLE_NAME.equals(tableNamePattern.s)) {
 			DefaultColumn[] columns = DefaultColumn.values();
-			List<Object> columnData = new ArrayList<>(columns.length);
+			List<Object> columnData = new ArrayList<Object>(columns.length);
 			int position = 1;
 			for (DefaultColumn column : columns) {
 				columnData.add(createColumnMetaData(column, null, position));
@@ -484,8 +489,8 @@ public class AtsdMeta extends MetaImpl {
 	private MetaResultSet getResultSet(Iterable<Object> iterable, Class<?> clazz) {
 		final Field[] fields = clazz.getDeclaredFields();
 		final int length = fields.length;
-		final List<ColumnMetaData> columns = new ArrayList<>(length);
-		final List<String> fieldNames = new ArrayList<>(length);
+		final List<ColumnMetaData> columns = new ArrayList<ColumnMetaData>(length);
+		final List<String> fieldNames = new ArrayList<String>(length);
 		int index = 0;
 		for (Field field : fields) {
 			final String name = AvaticaUtils.camelToUpper(field.getName());
@@ -495,7 +500,8 @@ public class AtsdMeta extends MetaImpl {
 		}
 
 		return createResultSet(Collections.<String, Object>emptyMap(), columns,
-				CursorFactory.record(clazz, Arrays.asList(fields), fieldNames), new Frame(0, true, iterable));
+				CursorFactory.record(clazz, Arrays.asList(fields), fieldNames),
+				new Frame(0, true, iterable));
 	}
 
 	private IDataProvider initProvider(StatementHandle statementHandle, String sql) throws UnsupportedEncodingException {
@@ -504,17 +510,17 @@ public class AtsdMeta extends MetaImpl {
 		assert connection instanceof AtsdConnection;
 		final Properties info = ((AtsdConnection) connection).getInfo();
 		final StatementContext newContext = new StatementContext(statementHandle);
-		contextMap.put(statementHandle.id, newContext);
-		final String login = info != null ? (String) info.get("user") : "";
-		final String password = info != null ? (String) info.get("password") : "";
 		try {
-			final int atsdVersion = connection.getMetaData().getDatabaseMajorVersion();
-			newContext.setVersion(atsdVersion);
+			newContext.setVersion(connection.getMetaData().getDatabaseMajorVersion());
 		} catch (SQLException e) {
 			if (log.isDebugEnabled()) {
 				log.debug("[initProvider] Error attempting to get databaseMajorVersion", e);
 			}
 		}
+
+		contextMap.put(statementHandle.id, newContext);
+		final String login = info != null ? (String) info.get("user") : "";
+		final String password = info != null ? (String) info.get("password") : "";
 		final IDataProvider dataProvider = new DataProvider(config.url(), sql, login, password, newContext);
 		providerCache.put(statementHandle.id, dataProvider);
 		return dataProvider;

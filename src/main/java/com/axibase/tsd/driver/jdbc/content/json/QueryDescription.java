@@ -33,7 +33,7 @@ public class QueryDescription {
 	@JsonProperty("sql")
 	private String sql;
 	@JsonIgnore
-	private final Map<String, Object> additionalProperties = new HashMap<>();
+	private final Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
 
 	public String getQueryId() {

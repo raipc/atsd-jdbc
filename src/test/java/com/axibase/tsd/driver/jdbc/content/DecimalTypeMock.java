@@ -18,8 +18,14 @@ public class DecimalTypeMock extends AbstractTypeMock {
 
 	@Test
 	public void testBidDecimalsType() throws Exception {
-		try (final IStoreStrategy storeStrategy = getMockStrategyObject()) {
+		IStoreStrategy storeStrategy = null;
+		try {
+			storeStrategy = getMockStrategyObject();
 			fetch(storeStrategy, String.format("/csv/%S.csv", TYPE_MOCK_TABLE_200), 200);
+		} finally {
+			if (storeStrategy != null) {
+				storeStrategy.close();
+			}
 		}
 	}
 }
