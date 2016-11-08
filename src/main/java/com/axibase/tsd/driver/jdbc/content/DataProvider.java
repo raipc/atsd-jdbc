@@ -89,7 +89,7 @@ public class DataProvider implements IDataProvider {
 			try {
 				this.contentProtocol.cancelQuery();
 			} catch (Exception e) {
-				throw new AtsdRuntimeException(e);
+				throw new AtsdRuntimeException(e.getMessage(), e);
 			}
 		} else {
 			if (logger.isWarnEnabled()) {

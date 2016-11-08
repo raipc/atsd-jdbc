@@ -146,14 +146,16 @@ public class AtsdMeta extends MetaImpl {
 			provider.fetchData(maxRows, timeout);
 			final ContentMetadata contentMetadata = findMetadata(query, statementHandle.connectionId, statementHandle.id);
 			return new ExecuteResult(contentMetadata.getList());
+		} catch (final RuntimeException e) {
+			if (log.isErrorEnabled()) {
+				log.error("[execute] error", e);
+			}
+			throw e;
 		} catch (final Exception e) {
-			if (log.isDebugEnabled()) {
-				log.debug("[execute] " + e.getMessage());
+			if (log.isErrorEnabled()) {
+				log.error("[execute] error", e);
 			}
-			if (e instanceof RuntimeException) {
-				throw (RuntimeException) e;
-			}
-			throw new AtsdRuntimeException(e);
+			throw new AtsdRuntimeException(e.getMessage(), e);
 		}
 	}
 
@@ -253,14 +255,16 @@ public class AtsdMeta extends MetaImpl {
 			final ExecuteResult result = new ExecuteResult(contentMetadata.getList());
 			callback.execute();
 			return result;
+		} catch (final RuntimeException e) {
+			if (log.isErrorEnabled()) {
+				log.error("[execute] error", e);
+			}
+			throw e;
 		} catch (final Exception e) {
-			if (log.isDebugEnabled()) {
-				log.debug("[prepareAndExecute] " + e.getMessage());
+			if (log.isErrorEnabled()) {
+				log.error("[prepareAndExecute] error", e);
 			}
-			if (e instanceof RuntimeException) {
-				throw (RuntimeException) e;
-			}
-			throw new AtsdRuntimeException(e);
+			throw new AtsdRuntimeException(e.getMessage(), e);
 		}
 	}
 
