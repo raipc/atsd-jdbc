@@ -75,7 +75,7 @@ Add dependency to `pom.xml` in your project. The JDBC driver will be imported au
 <dependency>
     <groupId>com.axibase</groupId>
     <artifactId>atsd-jdbc</artifactId>
-    <version>1.2.16</version>
+    <version>1.2.17</version>
 </dependency>
 ```
 
@@ -87,11 +87,11 @@ $ mvn clean install -DskipTests=true
 
 ### Classpath
 
-Download the driver [jar file](https://github.com/axibase/atsd-jdbc/releases/download/RELEASE-1.2.16/atsd-jdbc-1.2.16-DEPS.jar) with dependencies and add it to the classpath of your application.
+Download the driver [jar file](https://github.com/axibase/atsd-jdbc/releases/download/RELEASE-1.2.17/atsd-jdbc-1.2.17-DEPS.jar) with dependencies and add it to the classpath of your application.
 
 ```
-* Unix: java -cp "atsd-jdbc-1.2.16-DEPS.jar:lib/*" your.package.MainClass
-* Windows java -cp "atsd-jdbc-1.2.16-DEPS.jar;lib/*" your.package.MainClass
+* Unix: java -cp "atsd-jdbc-1.2.17-DEPS.jar:lib/*" your.package.MainClass
+* Windows java -cp "atsd-jdbc-1.2.17-DEPS.jar;lib/*" your.package.MainClass
 ```
 
 ### Database Tools
@@ -326,7 +326,7 @@ Results:
 Product Name:   	Axibase
 Product Version:	Axibase Time Series Database, <ATSD_EDITION>, Revision: <ATSD_REVISION_NUMBER>
 Driver Name:    	ATSD JDBC driver
-Driver Version: 	1.2.16
+Driver Version: 	1.2.17
 
 TypeInfo:
 	Name:BIGINT 	    CS: false 	Type: -5 	Precision: 19

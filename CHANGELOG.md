@@ -1,3 +1,7 @@
+## 1.2.17
+* Updated dependencies
+* Improved performance
+
 ## 1.2.16
 * Added support for ATSD `java_object` type.
 * Improved performance.
