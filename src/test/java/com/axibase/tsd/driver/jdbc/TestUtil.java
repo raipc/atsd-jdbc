@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -19,6 +18,7 @@ import com.axibase.tsd.driver.jdbc.enums.AtsdType;
 import com.axibase.tsd.driver.jdbc.util.EnumUtil;
 import org.apache.calcite.avatica.ColumnMetaData;
 
+import static com.axibase.tsd.driver.jdbc.DriverConstants.DEFAULT_CHARSET;
 import static com.axibase.tsd.driver.jdbc.content.ContentMetadata.getAvaticaType;
 
 public class TestUtil {
@@ -32,7 +32,7 @@ public class TestUtil {
 				throw new IOException("File not found by given relative path");
 			}
 			final Path path = Paths.get(url.toURI());
-			return new String(Files.readAllBytes(path), StandardCharsets.UTF_8);
+			return new String(Files.readAllBytes(path), DEFAULT_CHARSET);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}

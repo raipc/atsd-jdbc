@@ -1,5 +1,7 @@
 package com.axibase.tsd.driver.jdbc;
 
+import java.nio.charset.Charset;
+
 public final class DriverConstants {
 	public static final String DATABASE_PRODUCT_NAME = "Axibase";
 	public static final String DATABASE_PRODUCT_VERSION = "Axibase Time Series Database";
@@ -67,6 +69,8 @@ public final class DriverConstants {
 	public static final String TABLE_PROPERTY = "table";
 	public static final String TABLE_SCHEMA_SECTION = "tableSchema";
 	public static final String TITLE_PROPERTY = "titles";
+
+	public static final Charset DEFAULT_CHARSET = Charset.forName("UTF-8");
 
 	private DriverConstants(){}
 }

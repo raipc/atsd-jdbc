@@ -15,7 +15,6 @@
 package com.axibase.tsd.driver.jdbc.strategies;
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -31,6 +30,8 @@ import com.univocity.parsers.common.processor.RowProcessor;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
 import org.apache.calcite.avatica.ColumnMetaData;
+
+import static com.axibase.tsd.driver.jdbc.DriverConstants.DEFAULT_CHARSET;
 
 public class RowIterator implements Iterator<Object[]>, AutoCloseable {
 	private static final char COMMENT_SIGN = '#';
@@ -67,7 +68,7 @@ public class RowIterator implements Iterator<Object[]>, AutoCloseable {
 	}
 
 	public static RowIterator newDefaultIterator(InputStream inputStream, List<ColumnMetaData> metadata, int version) {
-		Reader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
+		Reader reader = new InputStreamReader(inputStream, DEFAULT_CHARSET);
 		return newDefaultIterator(reader, metadata, version);
 	}
 

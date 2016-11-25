@@ -1,17 +1,13 @@
 package com.axibase.tsd.driver.jdbc;
 
-import static com.axibase.tsd.driver.jdbc.TestConstants.JDBC_ATSD_URL_PREFIX;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Properties;
 
+import com.axibase.tsd.driver.jdbc.ext.AtsdConnection;
 import org.apache.calcite.avatica.AvaticaConnection;
 import org.apache.calcite.avatica.DriverVersion;
 import org.apache.calcite.avatica.Meta;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -22,7 +18,9 @@ import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import com.axibase.tsd.driver.jdbc.ext.AtsdConnection;
+import static com.axibase.tsd.driver.jdbc.TestConstants.JDBC_ATSD_URL_PREFIX;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(PowerMockRunner.class)
 @PowerMockIgnore({"javax.net.ssl.*"})
@@ -39,10 +37,6 @@ public class AtsdDriverTest extends AtsdProperties {
 	public void setUp() throws Exception {
 		this.driver = PowerMockito.spy(new AtsdDriver());
 		this.conn = PowerMockito.mock(AtsdConnection.class);
-	}
-
-	@After
-	public void tearDown() throws Exception {
 	}
 
 	@Test

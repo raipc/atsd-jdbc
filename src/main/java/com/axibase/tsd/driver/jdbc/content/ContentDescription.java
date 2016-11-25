@@ -16,13 +16,14 @@ package com.axibase.tsd.driver.jdbc.content;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import com.axibase.tsd.driver.jdbc.enums.MetadataFormat;
-import org.apache.commons.lang3.StringUtils;
-
 import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
+import org.apache.commons.lang3.StringUtils;
 
 import static com.axibase.tsd.driver.jdbc.DriverConstants.*;
 
@@ -91,7 +92,7 @@ public class ContentDescription {
 
 	public String getEncodedQuery() {
 		try {
-			return URLEncoder.encode(query, StandardCharsets.UTF_8.name());
+			return URLEncoder.encode(query, DEFAULT_CHARSET.name());
 		} catch (UnsupportedEncodingException e) {
 			logger.error(e.getMessage());
 			return query;

@@ -18,7 +18,6 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.SocketException;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
@@ -229,7 +228,7 @@ public class SdkProtocolImpl implements IContentProtocol {
 				logger.debug("[params] " + postParams);
 			}
 			try (OutputStream os = conn.getOutputStream();
-				 BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8.name()))) {
+				 BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, DEFAULT_CHARSET.name()))) {
 				writer.write(postParams);
 				writer.flush();
 			}
