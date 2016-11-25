@@ -493,7 +493,7 @@ public class AtsdMeta extends MetaImpl {
 		int index = 0;
 		for (Field field : fields) {
 			final String name = AvaticaUtils.camelToUpper(field.getName());
-			columns.add(columnMetaData(name, index, field.getType()));
+			columns.add(columnMetaData(name, index, field.getType(), getColumnNullability(field)));
 			fieldNames.add(name);
 			++index;
 		}
@@ -539,9 +539,9 @@ public class AtsdMeta extends MetaImpl {
 	private static MetaTypeInfo getTypeInfo(AtsdType type) {
 		return new MetaTypeInfo(type.sqlType.toUpperCase(Locale.US), type.sqlTypeCode, type.maxPrecision,
 				type.getLiteral(true), type.getLiteral(false),
-				DatabaseMetaData.typeNullable, type == AtsdType.STRING_DATA_TYPE,
-				DatabaseMetaData.typeSearchable, false, false, false,
-				0, 0, 10);
+				(short) DatabaseMetaData.typeNullable, type == AtsdType.STRING_DATA_TYPE,
+				(short) DatabaseMetaData.typeSearchable, false, false, false,
+				(short) 0, (short) 0, 10);
 	}
 
 	// Since Calcite 1.6.0
