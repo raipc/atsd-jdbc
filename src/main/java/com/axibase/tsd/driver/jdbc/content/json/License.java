@@ -47,21 +47,9 @@ public class License {
     @JsonIgnore
     private final Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
-    /**
-     * No args constructor for use in serialization
-     * 
-     */
     public License() {
     }
 
-    /**
-     * 
-     * @param dataVersioningEnabled
-     * @param hbaseServers
-     * @param forecastEnabled
-     * @param remoteHbase
-     * @param productVersion
-     */
     public License(boolean forecastEnabled, int hbaseServers, boolean remoteHbase, String productVersion, boolean dataVersioningEnabled) {
         this.forecastEnabled = forecastEnabled;
         this.hbaseServers = hbaseServers;
@@ -70,21 +58,11 @@ public class License {
         this.dataVersioningEnabled = dataVersioningEnabled;
     }
 
-    /**
-     * 
-     * @return
-     *     The forecastEnabled
-     */
     @JsonProperty("forecastEnabled")
     public boolean isForecastEnabled() {
         return forecastEnabled;
     }
 
-    /**
-     * 
-     * @param forecastEnabled
-     *     The forecastEnabled
-     */
     @JsonProperty("forecastEnabled")
     public void setForecastEnabled(boolean forecastEnabled) {
         this.forecastEnabled = forecastEnabled;
@@ -95,21 +73,12 @@ public class License {
         return this;
     }
 
-    /**
-     * 
-     * @return
-     *     The hbaseServers
-     */
     @JsonProperty("hbaseServers")
     public int getHbaseServers() {
         return hbaseServers;
     }
 
-    /**
-     * 
-     * @param hbaseServers
-     *     The hbaseServers
-     */
+
     @JsonProperty("hbaseServers")
     public void setHbaseServers(int hbaseServers) {
         this.hbaseServers = hbaseServers;
@@ -120,21 +89,11 @@ public class License {
         return this;
     }
 
-    /**
-     * 
-     * @return
-     *     The remoteHbase
-     */
     @JsonProperty("remoteHbase")
     public boolean isRemoteHbase() {
         return remoteHbase;
     }
 
-    /**
-     * 
-     * @param remoteHbase
-     *     The remoteHbase
-     */
     @JsonProperty("remoteHbase")
     public void setRemoteHbase(boolean remoteHbase) {
         this.remoteHbase = remoteHbase;
@@ -145,21 +104,11 @@ public class License {
         return this;
     }
 
-    /**
-     * 
-     * @return
-     *     The productVersion
-     */
     @JsonProperty("productVersion")
     public String getProductVersion() {
         return productVersion;
     }
 
-    /**
-     * 
-     * @param productVersion
-     *     The productVersion
-     */
     @JsonProperty("productVersion")
     public void setProductVersion(String productVersion) {
         this.productVersion = productVersion;
@@ -170,21 +119,11 @@ public class License {
         return this;
     }
 
-    /**
-     * 
-     * @return
-     *     The dataVersioningEnabled
-     */
     @JsonProperty("dataVersioningEnabled")
     public boolean isDataVersioningEnabled() {
         return dataVersioningEnabled;
     }
 
-    /**
-     * 
-     * @param dataVersioningEnabled
-     *     The dataVersioningEnabled
-     */
     @JsonProperty("dataVersioningEnabled")
     public void setDataVersioningEnabled(boolean dataVersioningEnabled) {
         this.dataVersioningEnabled = dataVersioningEnabled;
