@@ -74,4 +74,8 @@ public class AtsdConnection extends AvaticaConnection {
 			throw ExceptionsUtil.unboxException(e);
 		}
 	}
+
+	AtsdConnectionInfo getConnectionInfo() {
+		return new AtsdConnectionInfo(this.info);
+	}
 }

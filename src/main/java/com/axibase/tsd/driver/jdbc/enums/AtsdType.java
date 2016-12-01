@@ -119,9 +119,6 @@ public enum AtsdType {
 			try {
 				return readTimestampValue(cell);
 			} catch (final ParseException e) {
-				if (log.isDebugEnabled()) {
-					log.debug("[readValue] " + e.getMessage());
-				}
 				return readShortTimestampValue(cell);
 			}
 		}

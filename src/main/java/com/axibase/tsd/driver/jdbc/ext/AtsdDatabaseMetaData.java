@@ -20,7 +20,6 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
-import java.util.Properties;
 
 import com.axibase.tsd.driver.jdbc.content.ContentDescription;
 import com.axibase.tsd.driver.jdbc.content.json.Version;
@@ -32,9 +31,10 @@ import com.axibase.tsd.driver.jdbc.util.EnumUtil;
 import com.axibase.tsd.driver.jdbc.util.JsonMappingUtil;
 import org.apache.calcite.avatica.AvaticaConnection;
 import org.apache.calcite.avatica.AvaticaDatabaseMetaData;
-import org.apache.calcite.avatica.ConnectionConfig;
 
-import static com.axibase.tsd.driver.jdbc.DriverConstants.*;
+import static com.axibase.tsd.driver.jdbc.DriverConstants.PROTOCOL_SEPARATOR;
+import static com.axibase.tsd.driver.jdbc.DriverConstants.REVISION_LINE;
+import static com.axibase.tsd.driver.jdbc.DriverConstants.VERSION_ENDPOINT;
 
 public class AtsdDatabaseMetaData extends AvaticaDatabaseMetaData {
 	private static final LoggingFacade logger = LoggingFacade.getLogger(AtsdDatabaseMetaData.class);
@@ -45,34 +45,15 @@ public class AtsdDatabaseMetaData extends AvaticaDatabaseMetaData {
 		super(connection);
 	}
 
-	public void init(AvaticaConnection connection) throws SQLException {
-		final ConnectionConfig config = connection.config();
-		assert config != null;
-		final Properties info = ((AtsdConnection) connection).getInfo();
-		String urlSuffix = config.url();
-		final String host = urlSuffix.substring(0,
-				urlSuffix.indexOf('/', urlSuffix.indexOf(PROTOCOL_SEPARATOR) + PROTOCOL_SEPARATOR.length()))
-				+ VERSION_ENDPOINT;
-		String user = info != null ? (String) info.get("user") : "";
-		String pass = info != null ? (String) info.get("password") : "";
-		final String[] parts = urlSuffix.split(PARAM_SEPARATOR);
-		String[] params = new String[parts.length - 1];
-		if (parts.length > 1) {
-			System.arraycopy(parts, 1, params, 0, parts.length - 1);
-		}
-		if (logger.isTraceEnabled()) {
-			logger.trace("[init] host: " + parts[0]);
-			logger.trace("[init] params: " + params.length);
-		}
-		initVersions(host, user, pass, params);
-	}
-
-	private void initVersions(final String host, String user, String pass, String[] params) throws SQLException {
-		final ContentDescription cd = new ContentDescription(host, "", user, pass, params);
-		try (final IContentProtocol protocol = ProtocolFactory.create(SdkProtocolImpl.class, cd)) {
+	public void initVersions(AtsdConnectionInfo atsdConnectionInfo) throws SQLException {
+		final String host = atsdConnectionInfo.host();
+		final int endOfHostIndex = host.indexOf('/', host.indexOf(PROTOCOL_SEPARATOR) + PROTOCOL_SEPARATOR.length());
+		final String versionHost = host.substring(0, endOfHostIndex) + VERSION_ENDPOINT;
+		final ContentDescription contentDescription = new ContentDescription(versionHost, atsdConnectionInfo);
+		try (final IContentProtocol protocol = ProtocolFactory.create(SdkProtocolImpl.class, contentDescription)) {
 			assert protocol != null;
-			final InputStream inputStream = protocol.readInfo();
-			final Version version = JsonMappingUtil.mapToVersion(inputStream);
+			final InputStream databaseInfo = protocol.readInfo();
+			final Version version = JsonMappingUtil.mapToVersion(databaseInfo);
 			if (logger.isTraceEnabled()) {
 				logger.trace("[initVersions] " + version.toString());
 			}

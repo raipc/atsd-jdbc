@@ -19,6 +19,7 @@ import java.io.InputStream;
 import java.security.GeneralSecurityException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import com.axibase.tsd.driver.jdbc.ext.AtsdConnectionInfo;
 import com.axibase.tsd.driver.jdbc.ext.AtsdException;
 import com.axibase.tsd.driver.jdbc.ext.AtsdRuntimeException;
 import com.axibase.tsd.driver.jdbc.intf.IContentProtocol;
@@ -33,24 +34,17 @@ import static com.axibase.tsd.driver.jdbc.DriverConstants.ATSD_VERSION_SUPPORTS_
 
 public class DataProvider implements IDataProvider {
 	private static final LoggingFacade logger = LoggingFacade.getLogger(DataProvider.class);
-	private static final String PARAM_SEPARATOR = ";";
 	private final ContentDescription contentDescription;
 	private final IContentProtocol contentProtocol;
 	private final StatementContext context;
 	private IStoreStrategy strategy;
 	private AtomicBoolean isHoldingConnection = new AtomicBoolean();
 
-	public DataProvider(String url, String query, String login, String password, StatementContext context) {
-		final String[] parts = url.split(PARAM_SEPARATOR);
-		String[] params = new String[parts.length - 1];
-		if (parts.length > 1) {
-			System.arraycopy(parts, 1, params, 0, parts.length - 1);
-		}
+	public DataProvider(AtsdConnectionInfo connectionInfo, String query, StatementContext context) {
 		if (logger.isTraceEnabled()) {
-			logger.trace("Host: " + parts[0]);
-			logger.trace("Params: " + params.length);
+			logger.trace("Host: " + connectionInfo.host());
 		}
-		this.contentDescription = new ContentDescription(parts[0], query, login, password, context, params);
+		this.contentDescription = new ContentDescription(connectionInfo, query, context);
 		this.contentProtocol = ProtocolFactory.create(SdkProtocolImpl.class, contentDescription);
 		this.context = context;
 	}

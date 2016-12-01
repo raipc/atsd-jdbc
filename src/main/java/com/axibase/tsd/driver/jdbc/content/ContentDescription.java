@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.axibase.tsd.driver.jdbc.enums.MetadataFormat;
+import com.axibase.tsd.driver.jdbc.ext.AtsdConnectionInfo;
 import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
 import org.apache.commons.lang3.StringUtils;
 
@@ -33,7 +34,6 @@ public class ContentDescription {
 	private String host;
 	private String query;
 	private String login;
-	private Map<String, String> paramsMap;
 	private String password;
 	private long contentLength;
 	private String[] headers;
@@ -42,36 +42,26 @@ public class ContentDescription {
 	private long maxRowsCount;
 	private final String queryId;
 	private final boolean supportsCancel;
+	private final AtsdConnectionInfo atsdConnectionInfo;
 
-	public ContentDescription(String host, String query, String login, String password, String[] params) {
-		this(host, query, login, password, 0, "", params);
+	public ContentDescription(String host, AtsdConnectionInfo atsdConnectionInfo) {
+		this(host, atsdConnectionInfo, "", 0, "");
 	}
 
-	public ContentDescription(String host, String query, String login, String password, StatementContext context, String[] params) {
-		this(host, query, login, password, context.getVersion(), context.getQueryId(), params);
+	public ContentDescription(AtsdConnectionInfo atsdConnectionInfo, String query, StatementContext context) {
+		this(atsdConnectionInfo.host() , atsdConnectionInfo, query, context.getVersion(), context.getQueryId());
 	}
 
-	private ContentDescription(String host, String query, String login, String password, int atsdVersion,
-	                           String queryId, String[] params) {
+	private ContentDescription(String host, AtsdConnectionInfo atsdConnectionInfo, String query, int atsdVersion, String queryId) {
 		this.host = host;
 		this.query = query;
-		this.login = login;
-		this.password = password;
+		this.login = atsdConnectionInfo.user();
+		this.password = atsdConnectionInfo.password();
 		this.metadataFormat = atsdVersion < ATSD_VERSION_SUPPORTING_BODY_METADATA ?
 				MetadataFormat.HEADER.name() : MetadataFormat.EMBED.name();
-		final int size = params == null ? 0 : params.length;
-		this.paramsMap = new HashMap<>(size);
+		this.atsdConnectionInfo = atsdConnectionInfo;
 		this.queryId = queryId;
 		this.supportsCancel = atsdVersion >= ATSD_VERSION_SUPPORTS_CANCEL_QUERIES;
-		if (size > 0) {
-			for (String param : params) {
-				int delimiterPosition = param.indexOf('=');
-				if (delimiterPosition >= 0) {
-					paramsMap.put(param.substring(0, delimiterPosition),
-							      param.substring(delimiterPosition + 1));
-				}
-			}
-		}
 	}
 
 	public String getHost() {
@@ -184,23 +174,19 @@ public class ContentDescription {
 	}
 
 	public boolean isTrusted() {
-		final String trustedAsString = paramsMap.get(TRUST_PARAM_NAME);
-		return trustedAsString == null ? DEFAULT_TRUST_SERVER_CERTIFICATE : Boolean.valueOf(trustedAsString);
+		return atsdConnectionInfo.trustCertificate();
 	}
 
 	public int getConnectTimeout() {
-		final String timeoutAsString = paramsMap.get(CONNECT_TIMEOUT_PARAM);
-		return timeoutAsString == null ? DEFAULT_CONNECT_TIMEOUT_VALUE : Integer.parseInt(timeoutAsString);
+		return atsdConnectionInfo.connectTimeout();
 	}
 
 	public int getReadTimeout() {
-		final String timeoutAsString = paramsMap.get(READ_TIMEOUT_PARAM);
-		return timeoutAsString == null ? DEFAULT_READ_TIMEOUT_VALUE : Integer.parseInt(timeoutAsString);
+		return atsdConnectionInfo.readTimeout();
 	}
 
 	public String getStrategyName() {
-		final String strategy = paramsMap.get(STRATEGY_PARAM_NAME);
-		return StringUtils.isNoneEmpty(strategy) ? strategy : null;
+		return atsdConnectionInfo.strategy();
 	}
 
 	public String getQueryId() {

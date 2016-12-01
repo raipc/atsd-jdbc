@@ -20,6 +20,7 @@ public final class DriverConstants {
 	public static final String DRIVER_VERSION_MINOR_KEY = "driver.version.minor";
 	public static final String DRIVER_PROPERTIES = "META-INF/axibase-atsd-jdbc.properties";
 	public static final String RETRIES_NUMBER = "1";
+	public static final boolean JDBC_COMPLIANT = false;
 
 	public static final String CONNECT_URL_PREFIX = "jdbc:axibase:atsd:";
 	public static final String PARAM_SEPARATOR = ";";
@@ -34,6 +35,7 @@ public final class DriverConstants {
 	public static final String QUERY_ID_PARAM_NAME = "queryId";
 	public static final String Q_PARAM_NAME = "q";
 	public static final String STRATEGY_PARAM_NAME = "strategy";
+	public static final String DEFAULT_STRATEGY = "stream";
 	public static final String FORMAT_PARAM_NAME = "outputFormat";
 	public static final String FORMAT_PARAM_VALUE = "csv";
 	public static final String METADATA_FORMAT_PARAM_NAME = "metadataFormat";

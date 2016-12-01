@@ -17,21 +17,20 @@ package com.axibase.tsd.driver.jdbc;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Properties;
 
-import org.apache.calcite.avatica.AvaticaConnection;
-import org.apache.calcite.avatica.DriverVersion;
-import org.apache.calcite.avatica.Meta;
-import org.apache.calcite.avatica.UnregisteredDriver;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.math.NumberUtils;
-
+import com.axibase.tsd.driver.jdbc.enums.AtsdDriverConnectionProperties;
+import com.axibase.tsd.driver.jdbc.ext.AtsdConnectionInfo;
 import com.axibase.tsd.driver.jdbc.ext.AtsdDatabaseMetaData;
 import com.axibase.tsd.driver.jdbc.ext.AtsdFactory;
 import com.axibase.tsd.driver.jdbc.ext.AtsdMeta;
 import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
+import org.apache.calcite.avatica.*;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 
 import static com.axibase.tsd.driver.jdbc.DriverConstants.*;
 
@@ -45,10 +44,10 @@ public class AtsdDriver extends UnregisteredDriver {
 	@Override
 	protected DriverVersion createDriverVersion() {
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-		try (final InputStream is = classLoader.getResourceAsStream(DRIVER_PROPERTIES)) {
-			if (is != null) {
+		try (final InputStream propertiesFromFile = classLoader.getResourceAsStream(DRIVER_PROPERTIES)) {
+			if (propertiesFromFile != null) {
 				final Properties properties = new Properties();
-				properties.load(is);
+				properties.load(propertiesFromFile);
 				return getDriverVersion(properties);
 			}
 		} catch (final IOException e) {
@@ -74,11 +73,10 @@ public class AtsdDriver extends UnregisteredDriver {
 		property = properties.getProperty(DRIVER_VERSION_MINOR_KEY);
 		int driverVersionMinor = StringUtils.isNoneEmpty(property) ? NumberUtils.toInt(property)
 				: DRIVER_VERSION_MINOR_DEFAULT;
-		final boolean jdbcCompliant = false;
 		if (logger.isDebugEnabled()) {
 			logger.debug("[createDriverVersion] " + driverVersion);
 		}
-		return new DriverVersion(driverName, driverVersion, productName, productVersion, jdbcCompliant,
+		return new DriverVersion(driverName, driverVersion, productName, productVersion, JDBC_COMPLIANT,
 				driverVersionMajor, driverVersionMinor, productVersionMajor, productVersionMinor);
 	}
 
@@ -88,6 +86,12 @@ public class AtsdDriver extends UnregisteredDriver {
 			logger.debug("[getConnectStringPrefix]");
 		}
 		return CONNECT_URL_PREFIX;
+	}
+
+	@Override
+	protected Collection<ConnectionProperty> getConnectionProperties() {
+		final ConnectionProperty[] array = AtsdDriverConnectionProperties.values();
+		return Arrays.asList(array);
 	}
 
 	@Override
@@ -107,15 +111,23 @@ public class AtsdDriver extends UnregisteredDriver {
 			logger.debug("[connect] " + url);
 		}
 		final String urlSuffix = url.substring(CONNECT_URL_PREFIX.length());
+		final int firstSeparatorIndex = urlSuffix.indexOf(PARAM_SEPARATOR);
+		final String sqlHost = firstSeparatorIndex < 0 ? urlSuffix : urlSuffix.substring(0, firstSeparatorIndex);
+
 		info.setProperty("url", urlSuffix);
+		info.setProperty("host", sqlHost);
 		info.setProperty("schema", CONNECT_URL_PREFIX);
 		info.setProperty(AvaticaConnection.NUM_EXECUTE_RETRIES_KEY, RETRIES_NUMBER);
+
+		final int afterSeparator = urlSuffix.indexOf(PARAM_SEPARATOR) + 1;
+		if (afterSeparator  < urlSuffix.length()) {
+			info = ConnectStringParser.parse(urlSuffix.substring(afterSeparator), info);
+		}
+
 		final AtsdFactory atsdFactory = new AtsdFactory();
 		final AvaticaConnection connection = atsdFactory.newConnection(this, atsdFactory, url, info);
-		final DatabaseMetaData metaData = connection.getMetaData();
-		assert metaData instanceof AtsdDatabaseMetaData;
-		AtsdDatabaseMetaData atsdDatabaseMetaData = (AtsdDatabaseMetaData) metaData;
-		atsdDatabaseMetaData.init(connection);
+		AtsdDatabaseMetaData atsdDatabaseMetaData = (AtsdDatabaseMetaData) connection.getMetaData();
+		atsdDatabaseMetaData.initVersions(new AtsdConnectionInfo(info));
 		handler.onConnectionInit(connection);
 		return connection;
 	}
@@ -133,7 +145,7 @@ public class AtsdDriver extends UnregisteredDriver {
 			logger.debug("[getDefaultDriverVersion]");
 		}
 		return new DriverVersion(JDBC_DRIVER_NAME, JDBC_DRIVER_VERSION_DEFAULT, DATABASE_PRODUCT_NAME,
-				DATABASE_PRODUCT_VERSION, true, DRIVER_VERSION_MAJOR_DEFAULT, DRIVER_VERSION_MINOR_DEFAULT, 1, 0);
+				DATABASE_PRODUCT_VERSION, JDBC_COMPLIANT, DRIVER_VERSION_MAJOR_DEFAULT, DRIVER_VERSION_MINOR_DEFAULT, 1, 0);
 	}
 
 }

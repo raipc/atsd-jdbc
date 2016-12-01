@@ -503,25 +503,21 @@ public class AtsdMeta extends MetaImpl {
 	}
 
 	private IDataProvider initProvider(StatementHandle statementHandle, String sql) throws UnsupportedEncodingException {
-		final ConnectionConfig config = connection.config();
-		assert config != null;
 		assert connection instanceof AtsdConnection;
-		final Properties info = ((AtsdConnection) connection).getInfo();
+		AtsdConnection atsdConnection = (AtsdConnection) connection;
 		final StatementContext newContext = new StatementContext(statementHandle);
 		contextMap.put(statementHandle.id, newContext);
-		final String login = info != null ? (String) info.get("user") : "";
-		final String password = info != null ? (String) info.get("password") : "";
 		try {
-			final int atsdVersion = connection.getMetaData().getDatabaseMajorVersion();
-			newContext.setVersion(atsdVersion);
+			AtsdDatabaseMetaData metaData = (AtsdDatabaseMetaData) connection.getMetaData();
+			newContext.setVersion(metaData.getDatabaseMajorVersion());
+			AtsdConnectionInfo connectionInfo = atsdConnection.getConnectionInfo();
+			final IDataProvider dataProvider = new DataProvider(connectionInfo, sql, newContext);
+			providerCache.put(statementHandle.id, dataProvider);
+			return dataProvider;
 		} catch (SQLException e) {
-			if (log.isDebugEnabled()) {
-				log.debug("[initProvider] Error attempting to get databaseMajorVersion", e);
-			}
+			log.error("[initProvider] Error attempting to get databaseMetadata", e);
+			throw new AtsdRuntimeException(e);
 		}
-		final IDataProvider dataProvider = new DataProvider(config.url(), sql, login, password, newContext);
-		providerCache.put(statementHandle.id, dataProvider);
-		return dataProvider;
 	}
 
 	private ContentMetadata findMetadata(String sql, String connectionId, int statementId)

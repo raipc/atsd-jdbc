@@ -2,8 +2,10 @@ package com.axibase.tsd.driver.jdbc.content;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Properties;
 import java.util.Scanner;
 
+import com.axibase.tsd.driver.jdbc.ext.AtsdConnectionInfo;
 import com.axibase.tsd.driver.jdbc.intf.IStoreStrategy;
 import com.axibase.tsd.driver.jdbc.protocol.SdkProtocolImpl;
 import org.junit.Before;
@@ -19,11 +21,15 @@ public abstract class AbstractTypeMock extends AbstractFetchTest {
 
 	@Before
 	public void setUp() throws Exception {
-		final ContentDescription cd = new ContentDescription(HTTP_ATSD_URL, SELECT_ALL_CLAUSE + getTable(), LOGIN_NAME,
-				LOGIN_PASSWORD, null);
+		final Properties properties = new Properties();
+		properties.setProperty("host", HTTP_ATSD_URL);
+		properties.setProperty("user", LOGIN_NAME);
+		properties.setProperty("password", LOGIN_PASSWORD);
+		AtsdConnectionInfo info = new AtsdConnectionInfo(properties);
+		final ContentDescription cd = new ContentDescription(info, SELECT_ALL_CLAUSE + getTable(), new StatementContext());
 		cd.setJsonScheme(getSchema());
 		this.protocolImpl = PowerMockito.spy(new SdkProtocolImpl(cd));
-		isDefaultStrategy = READ_STRATEGY == null || READ_STRATEGY.equalsIgnoreCase("memory");
+		isDefaultStrategy = READ_STRATEGY == null || READ_STRATEGY.equalsIgnoreCase("stream");
 	}
 
 	@Test
