@@ -1,3 +1,7 @@
+## 1.2.18
+* Fixed classpath collision error
+* Added ability to state connection properties in GUI
+
 ## 1.2.17
 * Updated dependencies
 * Improved performance
