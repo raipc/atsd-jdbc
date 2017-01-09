@@ -107,6 +107,7 @@ public class AtsdMeta extends MetaImpl {
 			if (log.isDebugEnabled()) {
 				log.debug("[prepare] " + e.getMessage());
 			}
+			Thread.currentThread().interrupt();
 		}
 		final int id = idGenerator.getAndIncrement();
 		if (log.isTraceEnabled()) {
@@ -238,6 +239,7 @@ public class AtsdMeta extends MetaImpl {
 			if (log.isDebugEnabled()) {
 				log.debug("[prepareAndExecute] " + e.getMessage());
 			}
+			Thread.currentThread().interrupt();
 		}
 		if (log.isTraceEnabled()) {
 			log.trace("[prepareAndExecute] locked: {} maxRowCount: {} handle: {} query: {}", lock.getHoldCount(),

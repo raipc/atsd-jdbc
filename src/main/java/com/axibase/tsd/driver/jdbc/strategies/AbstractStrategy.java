@@ -87,6 +87,7 @@ public abstract class AbstractStrategy implements IStoreStrategy {
 			if (logger.isDebugEnabled()) {
 				logger.debug("[openToRead] " + e.getMessage());
 			}
+			Thread.currentThread().interrupt();
 		}
 		final String[] header = consumer.open(inputStream, metadataList);
 		consumer.fillComments();
