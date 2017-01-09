@@ -19,12 +19,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
-import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import org.apache.calcite.avatica.com.fasterxml.jackson.annotation.*;
+
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
@@ -76,21 +72,11 @@ public class Dialect {
     @JsonIgnore
     private final Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
-    /**
-     * 
-     * @return
-     *     The commentPrefix
-     */
     @JsonProperty("commentPrefix")
     public String getCommentPrefix() {
         return commentPrefix;
     }
 
-    /**
-     * 
-     * @param commentPrefix
-     *     The commentPrefix
-     */
     @JsonProperty("commentPrefix")
     public void setCommentPrefix(String commentPrefix) {
         this.commentPrefix = commentPrefix;
@@ -101,21 +87,11 @@ public class Dialect {
         return this;
     }
 
-    /**
-     * 
-     * @return
-     *     The delimiter
-     */
     @JsonProperty("delimiter")
     public String getDelimiter() {
         return delimiter;
     }
 
-    /**
-     * 
-     * @param delimiter
-     *     The delimiter
-     */
     @JsonProperty("delimiter")
     public void setDelimiter(String delimiter) {
         this.delimiter = delimiter;
@@ -126,21 +102,11 @@ public class Dialect {
         return this;
     }
 
-    /**
-     * 
-     * @return
-     *     The doubleQuote
-     */
     @JsonProperty("doubleQuote")
     public boolean isDoubleQuote() {
         return doubleQuote;
     }
 
-    /**
-     * 
-     * @param doubleQuote
-     *     The doubleQuote
-     */
     @JsonProperty("doubleQuote")
     public void setDoubleQuote(boolean doubleQuote) {
         this.doubleQuote = doubleQuote;
@@ -151,21 +117,11 @@ public class Dialect {
         return this;
     }
 
-    /**
-     * 
-     * @return
-     *     The quoteChar
-     */
     @JsonProperty("quoteChar")
     public String getQuoteChar() {
         return quoteChar;
     }
 
-    /**
-     * 
-     * @param quoteChar
-     *     The quoteChar
-     */
     @JsonProperty("quoteChar")
     public void setQuoteChar(String quoteChar) {
         this.quoteChar = quoteChar;
@@ -176,21 +132,11 @@ public class Dialect {
         return this;
     }
 
-    /**
-     * 
-     * @return
-     *     The headerRowCount
-     */
     @JsonProperty("headerRowCount")
     public int getHeaderRowCount() {
         return headerRowCount;
     }
 
-    /**
-     * 
-     * @param headerRowCount
-     *     The headerRowCount
-     */
     @JsonProperty("headerRowCount")
     public void setHeaderRowCount(int headerRowCount) {
         this.headerRowCount = headerRowCount;
@@ -201,21 +147,11 @@ public class Dialect {
         return this;
     }
 
-    /**
-     * 
-     * @return
-     *     The encoding
-     */
     @JsonProperty("encoding")
     public String getEncoding() {
         return encoding;
     }
 
-    /**
-     * 
-     * @param encoding
-     *     The encoding
-     */
     @JsonProperty("encoding")
     public void setEncoding(String encoding) {
         this.encoding = encoding;
@@ -226,21 +162,11 @@ public class Dialect {
         return this;
     }
 
-    /**
-     * 
-     * @return
-     *     The header
-     */
     @JsonProperty("header")
     public boolean isHeader() {
         return header;
     }
 
-    /**
-     * 
-     * @param header
-     *     The header
-     */
     @JsonProperty("header")
     public void setHeader(boolean header) {
         this.header = header;
@@ -251,21 +177,11 @@ public class Dialect {
         return this;
     }
 
-    /**
-     * 
-     * @return
-     *     The lineTerminators
-     */
     @JsonProperty("lineTerminators")
     public List<String> getLineTerminators() {
         return lineTerminators;
     }
 
-    /**
-     * 
-     * @param lineTerminators
-     *     The lineTerminators
-     */
     @JsonProperty("lineTerminators")
     public void setLineTerminators(List<String> lineTerminators) {
         this.lineTerminators = lineTerminators;
@@ -276,21 +192,11 @@ public class Dialect {
         return this;
     }
 
-    /**
-     * 
-     * @return
-     *     The skipBlankRows
-     */
     @JsonProperty("skipBlankRows")
     public boolean isSkipBlankRows() {
         return skipBlankRows;
     }
 
-    /**
-     * 
-     * @param skipBlankRows
-     *     The skipBlankRows
-     */
     @JsonProperty("skipBlankRows")
     public void setSkipBlankRows(boolean skipBlankRows) {
         this.skipBlankRows = skipBlankRows;
@@ -301,21 +207,11 @@ public class Dialect {
         return this;
     }
 
-    /**
-     * 
-     * @return
-     *     The skipColumns
-     */
     @JsonProperty("skipColumns")
     public int getSkipColumns() {
         return skipColumns;
     }
 
-    /**
-     * 
-     * @param skipColumns
-     *     The skipColumns
-     */
     @JsonProperty("skipColumns")
     public void setSkipColumns(int skipColumns) {
         this.skipColumns = skipColumns;
@@ -326,21 +222,11 @@ public class Dialect {
         return this;
     }
 
-    /**
-     * 
-     * @return
-     *     The skipRows
-     */
     @JsonProperty("skipRows")
     public int getSkipRows() {
         return skipRows;
     }
 
-    /**
-     * 
-     * @param skipRows
-     *     The skipRows
-     */
     @JsonProperty("skipRows")
     public void setSkipRows(int skipRows) {
         this.skipRows = skipRows;
@@ -351,21 +237,11 @@ public class Dialect {
         return this;
     }
 
-    /**
-     * 
-     * @return
-     *     The skipInitialSpace
-     */
     @JsonProperty("skipInitialSpace")
     public boolean isSkipInitialSpace() {
         return skipInitialSpace;
     }
 
-    /**
-     * 
-     * @param skipInitialSpace
-     *     The skipInitialSpace
-     */
     @JsonProperty("skipInitialSpace")
     public void setSkipInitialSpace(boolean skipInitialSpace) {
         this.skipInitialSpace = skipInitialSpace;
@@ -376,21 +252,11 @@ public class Dialect {
         return this;
     }
 
-    /**
-     * 
-     * @return
-     *     The trim
-     */
     @JsonProperty("trim")
     public boolean isTrim() {
         return trim;
     }
 
-    /**
-     * 
-     * @param trim
-     *     The trim
-     */
     @JsonProperty("trim")
     public void setTrim(boolean trim) {
         this.trim = trim;
@@ -401,21 +267,11 @@ public class Dialect {
         return this;
     }
 
-    /**
-     * 
-     * @return
-     *     The Type
-     */
     @JsonProperty("@type")
     public String getType() {
         return Type;
     }
 
-    /**
-     * 
-     * @param Type
-     *     The @type
-     */
     @JsonProperty("@type")
     public void setType(String Type) {
         this.Type = Type;

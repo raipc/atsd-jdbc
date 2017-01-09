@@ -17,12 +17,8 @@ package com.axibase.tsd.driver.jdbc.content.json;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
-import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import org.apache.calcite.avatica.com.fasterxml.jackson.annotation.*;
+
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
@@ -53,21 +49,11 @@ public class Column {
     @JsonIgnore
     private final Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
-    /**
-     * 
-     * @return
-     *     The columnIndex
-     */
     @JsonProperty("columnIndex")
     public int getColumnIndex() {
         return columnIndex;
     }
 
-    /**
-     * 
-     * @param columnIndex
-     *     The columnIndex
-     */
     @JsonProperty("columnIndex")
     public void setColumnIndex(int columnIndex) {
         this.columnIndex = columnIndex;
@@ -78,21 +64,11 @@ public class Column {
         return this;
     }
 
-    /**
-     * 
-     * @return
-     *     The name
-     */
     @JsonProperty("name")
     public String getName() {
         return name;
     }
 
-    /**
-     * 
-     * @param name
-     *     The name
-     */
     @JsonProperty("name")
     public void setName(String name) {
         this.name = name;
@@ -103,21 +79,11 @@ public class Column {
         return this;
     }
 
-    /**
-     * 
-     * @return
-     *     The titles
-     */
     @JsonProperty("titles")
     public String getTitles() {
         return titles;
     }
 
-    /**
-     * 
-     * @param titles
-     *     The titles
-     */
     @JsonProperty("titles")
     public void setTitles(String titles) {
         this.titles = titles;
@@ -128,21 +94,11 @@ public class Column {
         return this;
     }
 
-    /**
-     * 
-     * @return
-     *     The datatype
-     */
     @JsonProperty("datatype")
     public String getDatatype() {
         return datatype;
     }
 
-    /**
-     * 
-     * @param datatype
-     *     The datatype
-     */
     @JsonProperty("datatype")
     public void setDatatype(String datatype) {
         this.datatype = datatype;
@@ -153,21 +109,11 @@ public class Column {
         return this;
     }
 
-    /**
-     * 
-     * @return
-     *     The table
-     */
     @JsonProperty("table")
     public String getTable() {
         return table;
     }
 
-    /**
-     * 
-     * @param table
-     *     The table
-     */
     @JsonProperty("table")
     public void setTable(String table) {
         this.table = table;
@@ -178,21 +124,11 @@ public class Column {
         return this;
     }
 
-    /**
-     * 
-     * @return
-     *     The propertyUrl
-     */
     @JsonProperty("propertyUrl")
     public String getPropertyUrl() {
         return propertyUrl;
     }
 
-    /**
-     * 
-     * @param propertyUrl
-     *     The propertyUrl
-     */
     @JsonProperty("propertyUrl")
     public void setPropertyUrl(String propertyUrl) {
         this.propertyUrl = propertyUrl;
@@ -203,21 +139,11 @@ public class Column {
         return this;
     }
 
-    /**
-     * 
-     * @return
-     *     The dcDescription
-     */
     @JsonProperty("dc:description")
     public String getDcDescription() {
         return dcDescription;
     }
 
-    /**
-     * 
-     * @param dcDescription
-     *     The dc:description
-     */
     @JsonProperty("dc:description")
     public void setDcDescription(String dcDescription) {
         this.dcDescription = dcDescription;

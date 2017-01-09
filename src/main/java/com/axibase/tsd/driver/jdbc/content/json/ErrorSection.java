@@ -18,12 +18,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
-import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+
+import org.apache.calcite.avatica.com.fasterxml.jackson.annotation.*;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
@@ -42,22 +38,12 @@ public class ErrorSection implements AtsdExceptionRepresentation {
     @JsonIgnore
     private final Map<String, Object> additionalProperties = new HashMap<>();
 
-    /**
-     * 
-     * @return
-     *     The state
-     */
     @Override
     @JsonProperty("state")
     public String getState() {
         return state;
     }
 
-    /**
-     * 
-     * @param state
-     *     The state
-     */
     @JsonProperty("state")
     public void setState(String state) {
         this.state = state;
@@ -68,22 +54,12 @@ public class ErrorSection implements AtsdExceptionRepresentation {
         return this;
     }
 
-    /**
-     * 
-     * @return
-     *     The exception
-     */
     @Override
     @JsonProperty("exception")
     public List<ExceptionSection> getException() {
         return exception;
     }
 
-    /**
-     * 
-     * @param exception
-     *     The exception
-     */
     @JsonProperty("exception")
     public void setException(List<ExceptionSection> exception) {
         this.exception = exception;
@@ -94,22 +70,12 @@ public class ErrorSection implements AtsdExceptionRepresentation {
         return this;
     }
 
-    /**
-     * 
-     * @return
-     *     The message
-     */
     @Override
     @JsonProperty("message")
     public String getMessage() {
         return message;
     }
 
-    /**
-     * 
-     * @param message
-     *     The message
-     */
     @JsonProperty("message")
     public void setMessage(String message) {
         this.message = message;

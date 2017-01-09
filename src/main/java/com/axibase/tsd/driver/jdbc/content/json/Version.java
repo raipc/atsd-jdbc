@@ -14,10 +14,10 @@
 */
 package com.axibase.tsd.driver.jdbc.content.json;
 
-import com.fasterxml.jackson.annotation.*;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import org.apache.calcite.avatica.com.fasterxml.jackson.annotation.*;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
@@ -105,5 +105,5 @@ public class Version {
 	public String toString() {
 		return "Version [buildInfo=" + buildInfo + ", license=" + license + "]";
 	}
-    
+
 }

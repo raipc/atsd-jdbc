@@ -17,12 +17,7 @@ package com.axibase.tsd.driver.jdbc.content.json;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
-import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import org.apache.calcite.avatica.com.fasterxml.jackson.annotation.*;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
@@ -31,32 +26,22 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 public class SchemaUrl {
 
     @JsonProperty("@id")
-    private String Id;
+    private String id;
     @JsonIgnore
     private final Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
-    /**
-     * 
-     * @return
-     *     The Id
-     */
     @JsonProperty("@id")
     public String getId() {
-        return Id;
+        return id;
     }
 
-    /**
-     * 
-     * @param Id
-     *     The @id
-     */
     @JsonProperty("@id")
     public void setId(String Id) {
-        this.Id = Id;
+        this.id = Id;
     }
 
     public SchemaUrl withId(String Id) {
-        this.Id = Id;
+        this.id = Id;
         return this;
     }
 

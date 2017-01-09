@@ -26,15 +26,15 @@ import com.axibase.tsd.driver.jdbc.ext.AtsdException;
 import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
 import com.axibase.tsd.driver.jdbc.util.EnumUtil;
 import com.axibase.tsd.driver.jdbc.util.JsonMappingUtil;
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
 import org.apache.calcite.avatica.AvaticaParameter;
 import org.apache.calcite.avatica.ColumnMetaData;
 import org.apache.calcite.avatica.Meta.CursorFactory;
 import org.apache.calcite.avatica.Meta.MetaResultSet;
 import org.apache.calcite.avatica.Meta.Signature;
 import org.apache.calcite.avatica.Meta.StatementType;
+import org.apache.calcite.avatica.com.fasterxml.jackson.core.JsonParseException;
+import org.apache.calcite.avatica.com.fasterxml.jackson.core.JsonParser;
+import org.apache.calcite.avatica.com.fasterxml.jackson.core.JsonToken;
 import org.apache.commons.lang3.StringUtils;
 
 import static com.axibase.tsd.driver.jdbc.DriverConstants.*;

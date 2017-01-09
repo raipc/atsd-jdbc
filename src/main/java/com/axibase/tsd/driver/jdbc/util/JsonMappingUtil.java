@@ -7,33 +7,33 @@ import com.axibase.tsd.driver.jdbc.content.json.Comments;
 import com.axibase.tsd.driver.jdbc.content.json.GeneralError;
 import com.axibase.tsd.driver.jdbc.content.json.QueryDescription;
 import com.axibase.tsd.driver.jdbc.content.json.Version;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.MappingJsonFactory;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
+import org.apache.calcite.avatica.com.fasterxml.jackson.core.JsonParser;
+import org.apache.calcite.avatica.com.fasterxml.jackson.databind.MappingJsonFactory;
+import org.apache.calcite.avatica.com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.calcite.avatica.com.fasterxml.jackson.databind.ObjectReader;
 
 public class JsonMappingUtil {
-	private static final ObjectMapper mapper = new ObjectMapper();
-	private static final ObjectReader reader = mapper.reader();
-	private static final MappingJsonFactory factory = new MappingJsonFactory(mapper);
+	private static final ObjectMapper MAPPER = new ObjectMapper();
+	private static final ObjectReader READER = MAPPER.reader();
+	private static final MappingJsonFactory JSON_FACTORY = new MappingJsonFactory(MAPPER);
 
 	public static Comments mapToComments(String json) throws IOException {
-		return reader.forType(Comments.class).readValue(json);
+		return READER.forType(Comments.class).readValue(json);
 	}
 
 	public static QueryDescription[] mapToQueryDescriptionArray(InputStream jsonIs) throws IOException {
-		return reader.forType(QueryDescription[].class).readValue(jsonIs);
+		return READER.forType(QueryDescription[].class).readValue(jsonIs);
 	}
 
 	public static GeneralError mapToGeneralError(InputStream inputStream) throws IOException {
-		return reader.forType(GeneralError.class).readValue(inputStream);
+		return READER.forType(GeneralError.class).readValue(inputStream);
 	}
 
 	public static Version mapToVersion(InputStream jsonIs) throws IOException {
-		return reader.forType(Version.class).readValue(jsonIs);
+		return READER.forType(Version.class).readValue(jsonIs);
 	}
 
 	public static JsonParser getParser(String json) throws IOException {
-		return factory.createParser(json);
+		return JSON_FACTORY.createParser(json);
 	}
 }

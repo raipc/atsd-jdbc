@@ -19,12 +19,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
-import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import org.apache.calcite.avatica.com.fasterxml.jackson.annotation.*;
+
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({ "errors", "warnings" })
@@ -37,20 +33,11 @@ public class Comments {
 	@JsonIgnore
 	private final Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
-	/**
-	 * 
-	 * @return The errors
-	 */
 	@JsonProperty("errors")
 	public List<ErrorSection> getErrors() {
 		return errors;
 	}
 
-	/**
-	 * 
-	 * @param errors
-	 *            The errors
-	 */
 	@JsonProperty("errors")
 	public void setErrors(List<ErrorSection> errors) {
 		this.errors = errors;
@@ -61,20 +48,11 @@ public class Comments {
 		return this;
 	}
 
-	/**
-	 * 
-	 * @return The warnings
-	 */
 	@JsonProperty("warnings")
 	public List<WarningSection> getWarnings() {
 		return warnings;
 	}
 
-	/**
-	 * 
-	 * @param warnings
-	 *            The warnings
-	 */
 	@JsonProperty("warnings")
 	public void setWarnings(List<WarningSection> warnings) {
 		this.warnings = warnings;

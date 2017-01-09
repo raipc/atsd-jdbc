@@ -17,12 +17,7 @@ package com.axibase.tsd.driver.jdbc.content.json;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
-import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import org.apache.calcite.avatica.com.fasterxml.jackson.annotation.*;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
@@ -46,22 +41,12 @@ public class ExceptionSection {
     private Boolean nativeMethod;
     @JsonIgnore
     private final Map<String, Object> additionalProperties = new HashMap<String, Object>();
-
-    /**
-     * 
-     * @return
-     *     The methodName
-     */
+	
     @JsonProperty("methodName")
     public String getMethodName() {
         return methodName;
     }
-
-    /**
-     * 
-     * @param methodName
-     *     The methodName
-     */
+	
     @JsonProperty("methodName")
     public void setMethodName(String methodName) {
         this.methodName = methodName;
@@ -71,22 +56,12 @@ public class ExceptionSection {
         this.methodName = methodName;
         return this;
     }
-
-    /**
-     * 
-     * @return
-     *     The fileName
-     */
+	
     @JsonProperty("fileName")
     public String getFileName() {
         return fileName;
     }
-
-    /**
-     * 
-     * @param fileName
-     *     The fileName
-     */
+	
     @JsonProperty("fileName")
     public void setFileName(String fileName) {
         this.fileName = fileName;
@@ -96,22 +71,12 @@ public class ExceptionSection {
         this.fileName = fileName;
         return this;
     }
-
-    /**
-     * 
-     * @return
-     *     The lineNumber
-     */
+	
     @JsonProperty("lineNumber")
     public Integer getLineNumber() {
         return lineNumber;
     }
-
-    /**
-     * 
-     * @param lineNumber
-     *     The lineNumber
-     */
+	
     @JsonProperty("lineNumber")
     public void setLineNumber(Integer lineNumber) {
         this.lineNumber = lineNumber;
@@ -122,21 +87,11 @@ public class ExceptionSection {
         return this;
     }
 
-    /**
-     * 
-     * @return
-     *     The className
-     */
     @JsonProperty("className")
     public String getClassName() {
         return className;
     }
 
-    /**
-     * 
-     * @param className
-     *     The className
-     */
     @JsonProperty("className")
     public void setClassName(String className) {
         this.className = className;
@@ -147,21 +102,11 @@ public class ExceptionSection {
         return this;
     }
 
-    /**
-     * 
-     * @return
-     *     The nativeMethod
-     */
     @JsonProperty("nativeMethod")
     public Boolean getNativeMethod() {
         return nativeMethod;
     }
 
-    /**
-     * 
-     * @param nativeMethod
-     *     The nativeMethod
-     */
     @JsonProperty("nativeMethod")
     public void setNativeMethod(Boolean nativeMethod) {
         this.nativeMethod = nativeMethod;

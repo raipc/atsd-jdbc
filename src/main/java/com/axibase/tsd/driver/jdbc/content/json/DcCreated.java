@@ -17,12 +17,8 @@ package com.axibase.tsd.driver.jdbc.content.json;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
-import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import org.apache.calcite.avatica.com.fasterxml.jackson.annotation.*;
+
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
@@ -38,21 +34,11 @@ public class DcCreated {
     @JsonIgnore
     private final Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
-    /**
-     * 
-     * @return
-     *     The Value
-     */
     @JsonProperty("@value")
     public String getValue() {
         return Value;
     }
 
-    /**
-     * 
-     * @param Value
-     *     The @value
-     */
     @JsonProperty("@value")
     public void setValue(String Value) {
         this.Value = Value;
@@ -63,21 +49,11 @@ public class DcCreated {
         return this;
     }
 
-    /**
-     * 
-     * @return
-     *     The Type
-     */
     @JsonProperty("@type")
     public String getType() {
         return Type;
     }
 
-    /**
-     * 
-     * @param Type
-     *     The @type
-     */
     @JsonProperty("@type")
     public void setType(String Type) {
         this.Type = Type;
