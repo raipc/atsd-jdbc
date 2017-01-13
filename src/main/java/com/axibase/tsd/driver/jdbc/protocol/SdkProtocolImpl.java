@@ -218,7 +218,7 @@ public class SdkProtocolImpl implements IContentProtocol {
 		conn.setUseCaches(false);
 		if (method.equals(POST_METHOD)) {
 			final String postParams = contentDescription.getPostParams();
-			conn.setRequestProperty(HttpHeaders.ACCEPT, CSV_MIME_TYPE);
+			conn.setRequestProperty(HttpHeaders.ACCEPT, CSV_AND_JSON_MIME_TYPE);
 			conn.setRequestProperty(HttpHeaders.ACCEPT_ENCODING, COMPRESSION_ENCODING);
 			conn.setRequestProperty(HttpHeaders.CONTENT_LENGTH, "" + postParams.length());
 			conn.setRequestProperty(HttpHeaders.CONTENT_TYPE, FORM_URLENCODED_TYPE);

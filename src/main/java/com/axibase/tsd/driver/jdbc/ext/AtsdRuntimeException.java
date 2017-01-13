@@ -5,10 +5,6 @@ public class AtsdRuntimeException extends RuntimeException {
 		super(message);
 	}
 
-	public AtsdRuntimeException(Throwable cause) {
-		super(cause);
-	}
-
 	public AtsdRuntimeException(String message, Throwable cause) {
 		super(message, cause);
 	}

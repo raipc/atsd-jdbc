@@ -259,7 +259,7 @@ public class AtsdMeta extends MetaImpl {
 			return result;
 		} catch (final RuntimeException e) {
 			if (log.isErrorEnabled()) {
-				log.error("[execute] error", e);
+				log.error("[prepareAndExecute] error", e);
 			}
 			throw e;
 		} catch (final Exception e) {
@@ -518,7 +518,7 @@ public class AtsdMeta extends MetaImpl {
 			return dataProvider;
 		} catch (SQLException e) {
 			log.error("[initProvider] Error attempting to get databaseMetadata", e);
-			throw new AtsdRuntimeException(e);
+			throw new AtsdRuntimeException(e.getMessage(), e);
 		}
 	}
 

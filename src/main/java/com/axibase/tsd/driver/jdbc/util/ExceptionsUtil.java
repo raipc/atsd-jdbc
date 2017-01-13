@@ -2,6 +2,8 @@ package com.axibase.tsd.driver.jdbc.util;
 
 import java.sql.SQLException;
 
+import com.axibase.tsd.driver.jdbc.ext.AtsdRuntimeException;
+
 public class ExceptionsUtil {
 	private ExceptionsUtil() {}
 
@@ -10,8 +12,14 @@ public class ExceptionsUtil {
 		if (cause == null || !(cause instanceof RuntimeException)) {
 			return exception;
 		}
-		SQLException unboxed = new SQLException(exception.getMessage());
-		unboxed.setStackTrace(exception.getStackTrace());
-		return unboxed;
+		Throwable finalCause = exception;
+		if (cause instanceof AtsdRuntimeException) {
+			Throwable inner = cause.getCause();
+			if (inner instanceof SQLException) { // parsed result from ATSD
+				finalCause = cause;
+			}
+		}
+		SQLException result = new SQLException(exception.getMessage(), finalCause);
+		return result;
 	}
 }
