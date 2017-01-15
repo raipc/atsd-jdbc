@@ -35,8 +35,9 @@ import static com.axibase.tsd.driver.jdbc.DriverConstants.DEFAULT_CHARSET;
 
 public class RowIterator implements Iterator<Object[]>, AutoCloseable {
 	private static final char COMMENT_SIGN = '#';
+	private static final Object[] EMPTY_LINE = {null};
 
-	private CsvParser decoratedParser;
+	private CsvParser csvParser;
 	private final Reader decoratedReader;
 	private ParserRowContext rowContext;
 	private String commentSection;
@@ -57,9 +58,9 @@ public class RowIterator implements Iterator<Object[]>, AutoCloseable {
 				this.nextRow = this.header;
 				this.processor = new AtsdRowProcessor();
 				settings.setProcessor(this.processor);
-				this.decoratedParser = new CsvParser(settings);
-				this.decoratedParser.beginParsing(reader);
-				this.rowContext = new UnivocityParserRowContext(this.decoratedParser.getContext(), this.header.length);
+				this.csvParser = new CsvParser(settings);
+				this.csvParser.beginParsing(reader);
+				this.rowContext = new UnivocityParserRowContext(this.csvParser.getContext(), header.length);
 				next();
 			}
 		} catch (IOException e) {
@@ -90,7 +91,7 @@ public class RowIterator implements Iterator<Object[]>, AutoCloseable {
 
 		@Override
 		public void rowProcessed(String[] row, ParsingContext context) {
-			parsed = parseValues(row);
+			parsed = row.length == 0 ? EMPTY_LINE : parseValues(row);
 		}
 
 		@Override
@@ -107,6 +108,7 @@ public class RowIterator implements Iterator<Object[]>, AutoCloseable {
 		settings.setEmptyValue("");
 		settings.setNullValue(version >= DriverConstants.ATSD_VERSION_DIFFERS_NULL_AND_EMPTY ? null : "");
 		settings.setNumberOfRowsToSkip(1);
+		settings.setSkipEmptyLines(false);
 		return settings;
 	}
 
@@ -135,7 +137,7 @@ public class RowIterator implements Iterator<Object[]>, AutoCloseable {
 	}
 
 	private void fillCommentSectionWithParsedComments() {
-		final String comments = decoratedParser.getContext().currentParsedContent();
+		final String comments = csvParser.getContext().currentParsedContent();
 		if (comments == null) {
 			return;
 		}
@@ -170,7 +172,7 @@ public class RowIterator implements Iterator<Object[]>, AutoCloseable {
 			throw new NoSuchElementException();
 		}
 		final Object[] result = nextRow;
-		if (decoratedParser.parseNext() == null) {
+		if (csvParser.parseNext() == null) {
 			fillCommentSectionWithParsedComments();
 			nextRow = null;
 		} else {
@@ -198,8 +200,8 @@ public class RowIterator implements Iterator<Object[]>, AutoCloseable {
 
 	@Override
 	public void close() throws IOException {
-		if (this.decoratedParser != null) {
-			this.decoratedParser.stopParsing();
+		if (this.csvParser != null) {
+			this.csvParser.stopParsing();
 		}
 		if (this.decoratedReader != null) {
 			this.decoratedReader.close();
