@@ -1,3 +1,8 @@
+## 1.2.19
+* Humanized errors representation
+* Fixed skipping columns with single NULL values
+* Fixed a problem with colliding Jackson and commons-codecs dependencies in the classpath
+
 ## 1.2.18
 * Fixed classpath collision error
 * Added ability to state connection properties in GUI
