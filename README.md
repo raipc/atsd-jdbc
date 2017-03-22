@@ -332,9 +332,9 @@ TypeInfo:
 	Name:BIGINT 	    CS: false 	Type: -5 	Precision: 19
 	Name:DECIMAL 	    CS: false 	Type: 3 	Precision: -1
 	Name:DOUBLE 	    CS: false 	Type: 8 	Precision: 52
-	Name:FLOAT 	        CS: false 	Type: 6 	Precision: 23
+	Name:FLOAT 	    CS: false 	Type: 6 	Precision: 23
 	Name:INTEGER 	    CS: false 	Type: 4 	Precision: 10
-	Name:JAVA_OBJECT 	CS: false 	Type: 2000 	Precision: 2147483647
+	Name:JAVA_OBJECT    CS: false 	Type: 2000 	Precision: 2147483647
 	Name:SMALLINT 	    CS: false 	Type: 5 	Precision: 5
 	Name:VARCHAR 	    CS: true 	Type: 12 	Precision: 2147483647
 	Name:TIMESTAMP 	    CS: false 	Type: 93 	Precision: 23
@@ -344,7 +344,7 @@ TableTypes:
 	VIEW
 	SYSTEM
 	
-Catalog: 	atsd
+Catalog: atsd
 ```
 
 ## Spring Framework Integration
