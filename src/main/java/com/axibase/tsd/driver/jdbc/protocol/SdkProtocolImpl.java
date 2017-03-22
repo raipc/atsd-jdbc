@@ -36,8 +36,8 @@ import com.axibase.tsd.driver.jdbc.ext.AtsdRuntimeException;
 import com.axibase.tsd.driver.jdbc.intf.IContentProtocol;
 import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
 import com.axibase.tsd.driver.jdbc.util.JsonMappingUtil;
+import org.apache.calcite.avatica.org.apache.commons.codec.binary.Base64;
 import org.apache.calcite.avatica.org.apache.http.HttpHeaders;
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 
 import static com.axibase.tsd.driver.jdbc.DriverConstants.*;
