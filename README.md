@@ -124,11 +124,11 @@ Follow the instructions in the manager's user guide to create a custom driver ba
 To execute a query, load the driver class, open a connection, create a SQL statement, execute the query, and process the result set:
 
 ```java
-	Class.forName("com.axibase.tsd.driver.jdbc.AtsdDriver");
-	Connection connection = DriverManager.getConnection("jdbc:axibase:atsd:" + <ATDS_URL>, <USERNAME>, <PASSWORD>);
-	String query = "SELECT value, datetime FROM cpu_busy WHERE entity = 'nurswgvml007' LIMIT 1";
-	Statement statement = connection.createStatement();
-	ResultSet resultSet = statement.executeQuery(query);
+    Class.forName("com.axibase.tsd.driver.jdbc.AtsdDriver");
+    Connection connection = DriverManager.getConnection("jdbc:axibase:atsd:" + <ATSD_URL>, <USERNAME>, <PASSWORD>);
+    String query = "SELECT value, datetime FROM cpu_busy WHERE entity = 'nurswgvml007' LIMIT 1";
+    Statement statement = connection.createStatement();
+    ResultSet resultSet = statement.executeQuery(query);
 ```
 
 ## Prepared Statements
@@ -136,10 +136,10 @@ To execute a query, load the driver class, open a connection, create a SQL state
 Initialize a prepared statement, set placeholder parameters, and execute the query:
 
 ```java
-	String query = "SELECT value, datetime FROM cpu_busy WHERE entity = ? LIMIT 1";
-	PreparedStatement preparedStatement = connection.prepareStatement(query);
-	preparedStatement.setString(1, "nurswgvml007");
-	ResultSet resultSet = prepareStatement.executeQuery();
+    String query = "SELECT value, datetime FROM cpu_busy WHERE entity = ? LIMIT 1";
+    PreparedStatement preparedStatement = connection.prepareStatement(query);
+    preparedStatement.setString(1, "nurswgvml007");
+    ResultSet resultSet = prepareStatement.executeQuery();
 ```
 
 ### EndTime Expressions in Prepared Statements
@@ -162,10 +162,10 @@ The database may return SQL warnings as opposed to raising a non-recoverable err
 To retrieve SQL warnings, invoke the `resultSet.getWarnings()` method:
 
 ```java
-	SQLWarning rsWarning = resultSet.getWarnings();
-	if (rsWarning != null) {
-		System.err.println(rsWarning.getMessage());
-	}
+    SQLWarning rsWarning = resultSet.getWarnings();
+    if (rsWarning != null) {
+        System.err.println(rsWarning.getMessage());
+    }
 ```
 
 ## Basic Example
@@ -217,7 +217,7 @@ public class TestQuery {
 
 ```java
 
-	Class.forName("com.axibase.tsd.driver.jdbc.AtsdDriver");
+    Class.forName("com.axibase.tsd.driver.jdbc.AtsdDriver");
     
     String atsdHost = System.getProperty("atsd.host");
     String username = System.getProperty("atsd.user");
@@ -269,7 +269,7 @@ The following example shows how to extract metadata from the database:
 
 ```java
 
-	Class.forName("com.axibase.tsd.driver.jdbc.AtsdDriver");
+    Class.forName("com.axibase.tsd.driver.jdbc.AtsdDriver");
 
     String hostUrl = System.getProperty("atsd.host");
     String userName = System.getProperty("atsd.user");
@@ -357,28 +357,28 @@ See an example [here](https://github.com/axibase/atsd-jdbc-test/tree/master/src/
 
 ```java
 
-	@Configuration
-	public class AtsdRepositoryConfig {
+    @Configuration
+    public class AtsdRepositoryConfig {
 
-	@Bean
-	public SqlGenerator sqlGenerator() {
-		return new AtsdSqlGenerator();
-	}
+    @Bean
+    public SqlGenerator sqlGenerator() {
+        return new AtsdSqlGenerator();
+    }
 
-	@Bean
-	public DataSource dataSource() {
-		final HikariDataSource dataSource = new HikariDataSource();
-		dataSource.setJdbcUrl(url);
-		dataSource.setUsername(login);
-		dataSource.setPassword(password);
-		dataSource.setReadOnly(true);
-		return dataSource;
-	}
+    @Bean
+    public DataSource dataSource() {
+        final HikariDataSource dataSource = new HikariDataSource();
+        dataSource.setJdbcUrl(url);
+        dataSource.setUsername(login);
+        dataSource.setPassword(password);
+        dataSource.setReadOnly(true);
+        return dataSource;
+    }
 
-	@Bean
-	public EntityValueDoubleRepository entityRepository() {
-		return new EntityValueDoubleRepository(table);
-	}
+    @Bean
+    public EntityValueDoubleRepository entityRepository() {
+        return new EntityValueDoubleRepository(table);
+    }
 
 }
 ```
@@ -387,19 +387,19 @@ See an example [here](https://github.com/axibase/atsd-jdbc-test/tree/master/src/
 
 ```java
 
-	@Repository
-	public class EntityValueDoubleRepository extends JdbcRepository<EntityValueDouble, Double> {
+    @Repository
+    public class EntityValueDoubleRepository extends JdbcRepository<EntityValueDouble, Double> {
 
-	public EntityValueDoubleRepository(String table) {
-		super(ROW_MAPPER, new MissingRowUnmapper<EntityValueDouble>(), table);
-	}
+    public EntityValueDoubleRepository(String table) {
+        super(ROW_MAPPER, new MissingRowUnmapper<EntityValueDouble>(), table);
+    }
 
-	public static final RowMapper<EntityValueDouble> ROW_MAPPER = new RowMapper<EntityValueDouble>() {
-		@Override
-		public EntityValueDouble mapRow(ResultSet rs, int rowNum) throws SQLException {
-			return new EntityValueDouble(rs.getString("entity"), rs.getLong("time"), rs.getDouble("value"));
-		}
-	};
+    public static final RowMapper<EntityValueDouble> ROW_MAPPER = new RowMapper<EntityValueDouble>() {
+        @Override
+        public EntityValueDouble mapRow(ResultSet rs, int rowNum) throws SQLException {
+            return new EntityValueDouble(rs.getString("entity"), rs.getLong("time"), rs.getDouble("value"));
+        }
+    };
 
 }
 ```
@@ -408,15 +408,15 @@ Usage example with [Spring Boot](https://github.com/axibase/atsd-jdbc-test/blob/
 
 ```java
 
-	@Resource
-	private EntityValueDoubleRepository entityRepository;
+    @Resource
+    private EntityValueDoubleRepository entityRepository;
 
-	@Override
-	public void run(String... args) throws Exception {
-		PageRequest page = new PageRequest(0, 1000, Direction.DESC, "time", "value");
-		Page<EntityValueDouble> result = entityRepository.findAll(page);
-		List<EntityValueDouble> list = result.getContent();
-		assert list != null && !list.isEmpty();
-	}
+    @Override
+    public void run(String... args) throws Exception {
+        PageRequest page = new PageRequest(0, 1000, Direction.DESC, "time", "value");
+        Page<EntityValueDouble> result = entityRepository.findAll(page);
+        List<EntityValueDouble> list = result.getContent();
+        assert list != null && !list.isEmpty();
+    }
 
 ```
