@@ -22,6 +22,12 @@ public enum AtsdType {
 			return Long.valueOf(cell);
 		}
 	},
+	BOOLEAN_DATA_TYPE("boolean", "boolean", Types.BOOLEAN, Rep.BOOLEAN, 1, 1) {
+		@Override
+		protected Object readValueHelper(String cell) {
+			return Boolean.valueOf(cell);
+		}
+	},
 	DECIMAL_TYPE("decimal", "decimal", Types.DECIMAL, Rep.OBJECT, -1, 10) {
 		@Override
 		public Object readValueHelper(String values) {
