@@ -61,7 +61,7 @@ public enum AtsdType {
 		}
 
 		private boolean isNumberStart(char character) {
-			return Character.isDigit(character) || character != 'N';
+			return Character.isDigit(character) || character == 'N';
 		}
 
 		@Override
