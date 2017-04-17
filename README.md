@@ -6,7 +6,7 @@
 
 The JDBC driver provides a convenient way to query the Axibase Time Series Database via SQL. 
 
-Internal communication is implemented by means of transferring results in CSV format via HTTP or HTTPS protocols. See the [SQL API Documentation](https://github.com/axibase/atsd-docs/tree/master/api/sql#overview) for a description of the query syntax and examples.
+Internal communication is implemented by means of transferring results in CSV format via HTTP or HTTPS protocols. See the [SQL API Documentation](https://github.com/axibase/atsd/tree/master/docs/api/sql#overview) for a description of the query syntax and examples.
 
 ## JDBC URL
 
@@ -32,6 +32,7 @@ The project is released under [Apache 2.0 License](http://www.apache.org/license
 | 14220 | 1.2.12 |
 | 14451 | 1.2.15 |
 | 14540 | 1.2.16 |
+| 16130 | 1.2.20 |
 
 For a given the database version, the above table specifies a range of compatible driver versions.
 
@@ -46,7 +47,7 @@ For example, database versions 14150 supports driver versions between 1.2.10 (in
 | readTimeout | number | 0 | Read timeout, in seconds. |
 | strategy | `file`, `memory`, `stream` | `stream` | Resultset processing strategy. |
 
-Properties can be included as part of the JDBC url using a semi-colon as a separator. For example: `jdbc:axibase:atsd:https://10.102.0.6:8443/api/sql;trustServerCertificate=true;strategy=file`.
+Properties can be included as part of the JDBC url using a semicolon as a separator. For example: `jdbc:axibase:atsd:https://10.102.0.6:8443/api/sql;trustServerCertificate=true;strategy=file`.
 
 ## Resultset Processing Strategy
 
@@ -75,7 +76,7 @@ Add dependency to `pom.xml` in your project. The JDBC driver will be imported au
 <dependency>
     <groupId>com.axibase</groupId>
     <artifactId>atsd-jdbc</artifactId>
-    <version>1.2.19</version>
+    <version>1.2.20</version>
 </dependency>
 ```
 
@@ -87,11 +88,11 @@ $ mvn clean install -DskipTests=true
 
 ### Classpath
 
-Download the driver [jar file](https://github.com/axibase/atsd-jdbc/releases/download/RELEASE-1.2.19/atsd-jdbc-1.2.19-DEPS.jar) with dependencies and add it to the classpath of your application.
+Download the driver [jar file](https://github.com/axibase/atsd-jdbc/releases/download/RELEASE-1.2.20/atsd-jdbc-1.2.20-DEPS.jar) with dependencies and add it to the classpath of your application.
 
 ```
-* Unix: java -cp "atsd-jdbc-1.2.19-DEPS.jar:lib/*" your.package.MainClass
-* Windows java -cp "atsd-jdbc-1.2.19-DEPS.jar;lib/*" your.package.MainClass
+* Unix: java -cp "atsd-jdbc-1.2.20-DEPS.jar:lib/*" your.package.MainClass
+* Windows java -cp "atsd-jdbc-1.2.20-DEPS.jar;lib/*" your.package.MainClass
 ```
 
 ### Database Tools
@@ -104,6 +105,7 @@ Follow the instructions in the manager's user guide to create a custom driver ba
 
 | **TYPE NAME** | **DATA TYPE** | **PRECISION**  |
 |:---------|----------:|-----------:|
+| BOOLEAN | 16 | 1 |
 | DECIMAL | 3 | -1 |
 | DOUBLE | 8 | 52 |
 | FLOAT | 6 | 23 |
@@ -117,7 +119,7 @@ Follow the instructions in the manager's user guide to create a custom driver ba
 ## Capabilities
 
 * [Driver capabilities](capabilities.md) reference guide.
-* ATSD [SQL API documentation](https://github.com/axibase/atsd-docs/tree/master/api/sql#overview).
+* ATSD [SQL API documentation](https://github.com/axibase/atsd/tree/master/docs/api/sql#overview).
 
 ## Usage
 
@@ -146,7 +148,7 @@ Initialize a prepared statement, set placeholder parameters, and execute the que
 
 > Supported in 1.2.9+.
 
-To set an [`endTime`](https://github.com/axibase/atsd-docs/blob/master/end-time-syntax.md) expression as a parameter in a prepared statement, cast the statement to `AtsdPreparedStatement` and invoke the `setTimeExpression` method.
+To set an [`endTime`](https://github.com/axibase/atsd/blob/master/docs/end-time-syntax.md) expression as a parameter in a prepared statement, cast the statement to `AtsdPreparedStatement` and invoke the `setTimeExpression` method.
 
 ```java
     String query = "SELECT * FROM df.disk_used WHERE datetime > ? LIMIT 1";
@@ -326,10 +328,11 @@ Results:
 Product Name:   	Axibase
 Product Version:	Axibase Time Series Database, <ATSD_EDITION>, Revision: <ATSD_REVISION_NUMBER>
 Driver Name:    	ATSD JDBC driver
-Driver Version: 	1.2.19
+Driver Version: 	1.2.20
 
 TypeInfo:
 	Name:BIGINT 	    CS: false 	Type: -5 	Precision: 19
+	Name:BOOLEAN 	    CS: false 	Type: 16 	Precision: 1
 	Name:DECIMAL 	    CS: false 	Type: 3 	Precision: -1
 	Name:DOUBLE 	    CS: false 	Type: 8 	Precision: 52
 	Name:FLOAT 	    CS: false 	Type: 6 	Precision: 23

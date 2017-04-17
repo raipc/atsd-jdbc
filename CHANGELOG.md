@@ -1,3 +1,6 @@
+## 1.2.20
+* Added support for the boolean data type
+
 ## 1.2.19
 * Humanized errors representation
 * Fixed skipping columns with single NULL values
