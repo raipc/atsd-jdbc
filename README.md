@@ -6,7 +6,7 @@
 
 The JDBC driver provides a convenient way to query the Axibase Time Series Database via SQL. 
 
-Internal communication is implemented by means of transferring results in CSV format via HTTP or HTTPS protocols. See the [SQL API Documentation](https://github.com/axibase/atsd/tree/master/docs/api/sql#overview) for a description of the query syntax and examples.
+Internal communication is implemented by means of transferring results in CSV format via HTTP or HTTPS protocols. See the [SQL API Documentation](https://github.com/axibase/atsd/tree/master/api/sql#overview) for a description of the query syntax and examples.
 
 ## JDBC URL
 
@@ -119,7 +119,7 @@ Follow the instructions in the manager's user guide to create a custom driver ba
 ## Capabilities
 
 * [Driver capabilities](capabilities.md) reference guide.
-* ATSD [SQL API documentation](https://github.com/axibase/atsd/tree/master/docs/api/sql#overview).
+* ATSD [SQL API documentation](https://github.com/axibase/atsd/tree/master/api/sql#overview).
 
 ## Usage
 
@@ -148,7 +148,7 @@ Initialize a prepared statement, set placeholder parameters, and execute the que
 
 > Supported in 1.2.9+.
 
-To set an [`endTime`](https://github.com/axibase/atsd/blob/master/docs/end-time-syntax.md) expression as a parameter in a prepared statement, cast the statement to `AtsdPreparedStatement` and invoke the `setTimeExpression` method.
+To set an [`endTime`](https://github.com/axibase/atsd/blob/master/end-time-syntax.md) expression as a parameter in a prepared statement, cast the statement to `AtsdPreparedStatement` and invoke the `setTimeExpression` method.
 
 ```java
     String query = "SELECT * FROM df.disk_used WHERE datetime > ? LIMIT 1";
