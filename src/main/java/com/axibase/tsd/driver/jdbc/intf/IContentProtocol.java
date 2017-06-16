@@ -14,11 +14,11 @@
 */
 package com.axibase.tsd.driver.jdbc.intf;
 
+import com.axibase.tsd.driver.jdbc.ext.AtsdException;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.GeneralSecurityException;
-
-import com.axibase.tsd.driver.jdbc.ext.AtsdException;
 
 public interface IContentProtocol extends AutoCloseable {
 
@@ -27,6 +27,8 @@ public interface IContentProtocol extends AutoCloseable {
 	InputStream readContent() throws AtsdException, GeneralSecurityException, IOException;
 
 	InputStream readContent(int timeout) throws AtsdException, GeneralSecurityException, IOException;
+
+	InputStream getMetrics(String metricMask) throws AtsdException, GeneralSecurityException, IOException;
 
 	void cancelQuery() throws AtsdException, GeneralSecurityException, IOException;
 }

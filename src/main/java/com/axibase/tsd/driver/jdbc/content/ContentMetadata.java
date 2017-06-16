@@ -14,13 +14,6 @@
 */
 package com.axibase.tsd.driver.jdbc.content;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-
 import com.axibase.tsd.driver.jdbc.enums.AtsdType;
 import com.axibase.tsd.driver.jdbc.ext.AtsdException;
 import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
@@ -37,6 +30,13 @@ import org.apache.calcite.avatica.com.fasterxml.jackson.core.JsonParser;
 import org.apache.calcite.avatica.com.fasterxml.jackson.core.JsonToken;
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
 import static com.axibase.tsd.driver.jdbc.DriverConstants.*;
 
 @SuppressWarnings("unchecked")
@@ -47,9 +47,9 @@ public class ContentMetadata {
 	private final List<MetaResultSet> list;
 	private final List<ColumnMetaData> metadataList;
 
-	public ContentMetadata(String scheme, String sql, String connectionId, int statementId)
+	public ContentMetadata(String scheme, String sql, String catalog, String connectionId, int statementId)
 			throws AtsdException, IOException {
-		metadataList = StringUtils.isNoneEmpty(scheme) ? buildMetadataList(scheme)
+		metadataList = StringUtils.isNotEmpty(scheme) ? buildMetadataList(scheme, catalog)
 				: Collections.<ColumnMetaData>emptyList();
 		sign = new Signature(metadataList, sql, Collections.<AvaticaParameter>emptyList(), null, CursorFactory.LIST,
 				StatementType.SELECT);
@@ -69,7 +69,7 @@ public class ContentMetadata {
 		return metadataList;
 	}
 
-	static List<ColumnMetaData> buildMetadataList(String json)
+	static List<ColumnMetaData> buildMetadataList(String json, String catalog)
 			throws JsonParseException, MalformedURLException, IOException, AtsdException {
 		final Map<String, Object> jsonObject = getJsonScheme(json);
 		if (jsonObject == null) {
@@ -95,7 +95,7 @@ public class ContentMetadata {
 		ColumnMetaData[] sortedByOrdinal = new ColumnMetaData[size];
 		int index = 0;
 		for (final Object obj : columns) {
-			final ColumnMetaData cmd = getColumnMetaData(schema, index, obj);
+			final ColumnMetaData cmd = getColumnMetaData(schema, catalog, index, obj);
 			sortedByOrdinal[cmd.ordinal] = cmd;
 			++index;
 		}
@@ -105,7 +105,7 @@ public class ContentMetadata {
 		return Collections.unmodifiableList(Arrays.asList(sortedByOrdinal));
 	}
 
-	private static ColumnMetaData getColumnMetaData(String schema, int ind, final Object obj) {
+	private static ColumnMetaData getColumnMetaData(String schema, String catalog, int ind, final Object obj) {
 		final Map<String, Object> property = (Map<String, Object>) obj;
 		final Integer index = (Integer) property.get(INDEX_PROPERTY);
 		final int columnIndex = index != null ? index - 1 : ind;
@@ -120,6 +120,7 @@ public class ContentMetadata {
 		return new ColumnMetaDataBuilder()
 				.withColumnIndex(columnIndex)
 				.withSchema(schema)
+				.withCatalog(catalog)
 				.withTable(table)
 				.withName(name)
 				.withTitle(title)
@@ -156,6 +157,7 @@ public class ContentMetadata {
 		private int columnIndex;
 		private int nullable;
 		private String schema;
+		private String catalog;
 
 		public ColumnMetaDataBuilder withName(String name) {
 			this.name = name;
@@ -187,6 +189,11 @@ public class ContentMetadata {
 			return this;
 		}
 
+		public ColumnMetaDataBuilder withCatalog(String catalog) {
+			this.catalog = catalog;
+			return this;
+		}
+
 		public ColumnMetaDataBuilder withNullable(int nullable) {
 			this.nullable = nullable;
 			return this;
@@ -195,7 +202,7 @@ public class ContentMetadata {
 		public ColumnMetaData build() {
 			final ColumnMetaData.AvaticaType atype = getAvaticaType(atsdType);
 			return new ColumnMetaData(columnIndex, false, false, false,
-					false, nullable, false, atsdType.size, name, title, schema, 1, 1, table, DEFAULT_CATALOG_NAME, atype,
+					false, nullable, false, atsdType.size, name, title, schema, 1, 1, table, catalog, atype,
 					true, false, false, atype.rep.clazz.getCanonicalName());
 		}
 	}

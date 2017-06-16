@@ -1,13 +1,13 @@
 package com.axibase.tsd.driver.jdbc.enums;
 
+import com.axibase.tsd.driver.jdbc.DriverConstants;
+import org.apache.calcite.avatica.ConnectionConfigImpl;
+import org.apache.calcite.avatica.ConnectionProperty;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-
-import com.axibase.tsd.driver.jdbc.DriverConstants;
-import org.apache.calcite.avatica.ConnectionConfigImpl;
-import org.apache.calcite.avatica.ConnectionProperty;
 
 import static org.apache.calcite.avatica.ConnectionConfigImpl.parse;
 
@@ -15,7 +15,9 @@ public enum AtsdDriverConnectionProperties implements ConnectionProperty {
 	trustServerCertificate(DriverConstants.TRUST_PARAM_NAME, DriverConstants.DEFAULT_TRUST_SERVER_CERTIFICATE, Type.BOOLEAN),
 	connectTimeout(DriverConstants.CONNECT_TIMEOUT_PARAM, DriverConstants.DEFAULT_CONNECT_TIMEOUT_VALUE, Type.NUMBER),
 	readTimeout(DriverConstants.READ_TIMEOUT_PARAM, DriverConstants.DEFAULT_READ_TIMEOUT_VALUE, Type.NUMBER),
-	strategy(DriverConstants.STRATEGY_PARAM_NAME, DriverConstants.DEFAULT_STRATEGY, Type.STRING);
+	strategy(DriverConstants.STRATEGY_PARAM_NAME, DriverConstants.DEFAULT_STRATEGY, Type.STRING),
+	tables(DriverConstants.TABLES_PARAM_NAME, DriverConstants.DEFAULT_TABLES_VALUE, Type.STRING),
+	catalog(DriverConstants.CATALOG_PARAM_NAME, null, Type.STRING);
 
 	private final String name;
 	private final Object defaultValue;

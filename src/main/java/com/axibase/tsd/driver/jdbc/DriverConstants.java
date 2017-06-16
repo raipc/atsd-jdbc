@@ -6,7 +6,7 @@ public final class DriverConstants {
 	public static final String DATABASE_PRODUCT_NAME = "Axibase";
 	public static final String DATABASE_PRODUCT_VERSION = "Axibase Time Series Database";
 	public static final String JDBC_DRIVER_NAME = "ATSD JDBC driver";
-	public static final String JDBC_DRIVER_VERSION_DEFAULT = "1.2.20";
+	public static final String JDBC_DRIVER_VERSION_DEFAULT = "1.2.21";
 	public static final int    DRIVER_VERSION_MAJOR_DEFAULT = 1;
 	public static final int    DRIVER_VERSION_MINOR_DEFAULT = 2;
 
@@ -31,6 +31,9 @@ public final class DriverConstants {
 	public static final int    DEFAULT_READ_TIMEOUT_VALUE = 0;
 	public static final String TRUST_PARAM_NAME = "trustServerCertificate";
 	public static final boolean DEFAULT_TRUST_SERVER_CERTIFICATE = false;
+	public static final String TABLES_PARAM_NAME = "tables";
+	public static final String DEFAULT_TABLES_VALUE = null;
+	public static final String CATALOG_PARAM_NAME = "catalog";
 
 	public static final String QUERY_ID_PARAM_NAME = "queryId";
 	public static final String Q_PARAM_NAME = "q";
@@ -47,6 +50,7 @@ public final class DriverConstants {
 	public static final int    ATSD_VERSION_DIFFERS_NULL_AND_EMPTY = 14540;
 	public static final String REVISION_LINE = "Revision";
 
+	public static final String METRICS_ENDPOINT = "/api/v1/metrics";
 	public static final String VERSION_ENDPOINT = "/api/v1/version";
 	public static final String CANCEL_METHOD = "/cancel";
 	public static final String CONN_KEEP_ALIVE = "Keep-Alive";

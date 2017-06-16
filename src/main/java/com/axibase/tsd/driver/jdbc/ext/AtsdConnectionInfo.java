@@ -1,9 +1,10 @@
 package com.axibase.tsd.driver.jdbc.ext;
 
-import java.util.Properties;
-
 import com.axibase.tsd.driver.jdbc.enums.AtsdDriverConnectionProperties;
 
+import java.util.Properties;
+
+import static com.axibase.tsd.driver.jdbc.DriverConstants.PROTOCOL_SEPARATOR;
 import static com.axibase.tsd.driver.jdbc.enums.AtsdDriverConnectionProperties.*;
 
 public class AtsdConnectionInfo {
@@ -15,6 +16,12 @@ public class AtsdConnectionInfo {
 
 	public String host() {
 		return (String) info.get("host");
+	}
+
+	public String toEndpoint(String endpoint) {
+		final String host = host();
+		final int endOfHostIndex = host.indexOf('/', host.indexOf(PROTOCOL_SEPARATOR) + PROTOCOL_SEPARATOR.length());
+		return host.substring(0, endOfHostIndex) + endpoint;
 	}
 
 	public String url() {
@@ -51,6 +58,16 @@ public class AtsdConnectionInfo {
 		final AtsdDriverConnectionProperties property = strategy;
 		final String result = info.getProperty(property.camelName());
 		return result == null ? (String) property.defaultValue() : result;
+	}
+
+	public String tables() {
+		final AtsdDriverConnectionProperties property = tables;
+		return info.getProperty(property.camelName());
+	}
+
+	public String catalog() {
+		final AtsdDriverConnectionProperties property = catalog;
+		return info.getProperty(property.camelName());
 	}
 
 	private String propertyOrEmpty(String key) {

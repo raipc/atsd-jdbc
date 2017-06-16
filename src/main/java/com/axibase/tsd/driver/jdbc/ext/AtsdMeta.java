@@ -16,7 +16,28 @@ package com.axibase.tsd.driver.jdbc.ext;
 
 
 
+import com.axibase.tsd.driver.jdbc.DriverConstants;
+import com.axibase.tsd.driver.jdbc.content.ContentDescription;
+import com.axibase.tsd.driver.jdbc.content.ContentMetadata;
+import com.axibase.tsd.driver.jdbc.content.DataProvider;
+import com.axibase.tsd.driver.jdbc.content.StatementContext;
+import com.axibase.tsd.driver.jdbc.content.json.Metric;
+import com.axibase.tsd.driver.jdbc.enums.AtsdType;
+import com.axibase.tsd.driver.jdbc.enums.DefaultColumn;
+import com.axibase.tsd.driver.jdbc.enums.timedatesyntax.EndTime;
+import com.axibase.tsd.driver.jdbc.intf.IContentProtocol;
+import com.axibase.tsd.driver.jdbc.intf.IDataProvider;
+import com.axibase.tsd.driver.jdbc.intf.IStoreStrategy;
+import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
+import com.axibase.tsd.driver.jdbc.protocol.SdkProtocolImpl;
+import com.axibase.tsd.driver.jdbc.util.JsonMappingUtil;
+import com.axibase.tsd.driver.jdbc.util.TimeDateExpression;
+import org.apache.calcite.avatica.*;
+import org.apache.calcite.avatica.remote.TypedValue;
+import org.apache.commons.lang3.StringUtils;
+
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
 import java.sql.*;
@@ -25,21 +46,6 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
-
-import com.axibase.tsd.driver.jdbc.DriverConstants;
-import com.axibase.tsd.driver.jdbc.content.ContentDescription;
-import com.axibase.tsd.driver.jdbc.content.ContentMetadata;
-import com.axibase.tsd.driver.jdbc.content.DataProvider;
-import com.axibase.tsd.driver.jdbc.content.StatementContext;
-import com.axibase.tsd.driver.jdbc.enums.AtsdType;
-import com.axibase.tsd.driver.jdbc.enums.DefaultColumn;
-import com.axibase.tsd.driver.jdbc.enums.timedatesyntax.EndTime;
-import com.axibase.tsd.driver.jdbc.intf.IDataProvider;
-import com.axibase.tsd.driver.jdbc.intf.IStoreStrategy;
-import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
-import com.axibase.tsd.driver.jdbc.util.TimeDateExpression;
-import org.apache.calcite.avatica.*;
-import org.apache.calcite.avatica.remote.TypedValue;
 
 public class AtsdMeta extends MetaImpl {
 	private static final LoggingFacade log = LoggingFacade.getLogger(AtsdMeta.class);
@@ -85,6 +91,7 @@ public class AtsdMeta extends MetaImpl {
 	};
 
 	private final String schema;
+	private final String catalog;
 
 	public AtsdMeta(final AvaticaConnection conn) {
 		super(conn);
@@ -93,6 +100,7 @@ public class AtsdMeta extends MetaImpl {
 		this.connProps.setTransactionIsolation(Connection.TRANSACTION_NONE);
 		this.connProps.setDirty(false);
 		this.schema = null;
+		this.catalog = ((AtsdConnection) conn).getConnectionInfo().catalog();
 	}
 
 	public StatementContext getContextFromMap(StatementHandle statementHandle) {
@@ -409,16 +417,46 @@ public class AtsdMeta extends MetaImpl {
 	@Override
 	public MetaResultSet getTables(ConnectionHandle connectionHandle, String catalog, Pat schemaPattern, Pat tableNamePattern,
 								   List<String> typeList) {
+		AtsdConnection atsdConnection = (AtsdConnection) connection;
+		final AtsdConnectionInfo connectionInfo = atsdConnection.getConnectionInfo();
 		if (typeList == null || typeList.contains("TABLE")) {
-			final Iterable<Object> iterable = Collections.<Object>singletonList(
-					new AtsdMetaResultSets.AtsdMetaTable(DriverConstants.DEFAULT_CATALOG_NAME, this.schema,
-							DriverConstants.DEFAULT_TABLE_NAME, "TABLE", "SELECT metric, entity, tags.collector, " +
-							"tags.host, datetime, time, value FROM atsd_series WHERE metric = 'gc_time_percent' " +
-							"AND entity = 'atsd' AND datetime >= now - 5*MINUTE ORDER BY datetime DESC LIMIT 10"));
+			final Iterable<Object> iterable = receiveTables(connectionInfo);
 			return getResultSet(iterable, AtsdMetaResultSets.AtsdMetaTable.class);
 		}
 		return createEmptyResultSet(AtsdMetaResultSets.AtsdMetaTable.class);
 
+	}
+
+	private AtsdMetaResultSets.AtsdMetaTable generateDefaultMetaTable() {
+		return new AtsdMetaResultSets.AtsdMetaTable(catalog, schema,
+				DriverConstants.DEFAULT_TABLE_NAME, "TABLE", "SELECT metric, entity, tags.collector, " +
+				"tags.host, datetime, time, value FROM atsd_series WHERE metric = 'gc_time_percent' " +
+				"AND entity = 'atsd' AND datetime >= now - 5*MINUTE ORDER BY datetime DESC LIMIT 10");
+	}
+
+	private AtsdMetaResultSets.AtsdMetaTable generateMetaTable(String table) {
+		return new AtsdMetaResultSets.AtsdMetaTable(catalog, schema,
+				table, "TABLE", "SELECT metric, entity, tags, datetime, time, value" +
+				" FROM '" + table + "' WHERE datetime >= now - 1*HOUR ORDER BY datetime DESC LIMIT 10");
+	}
+
+	private List<Object> receiveTables(AtsdConnectionInfo connectionInfo) {
+		final List<Object> metricList = new ArrayList<>();
+		metricList.add(generateDefaultMetaTable());
+		final String tables = connectionInfo.tables();
+		if (StringUtils.isNotBlank(tables)) {
+			final String metricsUrl = connectionInfo.toEndpoint(DriverConstants.METRICS_ENDPOINT);
+			try (final IContentProtocol contentProtocol = new SdkProtocolImpl(new ContentDescription(metricsUrl, connectionInfo))) {
+				final InputStream metricsInputStream = contentProtocol.getMetrics(tables);
+				final Metric[] metrics = JsonMappingUtil.mapToMetrics(metricsInputStream);
+				for (Metric metric : metrics) {
+					metricList.add(generateMetaTable(metric.getName()));
+				}
+			} catch (Exception e) {
+				log.error(e.getMessage());
+			}
+		}
+		return metricList;
 	}
 
 	@Override
@@ -429,7 +467,7 @@ public class AtsdMeta extends MetaImpl {
 	@Override
 	public MetaResultSet getCatalogs(ConnectionHandle ch) {
 		final Iterable<Object> iterable = Collections.<Object>singletonList(
-				new MetaCatalog(DriverConstants.DEFAULT_CATALOG_NAME));
+				new MetaCatalog(catalog));
 		return getResultSet(iterable, MetaCatalog.class);
 	}
 
@@ -454,13 +492,13 @@ public class AtsdMeta extends MetaImpl {
 
 	@Override
 	public MetaResultSet getColumns(ConnectionHandle ch, String catalog, Pat schemaPattern, Pat tableNamePattern, Pat columnNamePattern) {
-		if ((catalog != null && !DriverConstants.DEFAULT_CATALOG_NAME.equals(catalog))
-				|| tableNamePattern.s != null && DriverConstants.DEFAULT_TABLE_NAME.equals(tableNamePattern.s)) {
+		final String tablePattern = tableNamePattern.s;
+		if (tablePattern != null) {
 			DefaultColumn[] columns = DefaultColumn.values();
 			List<Object> columnData = new ArrayList<>(columns.length);
 			int position = 1;
 			for (DefaultColumn column : columns) {
-				columnData.add(createColumnMetaData(column, null, position));
+				columnData.add(createColumnMetaData(column, null, tablePattern, position));
 				++position;
 			}
 			return getResultSet(columnData, AtsdMetaResultSets.AtsdMetaColumn.class);
@@ -468,12 +506,12 @@ public class AtsdMeta extends MetaImpl {
 		return createEmptyResultSet(AtsdMetaResultSets.AtsdMetaColumn.class);
 	}
 
-	private static Object createColumnMetaData(DefaultColumn column, String schema, int ordinal) {
+	private Object createColumnMetaData(DefaultColumn column, String schema, String table, int ordinal) {
 		final AtsdType columnType = column.getType();
 		return new AtsdMetaResultSets.AtsdMetaColumn(
-				DriverConstants.DEFAULT_CATALOG_NAME,
+				catalog,
 				schema,
-				DriverConstants.DEFAULT_TABLE_NAME,
+				table,
 				column.getColumnNamePrefix(),
 				columnType.sqlTypeCode,
 				columnType.sqlType,
@@ -528,7 +566,7 @@ public class AtsdMeta extends MetaImpl {
 		if (contentMetadata == null) {
 			IDataProvider provider = providerCache.get(statementId);
 			final String jsonScheme = provider != null ? provider.getContentDescription().getJsonScheme() : "";
-			contentMetadata = new ContentMetadata(jsonScheme, sql, connectionId, statementId);
+			contentMetadata = new ContentMetadata(jsonScheme, sql, catalog, connectionId, statementId);
 			metaCache.put(statementId, contentMetadata);
 		}
 		return contentMetadata;
