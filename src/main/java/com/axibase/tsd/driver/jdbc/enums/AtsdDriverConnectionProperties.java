@@ -17,7 +17,8 @@ public enum AtsdDriverConnectionProperties implements ConnectionProperty {
 	readTimeout(DriverConstants.READ_TIMEOUT_PARAM, DriverConstants.DEFAULT_READ_TIMEOUT_VALUE, Type.NUMBER),
 	strategy(DriverConstants.STRATEGY_PARAM_NAME, DriverConstants.DEFAULT_STRATEGY, Type.STRING),
 	tables(DriverConstants.TABLES_PARAM_NAME, DriverConstants.DEFAULT_TABLES_VALUE, Type.STRING),
-	catalog(DriverConstants.CATALOG_PARAM_NAME, null, Type.STRING);
+	catalog(DriverConstants.CATALOG_PARAM_NAME, null, Type.STRING),
+	expandTags(DriverConstants.EXPAND_TAGS_PARAM_NAME, DriverConstants.DEFAULT_EXPAND_TAGS_VALUE, Type.STRING);
 
 	private final String name;
 	private final Object defaultValue;

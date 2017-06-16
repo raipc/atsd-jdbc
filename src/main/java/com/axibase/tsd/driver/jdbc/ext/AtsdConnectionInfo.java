@@ -70,6 +70,12 @@ public class AtsdConnectionInfo {
 		return info.getProperty(property.camelName());
 	}
 
+	public boolean expandTags() {
+		final AtsdDriverConnectionProperties property = expandTags;
+		final String result = info.getProperty(property.camelName());
+		return result == null ? (Boolean) property.defaultValue() : Boolean.parseBoolean(result);
+	}
+
 	private String propertyOrEmpty(String key) {
 		final String result = (String) info.get(key);
 		return result == null ? "" : result;

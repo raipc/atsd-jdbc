@@ -493,19 +493,21 @@ public class AtsdMeta extends MetaImpl {
 
 	private Set<String> getTags(String metric) {
 		final AtsdConnectionInfo connectionInfo = ((AtsdConnection) connection).getConnectionInfo();
-		final String seriesUrl = toSeriesEndpoint(connectionInfo, metric);
-		try (final IContentProtocol contentProtocol = new SdkProtocolImpl(new ContentDescription(seriesUrl, connectionInfo))) {
-			final InputStream seriesInputStream = contentProtocol.readInfo();
-			final Series[] seriesArray = JsonMappingUtil.mapToSeries(seriesInputStream);
-			Set<String> tags = new HashSet<>();
-			for (Series series : seriesArray) {
-				tags.addAll(series.getTags().keySet());
+		if (connectionInfo.expandTags()) {
+			final String seriesUrl = toSeriesEndpoint(connectionInfo, metric);
+			try (final IContentProtocol contentProtocol = new SdkProtocolImpl(new ContentDescription(seriesUrl, connectionInfo))) {
+				final InputStream seriesInputStream = contentProtocol.readInfo();
+				final Series[] seriesArray = JsonMappingUtil.mapToSeries(seriesInputStream);
+				Set<String> tags = new HashSet<>();
+				for (Series series : seriesArray) {
+					tags.addAll(series.getTags().keySet());
+				}
+				return tags;
+			} catch (Exception e) {
+				log.error(e.getMessage());
 			}
-			return tags;
-		} catch (Exception e) {
-			log.error(e.getMessage());
-			return Collections.emptySet();
 		}
+		return Collections.emptySet();
 	}
 
 	private String toSeriesEndpoint(AtsdConnectionInfo connectionInfo, String metric) {
