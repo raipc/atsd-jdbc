@@ -14,8 +14,6 @@
 */
 package com.axibase.tsd.driver.jdbc.ext;
 
-
-
 import com.axibase.tsd.driver.jdbc.DriverConstants;
 import com.axibase.tsd.driver.jdbc.content.ContentDescription;
 import com.axibase.tsd.driver.jdbc.content.ContentMetadata;
@@ -49,47 +47,17 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class AtsdMeta extends MetaImpl {
 	private static final LoggingFacade log = LoggingFacade.getLogger(AtsdMeta.class);
+
+	public static final ThreadLocal<SimpleDateFormat> DATE_FORMATTER = prepareFormatter("yyyy-MM-dd");
+	public static final ThreadLocal<SimpleDateFormat> TIME_FORMATTER = prepareFormatter("HH:mm:ss");
+	public static final ThreadLocal<SimpleDateFormat> TIMESTAMP_FORMATTER = prepareFormatter("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+	public static final ThreadLocal<SimpleDateFormat> TIMESTAMP_SHORT_FORMATTER = prepareFormatter("yyyy-MM-dd'T'HH:mm:ss'Z'");
+
 	private final AtomicInteger idGenerator = new AtomicInteger(1);
 	private final Map<Integer, ContentMetadata> metaCache = new ConcurrentHashMap<>();
 	private final Map<Integer, IDataProvider> providerCache = new ConcurrentHashMap<>();
 	private final Map<Integer, StatementContext> contextMap = new ConcurrentHashMap<>();
 	private final ReentrantLock lock = new ReentrantLock();
-	private static final ThreadLocal<SimpleDateFormat> DATE_FORMATTER = new ThreadLocal<SimpleDateFormat>() {
-		@Override
-		protected SimpleDateFormat initialValue() {
-			SimpleDateFormat sdt = new SimpleDateFormat("yyyy-MM-dd", Locale.UK);
-			sdt.setTimeZone(TimeZone.getTimeZone("UTC"));
-			return sdt;
-		}
-	};
-
-	public static final ThreadLocal<SimpleDateFormat> TIME_FORMATTER = new ThreadLocal<SimpleDateFormat>() {
-		@Override
-		protected SimpleDateFormat initialValue() {
-			SimpleDateFormat sdt = new SimpleDateFormat("HH:mm:ss", Locale.UK);
-			sdt.setTimeZone(TimeZone.getTimeZone("UTC"));
-			return sdt;
-		}
-	};
-
-	public static final ThreadLocal<SimpleDateFormat> TIMESTAMP_FORMATTER = new ThreadLocal<SimpleDateFormat>() {
-		@Override
-		protected SimpleDateFormat initialValue() {
-			SimpleDateFormat sdt = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.UK);
-			sdt.setTimeZone(TimeZone.getTimeZone("UTC"));
-			return sdt;
-		}
-	};
-
-	public static final ThreadLocal<SimpleDateFormat> TIMESTAMP_SHORT_FORMATTER = new ThreadLocal<SimpleDateFormat>() {
-		@Override
-		protected SimpleDateFormat initialValue() {
-			SimpleDateFormat sdt = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.UK);
-			sdt.setTimeZone(TimeZone.getTimeZone("UTC"));
-			return sdt;
-		}
-	};
-
 	private final String schema;
 	private final String catalog;
 
@@ -101,6 +69,17 @@ public class AtsdMeta extends MetaImpl {
 		this.connProps.setDirty(false);
 		this.schema = null;
 		this.catalog = ((AtsdConnection) conn).getConnectionInfo().catalog();
+	}
+
+	private static ThreadLocal<SimpleDateFormat> prepareFormatter(final String pattern) {
+		return new ThreadLocal<SimpleDateFormat>() {
+			@Override
+			protected SimpleDateFormat initialValue() {
+				SimpleDateFormat sdt = new SimpleDateFormat(pattern, Locale.US);
+				sdt.setTimeZone(TimeZone.getTimeZone("UTC"));
+				return sdt;
+			}
+		};
 	}
 
 	public StatementContext getContextFromMap(StatementHandle statementHandle) {
