@@ -15,13 +15,12 @@
 package com.axibase.tsd.driver.jdbc.ext;
 
 import com.axibase.tsd.driver.jdbc.DriverConstants;
-import com.axibase.tsd.driver.jdbc.content.ContentDescription;
-import com.axibase.tsd.driver.jdbc.content.ContentMetadata;
-import com.axibase.tsd.driver.jdbc.content.DataProvider;
-import com.axibase.tsd.driver.jdbc.content.StatementContext;
+import com.axibase.tsd.driver.jdbc.content.*;
 import com.axibase.tsd.driver.jdbc.content.json.Metric;
+import com.axibase.tsd.driver.jdbc.content.json.Series;
 import com.axibase.tsd.driver.jdbc.enums.AtsdType;
 import com.axibase.tsd.driver.jdbc.enums.DefaultColumn;
+import com.axibase.tsd.driver.jdbc.intf.MetadataColumnDefinition;
 import com.axibase.tsd.driver.jdbc.enums.timedatesyntax.EndTime;
 import com.axibase.tsd.driver.jdbc.intf.IContentProtocol;
 import com.axibase.tsd.driver.jdbc.intf.IDataProvider;
@@ -38,6 +37,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
+import java.net.URLEncoder;
 import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -477,15 +477,49 @@ public class AtsdMeta extends MetaImpl {
 			List<Object> columnData = new ArrayList<>(columns.length);
 			int position = 1;
 			for (DefaultColumn column : columns) {
-				columnData.add(createColumnMetaData(column, null, tablePattern, position));
+				columnData.add(createColumnMetaData(column, schema, tablePattern, position));
 				++position;
+			}
+			if (!DriverConstants.DEFAULT_TABLE_NAME.equals(tablePattern)) {
+				for (String tag : getTags(tablePattern)) {
+					columnData.add(createColumnMetaData(new TagColumn(tag), schema, tablePattern, position));
+					++position;
+				}
 			}
 			return getResultSet(columnData, AtsdMetaResultSets.AtsdMetaColumn.class);
 		}
 		return createEmptyResultSet(AtsdMetaResultSets.AtsdMetaColumn.class);
 	}
 
-	private Object createColumnMetaData(DefaultColumn column, String schema, String table, int ordinal) {
+	private Set<String> getTags(String metric) {
+		final AtsdConnectionInfo connectionInfo = ((AtsdConnection) connection).getConnectionInfo();
+		final String seriesUrl = toSeriesEndpoint(connectionInfo, metric);
+		try (final IContentProtocol contentProtocol = new SdkProtocolImpl(new ContentDescription(seriesUrl, connectionInfo))) {
+			final InputStream seriesInputStream = contentProtocol.readInfo();
+			final Series[] seriesArray = JsonMappingUtil.mapToSeries(seriesInputStream);
+			Set<String> tags = new HashSet<>();
+			for (Series series : seriesArray) {
+				tags.addAll(series.getTags().keySet());
+			}
+			return tags;
+		} catch (Exception e) {
+			log.error(e.getMessage());
+			return Collections.emptySet();
+		}
+	}
+
+	private String toSeriesEndpoint(AtsdConnectionInfo connectionInfo, String metric) {
+		String encodedMetric;
+		try {
+			encodedMetric = URLEncoder.encode(metric, DriverConstants.DEFAULT_CHARSET.displayName(Locale.US));
+		} catch (UnsupportedEncodingException e) {
+			log.error("[toSeriesEndpoint] {}", e.getMessage());
+			encodedMetric = metric;
+		}
+		return connectionInfo.toEndpoint(DriverConstants.METRICS_ENDPOINT) + "/" + encodedMetric + "/series";
+	}
+
+	private Object createColumnMetaData(MetadataColumnDefinition column, String schema, String table, int ordinal) {
 		final AtsdType columnType = column.getType();
 		return new AtsdMetaResultSets.AtsdMetaColumn(
 				catalog,
