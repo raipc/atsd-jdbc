@@ -1,3 +1,6 @@
+#1.2.21
+* Exposed `tables`, `catalog`, `expandTags` connection string parameters
+
 ## 1.2.20
 * Added support for the boolean data type
 
@@ -8,7 +11,7 @@
 
 ## 1.2.18
 * Fixed classpath collision error
-* Added ability to state connection properties in GUI
+* Added ability to specify connection properties in GUI
 
 ## 1.2.17
 * Updated dependencies
