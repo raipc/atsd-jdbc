@@ -1,12 +1,5 @@
 package com.axibase.tsd.driver.jdbc;
 
-import java.sql.Connection;
-import java.sql.DriverPropertyInfo;
-import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Properties;
-
 import com.axibase.tsd.driver.jdbc.enums.AtsdDriverConnectionProperties;
 import com.axibase.tsd.driver.jdbc.ext.AtsdConnection;
 import org.apache.calcite.avatica.AvaticaConnection;
@@ -23,10 +16,15 @@ import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
+import java.sql.Connection;
+import java.sql.DriverPropertyInfo;
+import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Properties;
+
 import static com.axibase.tsd.driver.jdbc.TestConstants.JDBC_ATSD_URL_PREFIX;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 @RunWith(PowerMockRunner.class)
 @PowerMockIgnore({"javax.net.ssl.*"})
@@ -69,7 +67,7 @@ public class AtsdDriverTest extends AtsdProperties {
 		assertTrue(properties.containsAll(Arrays.asList(AtsdDriverConnectionProperties.values())));
 		DriverPropertyInfo[] propertyInfo = driver.getPropertyInfo(null, new Properties());
 		assertNotNull(propertyInfo);
-		assertEquals(4, propertyInfo.length);
+		assertEquals(7, propertyInfo.length);
 
 	}
 
