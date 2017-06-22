@@ -42,7 +42,7 @@ public class DataProvider implements IDataProvider {
 
 	public DataProvider(AtsdConnectionInfo connectionInfo, String query, StatementContext context) {
 		if (logger.isTraceEnabled()) {
-			logger.trace("Host: " + connectionInfo.host());
+			logger.trace("Host: {}", connectionInfo.host());
 		}
 		this.contentDescription = new ContentDescription(connectionInfo, query, context);
 		this.contentProtocol = ProtocolFactory.create(SdkProtocolImpl.class, contentDescription);
@@ -77,9 +77,7 @@ public class DataProvider implements IDataProvider {
 			throw new IllegalStateException("Cannot cancel query: contentProtocol is not created yet");
 		}
 		if (context.isAbleToCancelAtsdQueries()) {
-			if (logger.isTraceEnabled()) {
-				logger.trace("[cancelQuery] sending cancel queryId={}", context.getQueryId());
-			}
+			logger.trace("[cancelQuery] sending cancel queryId={}", context.getQueryId());
 			try {
 				this.contentProtocol.cancelQuery();
 			} catch (Exception e) {
@@ -112,9 +110,8 @@ public class DataProvider implements IDataProvider {
 		if (this.strategy != null) {
 			this.strategy.close();
 		}
-		if (logger.isTraceEnabled()) {
-			logger.trace("[DataProvider#close]");
-		}
+
+		logger.trace("[DataProvider#close]");
 	}
 
 	private IStoreStrategy defineStrategy() {
