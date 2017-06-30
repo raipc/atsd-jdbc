@@ -75,4 +75,8 @@ public class AtsdConnection extends AvaticaConnection {
 	AtsdConnectionInfo getConnectionInfo() {
 		return new AtsdConnectionInfo(this.info);
 	}
+
+	AtsdDatabaseMetaData getAtsdDatabaseMetaData() throws SQLException {
+		return (AtsdDatabaseMetaData) super.getMetaData();
+	}
 }
