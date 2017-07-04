@@ -340,9 +340,24 @@ public class AtsdMeta extends MetaImpl {
 	}
 
 	private AtsdMetaResultSets.AtsdMetaTable generateMetaTable(String table) {
-		return new AtsdMetaResultSets.AtsdMetaTable(catalog, schema,
-				table, "TABLE", "SELECT metric, entity, tags, datetime, time, value" +
-				" FROM '" + table + "' WHERE datetime >= now - 1*HOUR ORDER BY datetime DESC LIMIT 10");
+		return new AtsdMetaResultSets.AtsdMetaTable(catalog, schema, table, "TABLE", generateTableRemark(table));
+	}
+
+	private String generateTableRemark(String table) {
+		StringBuilder buffer = new StringBuilder("SELECT");
+		for (DefaultColumn defaultColumn : DefaultColumn.values()) {
+			if (showMetaColumns || !defaultColumn.isMetaColumn()) {
+				if (defaultColumn.ordinal() != 0) {
+					buffer.append(',');
+				}
+				buffer.append(' ').append(defaultColumn.getColumnNamePrefix());
+			}
+		}
+		return buffer
+				.append(" FROM '")
+				.append(table)
+				.append("' LIMIT 1")
+				.toString();
 	}
 
 	private List<Object> receiveTables(AtsdConnectionInfo connectionInfo) {
@@ -371,8 +386,8 @@ public class AtsdMeta extends MetaImpl {
 
 	@Override
 	public MetaResultSet getCatalogs(ConnectionHandle ch) {
-		final Iterable<Object> iterable = Collections.<Object>singletonList(
-				new MetaCatalog(catalog));
+		final Iterable<Object> iterable = catalog == null ? Collections.emptyList() :
+				Collections.<Object>singletonList(new MetaCatalog(catalog));
 		return getResultSet(iterable, MetaCatalog.class);
 	}
 
