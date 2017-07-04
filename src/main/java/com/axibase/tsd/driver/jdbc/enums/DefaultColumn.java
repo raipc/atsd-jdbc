@@ -15,7 +15,9 @@
 package com.axibase.tsd.driver.jdbc.enums;
 
 import com.axibase.tsd.driver.jdbc.intf.MetadataColumnDefinition;
+import lombok.Getter;
 
+@Getter
 public enum DefaultColumn implements MetadataColumnDefinition {
 	TIME("time", AtsdType.LONG_DATA_TYPE, 0, false),
 	DATETIME("datetime", AtsdType.TIMESTAMP_DATA_TYPE, 0, false),
@@ -40,24 +42,7 @@ public enum DefaultColumn implements MetadataColumnDefinition {
 		this.metaColumn = metaColumn;
 	}
 
-	public String getColumnNamePrefix() {
-		return columnNamePrefix;
-	}
-
-	public AtsdType getType() {
-		return type;
-	}
-
-	public int getNullable() {
-		return nullable;
-	}
-
 	public String getNullableAsString() {
 		return NULLABLE_AS_STRING[nullable];
-	}
-
-	@Override
-	public boolean isMetaColumn() {
-		return metaColumn;
 	}
 }
