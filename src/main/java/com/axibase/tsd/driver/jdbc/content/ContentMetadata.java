@@ -205,8 +205,12 @@ public class ContentMetadata {
 			final ColumnMetaData.AvaticaType atype = getAvaticaType(atsdType);
 			return new ColumnMetaData(columnIndex, false, false, false,
 					false, nullable, false, atsdType.size, label, assignColumnNames ? name : label,
-					schema, atsdType.maxPrecision, 1, table, catalog, atype, true,
-					false,false, atype.rep.clazz.getCanonicalName());
+					getValueNotNull(schema), atsdType.maxPrecision, atsdType.scale, table, getValueNotNull(catalog), atype,
+					true, false,false, atype.rep.clazz.getCanonicalName());
+		}
+
+		private String getValueNotNull(String value) {
+			return value == null ? "" : value;
 		}
 	}
 
