@@ -37,7 +37,7 @@ public final class DriverConstants {
 	public static final String EXPAND_TAGS_PARAM_NAME = "expandTags";
 	public static final boolean DEFAULT_EXPAND_TAGS_VALUE = true;
 	public static final String META_COLUMNS_PARAM_NAME = "metaColumns";
-	public static final boolean DEFAULT_META_COLUMNS_VALUE = true;
+	public static final boolean DEFAULT_META_COLUMNS_VALUE = false;
 	public static final String ASSIGN_INNER_COLUMN_NAMES_PARAM = "assignColumnNames";
 	public static final boolean DEFAULT_ASSIGN_INNER_COLUMN_NAMES_VALUE = false;
 
