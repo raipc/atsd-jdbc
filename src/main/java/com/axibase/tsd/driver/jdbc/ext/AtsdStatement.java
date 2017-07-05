@@ -20,6 +20,7 @@ import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
 import com.axibase.tsd.driver.jdbc.util.ExceptionsUtil;
 import org.apache.calcite.avatica.AvaticaConnection;
 import org.apache.calcite.avatica.AvaticaStatement;
+import org.apache.calcite.avatica.Meta;
 import org.apache.calcite.avatica.Meta.Signature;
 import org.apache.calcite.avatica.Meta.StatementHandle;
 
@@ -75,6 +76,21 @@ public class AtsdStatement extends AvaticaStatement {
 	public synchronized void close() throws SQLException {
 		super.close();
 		logger.trace("[AtsdStatement#close] {}", this.handle.id);
+	}
+
+	@Override
+	public Meta.StatementType getStatementType() {
+		return getSignature() == null ? null : getSignature().statementType;
+	}
+
+	@Override
+	public int getUpdateCount() throws SQLException {
+		return getStatementType() != Meta.StatementType.SELECT ? super.getUpdateCount() : -1;
+	}
+
+	@Override
+	public long getLargeUpdateCount() throws SQLException {
+		return getStatementType() != Meta.StatementType.SELECT ? super.getLargeUpdateCount() : -1L;
 	}
 
 }
