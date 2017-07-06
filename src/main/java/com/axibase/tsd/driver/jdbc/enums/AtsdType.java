@@ -43,7 +43,7 @@ public enum AtsdType {
 	FLOAT_DATA_TYPE("float", "float", Types.REAL, Rep.FLOAT, 7, 15, 0) {
 		@Override
 		protected Object readValueHelper(String cell) {
-			return Double.valueOf(cell);
+			return Float.valueOf(cell);
 		}
 	},
 	INTEGER_DATA_TYPE("integer", "integer", Types.INTEGER, Rep.INTEGER, 10, 11, 0) {
@@ -60,7 +60,7 @@ public enum AtsdType {
 				return "";
 			}
 			final char firstCharacter = cell.charAt(0);
-			if (!isNumberStart(firstCharacter) || firstCharacter == '"' || context.hasQuote(index)) {
+			if (!isNumberStart(firstCharacter) || context.hasQuote(index)) {
 				return cell;
 			}
 			return Double.valueOf(cell);
