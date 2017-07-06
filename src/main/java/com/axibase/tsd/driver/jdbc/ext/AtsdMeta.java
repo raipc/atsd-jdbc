@@ -401,11 +401,9 @@ public class AtsdMeta extends MetaImpl {
 	@Override
 	public MetaResultSet getTypeInfo(ConnectionHandle ch) {
 		AtsdType[] atsdTypes = AtsdType.values();
-		final List<Object> list = new ArrayList<>(atsdTypes.length - 2);
+		final List<Object> list = new ArrayList<>(atsdTypes.length);
 		for (AtsdType type : atsdTypes) {
-			if (!(type == AtsdType.LONG_DATA_TYPE || type == AtsdType.SHORT_DATA_TYPE)) {
-				list.add(getTypeInfo(type));
-			}
+			list.add(getTypeInfo(type));
 		}
 		return getResultSet(list, AtsdMetaResultSets.AtsdMetaTypeInfo.class);
 	}

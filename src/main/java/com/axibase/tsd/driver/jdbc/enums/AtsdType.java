@@ -75,19 +75,7 @@ public enum AtsdType {
 			return cell.startsWith("\"") ? cell : new BigDecimal(cell);
 		}
 	},
-	LONG_DATA_TYPE("long", "bigint", Types.BIGINT, Rep.LONG, 19, 20, 0) {
-		@Override
-		protected Object readValueHelper(String cell) {
-			return Long.valueOf(cell);
-		}
-	},
-	SHORT_DATA_TYPE("short", "smallint", Types.SMALLINT, Rep.SHORT, 5, 10, 0) {
-		@Override
-		protected Object readValueHelper(String cell) {
-			return Short.valueOf(cell);
-		}
-	},
-	SMALLINT_DATA_TYPE("smallint", "smallint", Types.SMALLINT, Rep.SHORT, 5, 10, 0) {
+	SMALLINT_DATA_TYPE("smallint", "smallint", Types.SMALLINT, Rep.SHORT, 5, 5, 0) {
 		@Override
 		protected Object readValueHelper(String cell) {
 			return Short.valueOf(cell);
