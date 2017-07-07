@@ -19,6 +19,7 @@ import java.io.InputStream;
 import java.security.GeneralSecurityException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import com.axibase.tsd.driver.jdbc.DriverConstants;
 import com.axibase.tsd.driver.jdbc.ext.AtsdConnectionInfo;
 import com.axibase.tsd.driver.jdbc.ext.AtsdException;
 import com.axibase.tsd.driver.jdbc.ext.AtsdRuntimeException;
@@ -42,7 +43,8 @@ public class DataProvider implements IDataProvider {
 		if (logger.isTraceEnabled()) {
 			logger.trace("Host: {}", connectionInfo.host());
 		}
-		this.contentDescription = new ContentDescription(connectionInfo, query, context);
+		final String endpoint = connectionInfo.toEndpoint(DriverConstants.SQL_ENDPOINT);
+		this.contentDescription = new ContentDescription(endpoint, connectionInfo, query, context);
 		this.contentProtocol = ProtocolFactory.create(SdkProtocolImpl.class, contentDescription);
 		this.context = context;
 	}
@@ -104,7 +106,7 @@ public class DataProvider implements IDataProvider {
 	}
 
 	private IStoreStrategy defineStrategy() {
-		return StrategyFactory.create(StrategyFactory.findClassByName(this.contentDescription.getStrategyName()), this.context);
+		return StrategyFactory.create(StrategyFactory.findClassByName(this.contentDescription.getInfo().strategy()), this.context);
 	}
 
 }

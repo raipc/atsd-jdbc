@@ -23,9 +23,7 @@ import java.util.Map;
 import com.axibase.tsd.driver.jdbc.enums.MetadataFormat;
 import com.axibase.tsd.driver.jdbc.ext.AtsdConnectionInfo;
 import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
-import lombok.AccessLevel;
 import lombok.Data;
-import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 
 import static com.axibase.tsd.driver.jdbc.DriverConstants.*;
@@ -34,34 +32,27 @@ import static com.axibase.tsd.driver.jdbc.DriverConstants.*;
 public class ContentDescription {
 	private static final LoggingFacade logger = LoggingFacade.getLogger(ContentDescription.class);
 
-	private String host;
+	private String endpoint;
 	private String query;
-	private String login;
-	private String password;
-	private long contentLength;
-	private String[] headers;
 	private String jsonScheme;
 	private final String metadataFormat;
 	private long maxRowsCount;
 	private final String queryId;
-	@Getter(AccessLevel.NONE)
-	private final AtsdConnectionInfo atsdConnectionInfo;
+	private final AtsdConnectionInfo info;
 
-	public ContentDescription(String host, AtsdConnectionInfo atsdConnectionInfo) {
-		this(host, atsdConnectionInfo, "", 0, "");
+	public ContentDescription(String endpoint, AtsdConnectionInfo atsdConnectionInfo) {
+		this(endpoint, atsdConnectionInfo, "", "");
 	}
 
-	public ContentDescription(AtsdConnectionInfo atsdConnectionInfo, String query, StatementContext context) {
-		this(atsdConnectionInfo.host() , atsdConnectionInfo, query, context.getVersion(), context.getQueryId());
+	public ContentDescription(String endpoint, AtsdConnectionInfo atsdConnectionInfo, String query, StatementContext context) {
+		this(endpoint, atsdConnectionInfo, query, context.getQueryId());
 	}
 
-	private ContentDescription(String host, AtsdConnectionInfo atsdConnectionInfo, String query, int atsdVersion, String queryId) {
-		this.host = host;
+	private ContentDescription(String endpoint, AtsdConnectionInfo atsdConnectionInfo, String query, String queryId) {
+		this.endpoint = endpoint;
 		this.query = query;
-		this.login = atsdConnectionInfo.user();
-		this.password = atsdConnectionInfo.password();
 		this.metadataFormat = MetadataFormat.EMBED.name();
-		this.atsdConnectionInfo = atsdConnectionInfo;
+		this.info = atsdConnectionInfo;
 		this.queryId = queryId;
 	}
 
@@ -85,10 +76,6 @@ public class ContentDescription {
 				LIMIT_PARAM_NAME + '=' + maxRowsCount;
 	}
 
-	public String getCancelQueryUrl() {
-		return host + CANCEL_METHOD + '?' + QUERY_ID_PARAM_NAME + '=' + queryId;
-	}
-
 	public Map<String, String> getQueryParamsAsMap() {
 		if (StringUtils.isEmpty(query)) {
 			return Collections.emptyMap();
@@ -102,27 +89,7 @@ public class ContentDescription {
 	}
 
 	public boolean isSsl() {
-		return StringUtils.startsWithIgnoreCase(host, "https://");
-	}
-
-	public boolean isTrusted() {
-		return atsdConnectionInfo.trustCertificate();
-	}
-
-	public int getConnectTimeout() {
-		return atsdConnectionInfo.connectTimeout();
-	}
-
-	public int getReadTimeout() {
-		return atsdConnectionInfo.readTimeout();
-	}
-
-	public String getStrategyName() {
-		return atsdConnectionInfo.strategy();
-	}
-
-	public String getQueryId() {
-		return queryId;
+		return StringUtils.startsWithIgnoreCase(endpoint, "https://");
 	}
 
 }
