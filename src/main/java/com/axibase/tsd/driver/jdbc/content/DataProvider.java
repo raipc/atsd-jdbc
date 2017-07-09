@@ -14,11 +14,6 @@
 */
 package com.axibase.tsd.driver.jdbc.content;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.security.GeneralSecurityException;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import com.axibase.tsd.driver.jdbc.DriverConstants;
 import com.axibase.tsd.driver.jdbc.ext.AtsdConnectionInfo;
 import com.axibase.tsd.driver.jdbc.ext.AtsdException;
@@ -30,6 +25,11 @@ import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
 import com.axibase.tsd.driver.jdbc.protocol.ProtocolFactory;
 import com.axibase.tsd.driver.jdbc.protocol.SdkProtocolImpl;
 import com.axibase.tsd.driver.jdbc.strategies.StrategyFactory;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.security.GeneralSecurityException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class DataProvider implements IDataProvider {
 	private static final LoggingFacade logger = LoggingFacade.getLogger(DataProvider.class);
@@ -83,14 +83,6 @@ public class DataProvider implements IDataProvider {
 			throw new AtsdRuntimeException(e.getMessage(), e);
 		}
 		this.isHoldingConnection.set(false);
-	}
-
-	private void closeWithRuntimeException() {
-		try {
-			this.contentProtocol.close();
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
 	}
 
 	@Override

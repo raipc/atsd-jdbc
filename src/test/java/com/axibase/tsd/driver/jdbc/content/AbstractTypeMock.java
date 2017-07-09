@@ -1,10 +1,5 @@
 package com.axibase.tsd.driver.jdbc.content;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
-import java.util.Scanner;
-
 import com.axibase.tsd.driver.jdbc.DriverConstants;
 import com.axibase.tsd.driver.jdbc.ext.AtsdConnectionInfo;
 import com.axibase.tsd.driver.jdbc.intf.IStoreStrategy;
@@ -12,6 +7,11 @@ import com.axibase.tsd.driver.jdbc.protocol.SdkProtocolImpl;
 import org.junit.Before;
 import org.junit.Test;
 import org.powermock.api.mockito.PowerMockito;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
+import java.util.Scanner;
 
 import static com.axibase.tsd.driver.jdbc.TestConstants.SELECT_ALL_CLAUSE;
 import static org.junit.Assert.assertTrue;

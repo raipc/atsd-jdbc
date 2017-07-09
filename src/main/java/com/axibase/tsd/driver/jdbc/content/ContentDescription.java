@@ -14,17 +14,18 @@
 */
 package com.axibase.tsd.driver.jdbc.content;
 
+import com.axibase.tsd.driver.jdbc.enums.MetadataFormat;
+import com.axibase.tsd.driver.jdbc.ext.AtsdConnectionInfo;
+import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
+import lombok.Data;
+import lombok.SneakyThrows;
+import org.apache.commons.lang3.StringUtils;
+
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-
-import com.axibase.tsd.driver.jdbc.enums.MetadataFormat;
-import com.axibase.tsd.driver.jdbc.ext.AtsdConnectionInfo;
-import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
-import lombok.Data;
-import org.apache.commons.lang3.StringUtils;
 
 import static com.axibase.tsd.driver.jdbc.DriverConstants.*;
 
@@ -56,13 +57,9 @@ public class ContentDescription {
 		this.queryId = queryId;
 	}
 
+	@SneakyThrows(UnsupportedEncodingException.class)
 	public String getEncodedQuery() {
-		try {
-			return URLEncoder.encode(query, DEFAULT_CHARSET.name());
-		} catch (UnsupportedEncodingException e) {
-			logger.error(e.getMessage());
-			return query;
-		}
+		return URLEncoder.encode(query, DEFAULT_CHARSET.name());
 	}
 
 	public String getPostParams() {
@@ -87,9 +84,4 @@ public class ContentDescription {
 		map.put(LIMIT_PARAM_NAME, Long.toString(maxRowsCount));
 		return map;
 	}
-
-	public boolean isSsl() {
-		return StringUtils.startsWithIgnoreCase(endpoint, "https://");
-	}
-
 }

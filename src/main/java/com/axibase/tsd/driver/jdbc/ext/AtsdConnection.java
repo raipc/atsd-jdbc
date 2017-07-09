@@ -14,13 +14,13 @@
 */
 package com.axibase.tsd.driver.jdbc.ext;
 
+import com.axibase.tsd.driver.jdbc.util.ExceptionsUtil;
+import org.apache.calcite.avatica.*;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.util.Properties;
-
-import com.axibase.tsd.driver.jdbc.util.ExceptionsUtil;
-import org.apache.calcite.avatica.*;
 
 public class AtsdConnection extends AvaticaConnection {
 	protected static final Trojan TROJAN = createTrojan();
@@ -35,10 +35,6 @@ public class AtsdConnection extends AvaticaConnection {
 			throw new SQLFeatureNotSupportedException("Only TYPE_FORWARD_ONLY ResultSet type is supported");
 		}
 		return super.createStatement(resultSetType, resultSetConcurrency, resultSetHoldability);
-	}
-
-	public Properties getInfo() {
-		return info;
 	}
 
 	@Override

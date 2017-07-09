@@ -14,17 +14,6 @@
 */
 package com.axibase.tsd.driver.jdbc.ext;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Field;
-import java.net.URLEncoder;
-import java.sql.*;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import com.axibase.tsd.driver.jdbc.DriverConstants;
 import com.axibase.tsd.driver.jdbc.content.*;
 import com.axibase.tsd.driver.jdbc.content.json.Metric;
@@ -45,6 +34,17 @@ import org.apache.calcite.avatica.remote.TypedValue;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Field;
+import java.net.URLEncoder;
+import java.sql.*;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
+
 public class AtsdMeta extends MetaImpl {
 	private static final LoggingFacade log = LoggingFacade.getLogger(AtsdMeta.class);
 
@@ -57,10 +57,7 @@ public class AtsdMeta extends MetaImpl {
 	private final Map<Integer, ContentMetadata> metaCache = new ConcurrentHashMap<>();
 	private final Map<Integer, IDataProvider> providerCache = new ConcurrentHashMap<>();
 	private final Map<Integer, StatementContext> contextMap = new ConcurrentHashMap<>();
-	private final String schema;
-	private final String catalog;
-	private final boolean showMetaColumns;
-	private final boolean assignColumnNames;
+	private final AtsdConnectionInfo atsdConnectionInfo;
 
 	public AtsdMeta(final AvaticaConnection conn) {
 		super(conn);
@@ -68,11 +65,7 @@ public class AtsdMeta extends MetaImpl {
 		this.connProps.setReadOnly(true);
 		this.connProps.setTransactionIsolation(Connection.TRANSACTION_NONE);
 		this.connProps.setDirty(false);
-		this.schema = null;
-		final AtsdConnectionInfo connectionInfo = ((AtsdConnection) conn).getConnectionInfo();
-		this.catalog = connectionInfo.catalog();
-		this.showMetaColumns = connectionInfo.metaColumns();
-		this.assignColumnNames = connectionInfo.assignColumnNames();
+		this.atsdConnectionInfo = ((AtsdConnection) conn).getConnectionInfo();
 	}
 
 	private static ThreadLocal<SimpleDateFormat> prepareFormatter(final String pattern) {
@@ -333,20 +326,21 @@ public class AtsdMeta extends MetaImpl {
 	}
 
 	private AtsdMetaResultSets.AtsdMetaTable generateDefaultMetaTable() {
-		return new AtsdMetaResultSets.AtsdMetaTable(catalog, schema,
+		return new AtsdMetaResultSets.AtsdMetaTable(atsdConnectionInfo.catalog(), atsdConnectionInfo.schema(),
 				DriverConstants.DEFAULT_TABLE_NAME, "TABLE", "SELECT metric, entity, tags.collector, " +
 				"tags.host, datetime, time, value FROM atsd_series WHERE metric = 'gc_time_percent' " +
 				"AND entity = 'atsd' AND datetime >= now - 5*MINUTE ORDER BY datetime DESC LIMIT 10");
 	}
 
 	private AtsdMetaResultSets.AtsdMetaTable generateMetaTable(String table) {
-		return new AtsdMetaResultSets.AtsdMetaTable(catalog, schema, table, "TABLE", generateTableRemark(table));
+		return new AtsdMetaResultSets.AtsdMetaTable(atsdConnectionInfo.catalog(), atsdConnectionInfo.schema(),
+				table, "TABLE", generateTableRemark(table));
 	}
 
 	private String generateTableRemark(String table) {
 		StringBuilder buffer = new StringBuilder("SELECT");
 		for (DefaultColumn defaultColumn : DefaultColumn.values()) {
-			if (showMetaColumns || !defaultColumn.isMetaColumn()) {
+			if (atsdConnectionInfo.metaColumns() || !defaultColumn.isMetaColumn()) {
 				if (defaultColumn.ordinal() != 0) {
 					buffer.append(',');
 				}
@@ -386,6 +380,7 @@ public class AtsdMeta extends MetaImpl {
 
 	@Override
 	public MetaResultSet getCatalogs(ConnectionHandle ch) {
+		final String catalog = atsdConnectionInfo.catalog();
 		final Iterable<Object> iterable = catalog == null ? Collections.emptyList() :
 				Collections.<Object>singletonList(new MetaCatalog(catalog));
 		return getResultSet(iterable, MetaCatalog.class);
@@ -415,15 +410,16 @@ public class AtsdMeta extends MetaImpl {
 			DefaultColumn[] columns = DefaultColumn.values();
 			List<Object> columnData = new ArrayList<>(columns.length);
 			int position = 1;
+			final boolean showMetaColumns = atsdConnectionInfo.metaColumns();
 			for (DefaultColumn column : columns) {
 				if (showMetaColumns || !column.isMetaColumn()) {
-					columnData.add(createColumnMetaData(column, schema, tablePattern, position));
+					columnData.add(createColumnMetaData(column, tablePattern, position));
 					++position;
 				}
 			}
 			if (!DriverConstants.DEFAULT_TABLE_NAME.equals(tablePattern)) {
 				for (String tag : getTags(tablePattern)) {
-					columnData.add(createColumnMetaData(new TagColumn(tag), schema, tablePattern, position));
+					columnData.add(createColumnMetaData(new TagColumn(tag), tablePattern, position));
 					++position;
 				}
 			}
@@ -462,11 +458,11 @@ public class AtsdMeta extends MetaImpl {
 		return connectionInfo.toEndpoint(DriverConstants.METRICS_ENDPOINT) + "/" + encodedMetric + "/series";
 	}
 
-	private Object createColumnMetaData(MetadataColumnDefinition column, String schema, String table, int ordinal) {
+	private Object createColumnMetaData(MetadataColumnDefinition column, String table, int ordinal) {
 		final AtsdType columnType = column.getType();
 		return new AtsdMetaResultSets.AtsdMetaColumn(
-				catalog,
-				schema,
+				atsdConnectionInfo.catalog(),
+				atsdConnectionInfo.schema(),
 				table,
 				column.getColumnNamePrefix(),
 				columnType.sqlTypeCode,
@@ -520,7 +516,8 @@ public class AtsdMeta extends MetaImpl {
 			throws AtsdException, IOException {
 		IDataProvider provider = providerCache.get(statementId);
 		final String jsonScheme = provider != null ? provider.getContentDescription().getJsonScheme() : "";
-		ContentMetadata contentMetadata = new ContentMetadata(jsonScheme, sql, catalog, connectionId, statementId, assignColumnNames);
+		ContentMetadata contentMetadata = new ContentMetadata(jsonScheme, sql, atsdConnectionInfo.catalog(),
+				connectionId, statementId, atsdConnectionInfo.assignColumnNames());
 		metaCache.put(statementId, contentMetadata);
 		return contentMetadata;
 	}

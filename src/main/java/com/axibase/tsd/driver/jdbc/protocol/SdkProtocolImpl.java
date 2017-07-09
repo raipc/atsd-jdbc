@@ -14,20 +14,6 @@
 */
 package com.axibase.tsd.driver.jdbc.protocol;
 
-import java.io.*;
-import java.net.HttpURLConnection;
-import java.net.SocketException;
-import java.net.URL;
-import java.net.URLEncoder;
-import java.security.GeneralSecurityException;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-import java.util.zip.GZIPInputStream;
-import javax.net.ssl.*;
-
 import com.axibase.tsd.driver.jdbc.content.ContentDescription;
 import com.axibase.tsd.driver.jdbc.content.json.GeneralError;
 import com.axibase.tsd.driver.jdbc.content.json.QueryDescription;
@@ -40,6 +26,20 @@ import com.axibase.tsd.driver.jdbc.util.JsonMappingUtil;
 import org.apache.calcite.avatica.org.apache.commons.codec.binary.Base64;
 import org.apache.calcite.avatica.org.apache.http.HttpHeaders;
 import org.apache.commons.lang3.StringUtils;
+
+import javax.net.ssl.*;
+import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.SocketException;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.security.GeneralSecurityException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.util.zip.GZIPInputStream;
 
 import static com.axibase.tsd.driver.jdbc.DriverConstants.*;
 
@@ -183,7 +183,7 @@ public class SdkProtocolImpl implements IContentProtocol {
 			logger.debug("[request] {} {}", method, url);
 		}
 		this.conn = getHttpURLConnection(url);
-		if (contentDescription.isSsl()) {
+		if (contentDescription.getInfo().secure()) {
 			doTrustToCertificates((HttpsURLConnection) this.conn);
 		}
 		setBaseProperties(method, queryTimeout);
