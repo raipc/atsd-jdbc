@@ -57,9 +57,9 @@ Properties can be included as part of the JDBC url using a semicolon as a separa
 
 |**Name**|**Description**|
 |:--|---|
-|`stream`| Reads data received from the database in batches when triggered by the `ResultSet.next()` command. This command keeps the connection open until all rows are processed by the client.|
-|`file`| Buffers data received from the database to a temporary file on the local file system and reads rows from the file on the `ResultSet.next()` command. |
-|`memory`| Buffers data received from the database into the application memory and returns rows on the `ResultSet.next()` command directly from a memory structure. |
+|`stream`| Reads data received from the database in batches when triggered by the `ResultSet.next()` invocation. This command keeps the connection open until all rows are processed by the client.|
+|`file`| Buffers data received from the database to a temporary file on the local file system and reads rows from the file on the `ResultSet.next()` invocation. |
+|`memory`| Buffers data received from the database into the application memory and returns rows on the `ResultSet.next()` invocation directly from a memory structure. |
 
 * The `stream` strategy is faster than the alternatives, at the expense of keeping the database connection open. It is not recommended if row processing may last a significant time. 
 * While the `memory` strategy may be more efficient than `file`, it requires more memory. Generally speaking, the `memory` strategy is better suited to queries returning thousands of rows, whereas the `file`/`stream` strategy can process millions of rows (provided disk space is available).
