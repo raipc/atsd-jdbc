@@ -28,8 +28,10 @@ import com.axibase.tsd.driver.jdbc.intf.IStoreStrategy;
 import com.axibase.tsd.driver.jdbc.intf.MetadataColumnDefinition;
 import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
 import com.axibase.tsd.driver.jdbc.protocol.SdkProtocolImpl;
+import com.axibase.tsd.driver.jdbc.util.EnumUtil;
 import com.axibase.tsd.driver.jdbc.util.JsonMappingUtil;
 import com.axibase.tsd.driver.jdbc.util.TimeDateExpression;
+import lombok.SneakyThrows;
 import org.apache.calcite.avatica.*;
 import org.apache.calcite.avatica.remote.TypedValue;
 import org.apache.commons.lang3.ArrayUtils;
@@ -45,6 +47,9 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import static com.axibase.tsd.driver.jdbc.DriverConstants.DEFAULT_CHARSET;
+import static org.apache.calcite.avatica.Meta.StatementType.SELECT;
 
 public class AtsdMeta extends MetaImpl {
 	private static final LoggingFacade log = LoggingFacade.getLogger(AtsdMeta.class);
@@ -85,13 +90,42 @@ public class AtsdMeta extends MetaImpl {
 	}
 
 	@Override
+	@SneakyThrows(SQLException.class)
 	public StatementHandle prepare(ConnectionHandle connectionHandle, String query, long maxRowCount) {
 		final int id = idGenerator.getAndIncrement();
 		log.trace("[prepare] handle: {} query: {}", id, query);
 
-		Signature signature = new Signature(null, query, Collections.<AvaticaParameter>emptyList(), null,
-					CursorFactory.LIST, StatementType.SELECT);
+		if (StringUtils.isBlank(query)) {
+			throw new SQLException("Failed to prepare statement with blank query");
+		}
+		final StatementType statementType = EnumUtil.getStatementTypeByQuery(query);
+		Signature signature = new Signature(new ArrayList<ColumnMetaData>(), query, Collections.<AvaticaParameter>emptyList(), null,
+				statementType == SELECT ? CursorFactory.LIST : null, statementType);
 		return new StatementHandle(connectionHandle.id, id, signature);
+	}
+
+	public void updatePreparedStatementResultSetMetaData(Signature signature, StatementHandle handle) throws SQLException {
+		if (signature.columns.isEmpty()) {
+			final String metaEndpoint = Location.SQL_META_ENDPOINT.getUrl(atsdConnectionInfo);
+			final ContentDescription contentDescription = new ContentDescription(
+					metaEndpoint, atsdConnectionInfo, signature.sql, new StatementContext(handle));
+			try (final IContentProtocol protocol = new SdkProtocolImpl(contentDescription)) {
+				final List<ColumnMetaData> columnMetaData = ContentMetadata.buildMetadataList(protocol.readContent(0),
+						atsdConnectionInfo.catalog(), atsdConnectionInfo.assignColumnNames());
+				signature.columns.addAll(columnMetaData);
+			} catch (AtsdJsonException e)  {
+				final Object jsonError = e.getJson().get("error");
+				if (jsonError != null) {
+					log.error("[updatePreparedStatementResultSetMetaData] error: {}", jsonError);
+					throw new SQLException(jsonError.toString());
+				} else {
+					throw new SQLException(e);
+				}
+			} catch (Exception e)  {
+				log.error("[updatePreparedStatementResultSetMetaData] error", e);
+				throw new SQLException(e);
+			}
+		}
 	}
 
 	@Override
@@ -316,10 +350,8 @@ public class AtsdMeta extends MetaImpl {
 	@Override
 	public MetaResultSet getTables(ConnectionHandle connectionHandle, String catalog, Pat schemaPattern, Pat tableNamePattern,
 								   List<String> typeList) {
-		AtsdConnection atsdConnection = (AtsdConnection) connection;
-		final AtsdConnectionInfo connectionInfo = atsdConnection.getConnectionInfo();
 		if (typeList == null || typeList.contains("TABLE")) {
-			final Iterable<Object> iterable = receiveTables(connectionInfo);
+			final Iterable<Object> iterable = receiveTables(atsdConnectionInfo);
 			return getResultSet(iterable, AtsdMetaResultSets.AtsdMetaTable.class);
 		}
 		return createEmptyResultSet(AtsdMetaResultSets.AtsdMetaTable.class);
@@ -359,9 +391,9 @@ public class AtsdMeta extends MetaImpl {
 		final List<Object> metricList = new ArrayList<>();
 		final String tables = connectionInfo.tables();
 		if (StringUtils.isNotBlank(tables)) {
-			final String metricsUrl = Location.METRICS_ENDPOINT.getUrl(connectionInfo);
+			final String metricsUrl = prepareUrlWithMetricExpression(Location.METRICS_ENDPOINT.getUrl(connectionInfo), tables);
 			try (final IContentProtocol contentProtocol = new SdkProtocolImpl(new ContentDescription(metricsUrl, connectionInfo))) {
-				final InputStream metricsInputStream = contentProtocol.getMetrics(tables);
+				final InputStream metricsInputStream = contentProtocol.readInfo();
 				final Metric[] metrics = JsonMappingUtil.mapToMetrics(metricsInputStream);
 				for (Metric metric : metrics) {
 					metricList.add(generateMetaTable(metric.getName()));
@@ -372,6 +404,25 @@ public class AtsdMeta extends MetaImpl {
 			}
 		}
 		return metricList;
+	}
+
+	@SneakyThrows(UnsupportedEncodingException.class)
+	private String prepareUrlWithMetricExpression(String metricEndpoint, String metricMask) {
+		StringBuilder expressionBuilder = new StringBuilder();
+		for (String mask : metricMask.split(",")) {
+			if (expressionBuilder.length() > 0) {
+				expressionBuilder.append(" or ");
+			}
+			expressionBuilder.append("name");
+			if (StringUtils.contains(mask, '*')) {
+				expressionBuilder.append(" like ");
+			} else {
+				expressionBuilder.append('=');
+			}
+			expressionBuilder.append('\'').append(mask).append('\'');
+		}
+		return metricEndpoint + "?expression=" + URLEncoder.encode(expressionBuilder.toString(), DEFAULT_CHARSET.name());
+
 	}
 
 	@Override
@@ -430,10 +481,9 @@ public class AtsdMeta extends MetaImpl {
 	}
 
 	private Set<String> getTags(String metric) {
-		final AtsdConnectionInfo connectionInfo = ((AtsdConnection) connection).getConnectionInfo();
-		if (connectionInfo.expandTags()) {
-			final String seriesUrl = toSeriesEndpoint(connectionInfo, metric);
-			try (final IContentProtocol contentProtocol = new SdkProtocolImpl(new ContentDescription(seriesUrl, connectionInfo))) {
+		if (atsdConnectionInfo.expandTags()) {
+			final String seriesUrl = toSeriesEndpoint(atsdConnectionInfo, metric);
+			try (final IContentProtocol contentProtocol = new SdkProtocolImpl(new ContentDescription(seriesUrl, atsdConnectionInfo))) {
 				final InputStream seriesInputStream = contentProtocol.readInfo();
 				final Series[] seriesArray = JsonMappingUtil.mapToSeries(seriesInputStream);
 				Set<String> tags = new HashSet<>();
@@ -448,14 +498,9 @@ public class AtsdMeta extends MetaImpl {
 		return Collections.emptySet();
 	}
 
+	@SneakyThrows(UnsupportedEncodingException.class)
 	private String toSeriesEndpoint(AtsdConnectionInfo connectionInfo, String metric) {
-		String encodedMetric;
-		try {
-			encodedMetric = URLEncoder.encode(metric, DriverConstants.DEFAULT_CHARSET.displayName(Locale.US));
-		} catch (UnsupportedEncodingException e) {
-			log.error("[toSeriesEndpoint] {}", e.getMessage());
-			encodedMetric = metric;
-		}
+		String encodedMetric = URLEncoder.encode(metric, DriverConstants.DEFAULT_CHARSET.name());
 		return Location.METRICS_ENDPOINT.getUrl(connectionInfo) + "/" + encodedMetric + "/series";
 	}
 
@@ -503,8 +548,7 @@ public class AtsdMeta extends MetaImpl {
 		try {
 			AtsdDatabaseMetaData metaData = atsdConnection.getAtsdDatabaseMetaData();
 			newContext.setVersion(metaData.getConnectedAtsdVersion());
-			AtsdConnectionInfo connectionInfo = atsdConnection.getConnectionInfo();
-			final IDataProvider dataProvider = new DataProvider(connectionInfo, sql, newContext);
+			final IDataProvider dataProvider = new DataProvider(atsdConnectionInfo, sql, newContext);
 			providerCache.put(statementHandle.id, dataProvider);
 			return dataProvider;
 		} catch (SQLException e) {

@@ -36,7 +36,7 @@ public class ContentDescription {
 	private String endpoint;
 	private String query;
 	private String jsonScheme;
-	private final String metadataFormat;
+	private final MetadataFormat metadataFormat;
 	private long maxRowsCount;
 	private final String queryId;
 	private final AtsdConnectionInfo info;
@@ -52,7 +52,7 @@ public class ContentDescription {
 	private ContentDescription(String endpoint, AtsdConnectionInfo atsdConnectionInfo, String query, String queryId) {
 		this.endpoint = endpoint;
 		this.query = query;
-		this.metadataFormat = MetadataFormat.EMBED.name();
+		this.metadataFormat = MetadataFormat.EMBED;
 		this.info = atsdConnectionInfo;
 		this.queryId = queryId;
 	}
@@ -69,7 +69,7 @@ public class ContentDescription {
 		return QUERY_ID_PARAM_NAME + '=' + queryId + '&' +
 				Q_PARAM_NAME + '=' + getEncodedQuery() + '&' +
 				FORMAT_PARAM_NAME + '=' + FORMAT_PARAM_VALUE + '&' +
-				METADATA_FORMAT_PARAM_NAME + '=' + metadataFormat + '&' +
+				METADATA_FORMAT_PARAM_NAME + '=' + metadataFormat.name() + '&' +
 				LIMIT_PARAM_NAME + '=' + maxRowsCount;
 	}
 
@@ -80,7 +80,7 @@ public class ContentDescription {
 		Map<String, String> map = new HashMap<>();
 		map.put(Q_PARAM_NAME, query);
 		map.put(FORMAT_PARAM_NAME, FORMAT_PARAM_VALUE);
-		map.put(METADATA_FORMAT_PARAM_NAME, metadataFormat);
+		map.put(METADATA_FORMAT_PARAM_NAME, metadataFormat.name());
 		map.put(LIMIT_PARAM_NAME, Long.toString(maxRowsCount));
 		return map;
 	}

@@ -14,6 +14,18 @@
 */
 package com.axibase.tsd.driver.jdbc.ext;
 
+import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
+import com.axibase.tsd.driver.jdbc.util.ExceptionsUtil;
+import com.axibase.tsd.driver.jdbc.util.TimeDateExpression;
+import lombok.SneakyThrows;
+import org.apache.calcite.avatica.AvaticaConnection;
+import org.apache.calcite.avatica.AvaticaPreparedStatement;
+import org.apache.calcite.avatica.ColumnMetaData;
+import org.apache.calcite.avatica.Meta;
+import org.apache.calcite.avatica.Meta.Signature;
+import org.apache.calcite.avatica.Meta.StatementHandle;
+import org.apache.calcite.avatica.remote.TypedValue;
+
 import java.io.InputStream;
 import java.io.Reader;
 import java.math.BigDecimal;
@@ -25,16 +37,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentSkipListMap;
 
-import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
-import com.axibase.tsd.driver.jdbc.util.ExceptionsUtil;
-import com.axibase.tsd.driver.jdbc.util.TimeDateExpression;
-import org.apache.calcite.avatica.AvaticaConnection;
-import org.apache.calcite.avatica.AvaticaPreparedStatement;
-import org.apache.calcite.avatica.ColumnMetaData;
-import org.apache.calcite.avatica.Meta;
-import org.apache.calcite.avatica.Meta.Signature;
-import org.apache.calcite.avatica.Meta.StatementHandle;
-import org.apache.calcite.avatica.remote.TypedValue;
+import static org.apache.calcite.avatica.Meta.StatementType.SELECT;
 
 public class AtsdPreparedStatement extends AvaticaPreparedStatement {
 	private static final LoggingFacade logger = LoggingFacade.getLogger(AtsdPreparedStatement.class);
@@ -344,5 +347,28 @@ public class AtsdPreparedStatement extends AvaticaPreparedStatement {
 	@Override
 	public long getLargeUpdateCount() throws SQLException {
 		return getStatementType() != Meta.StatementType.SELECT ? super.getLargeUpdateCount() : -1L;
+	}
+
+	private AtsdConnection getAtsdConnection() {
+		return (AtsdConnection) super.getConnection();
+	}
+
+	@Override
+	@SneakyThrows(SQLException.class)
+	public ResultSetMetaData getMetaData() {
+		logger.debug("[getMetaData]");
+		final ResultSetMetaData resultSetMetaData;
+		if (super.openResultSet == null) {
+			if (getStatementType() == SELECT) {
+				getAtsdConnection().getMeta()
+						.updatePreparedStatementResultSetMetaData(this.getSignature(), this.handle);
+				resultSetMetaData = super.getMetaData();
+			} else {
+				resultSetMetaData = null;
+			}
+		} else {
+			resultSetMetaData = openResultSet.getMetaData();
+		}
+		return resultSetMetaData;
 	}
 }

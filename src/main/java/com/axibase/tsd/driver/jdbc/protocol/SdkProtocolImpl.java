@@ -33,7 +33,6 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.SocketException;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.security.GeneralSecurityException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
@@ -79,9 +78,6 @@ public class SdkProtocolImpl implements IContentProtocol {
 	private String atsdQueryId;
 	private String queryId;
 
-	public void setQueryId(String queryId) {
-		this.queryId = queryId;
-	}
 
 	public SdkProtocolImpl(final ContentDescription contentDescription) {
 		this.contentDescription = contentDescription;
@@ -97,14 +93,14 @@ public class SdkProtocolImpl implements IContentProtocol {
 		InputStream inputStream = null;
 		try {
 			inputStream = executeRequest(POST_METHOD, timeout, contentDescription.getEndpoint());
-			if (MetadataFormat.EMBED.name().equals(contentDescription.getMetadataFormat())) {
+			if (MetadataFormat.EMBED == contentDescription.getMetadataFormat()) {
 				inputStream = MetadataRetriever.retrieveJsonSchemeAndSubstituteStream(inputStream, contentDescription);
 			}
 		} catch (IOException e) {
 			if (logger.isDebugEnabled()) {
 				logger.debug("Metadata retrieving error", e);
 			}
-			if (queryId != null) {
+			if (queryId != null) { // queryId is set if cancel method is invoked from another thread
 				throw new AtsdRuntimeException(prepareCancelMessage());
 			}
 			if (e instanceof SocketException) {
@@ -114,29 +110,6 @@ public class SdkProtocolImpl implements IContentProtocol {
 		return inputStream;
 	}
 
-	@Override
-	public InputStream getMetrics(String metricMask) throws AtsdException, GeneralSecurityException, IOException {
-		return executeRequest(GET_METHOD, 0, prepareUrlWithMetricExpression(contentDescription.getEndpoint(), metricMask));
-	}
-
-	private String prepareUrlWithMetricExpression(String metricEndpoint, String metricMask) throws UnsupportedEncodingException {
-		StringBuilder expressionBuilder = new StringBuilder();
-		for (String mask : metricMask.split(",")) {
-			if (expressionBuilder.length() > 0) {
-				expressionBuilder.append(" or ");
-			}
-			expressionBuilder.append("name");
-			if (StringUtils.contains(mask, '*')) {
-				expressionBuilder.append(" like ");
-			} else {
-				expressionBuilder.append('=');
-			}
-			expressionBuilder.append('\'').append(mask).append('\'');
-		}
-		return metricEndpoint + "?expression=" + URLEncoder.encode(expressionBuilder.toString(), DEFAULT_CHARSET.name());
-
-	}
-
 	private String prepareCancelMessage() {
 		if (atsdQueryId != null) {
 			return "Query with driver-generated id=" + queryId +
@@ -144,11 +117,6 @@ public class SdkProtocolImpl implements IContentProtocol {
 		} else {
 			return "Disconnect occurred while executing query with driver-generated id=" + queryId;
 		}
-	}
-
-	@Override
-	public InputStream readContent() throws AtsdException, GeneralSecurityException, IOException {
-		return readContent(0);
 	}
 
 	@Override
@@ -188,7 +156,7 @@ public class SdkProtocolImpl implements IContentProtocol {
 			doTrustToCertificates((HttpsURLConnection) this.conn);
 		}
 		setBaseProperties(method, queryTimeout);
-		if (MetadataFormat.HEADER.name().equals(contentDescription.getMetadataFormat())
+		if (MetadataFormat.HEADER == contentDescription.getMetadataFormat()
 				&& StringUtils.isEmpty(contentDescription.getJsonScheme())) {
 			MetadataRetriever.retrieveJsonSchemeFromHeader(conn.getHeaderFields(), contentDescription);
 		}

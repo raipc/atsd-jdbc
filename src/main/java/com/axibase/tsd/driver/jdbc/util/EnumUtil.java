@@ -1,12 +1,17 @@
 package com.axibase.tsd.driver.jdbc.util;
 
-import java.util.*;
-
 import com.axibase.tsd.driver.jdbc.enums.*;
 import com.axibase.tsd.driver.jdbc.enums.timedatesyntax.*;
 import com.axibase.tsd.driver.jdbc.intf.ITimeDateConstant;
+import org.apache.calcite.avatica.Meta;
 import org.apache.commons.lang3.EnumUtils;
 import org.apache.commons.lang3.StringUtils;
+
+import java.util.*;
+
+import static org.apache.calcite.avatica.Meta.StatementType.INSERT;
+import static org.apache.calcite.avatica.Meta.StatementType.SELECT;
+import static org.apache.calcite.avatica.Meta.StatementType.UPDATE;
 
 
 public class EnumUtil {
@@ -17,6 +22,10 @@ public class EnumUtil {
 	private static final Map<String, AtsdType> columnPrefixAtsdTypeMapping = createColumnPrefixAtsdTypeMapping();
 	private static final Map<String, ITimeDateConstant> tokenToTimeDateEnumConstant = initializeTimeDateMap();
 	private static final Map<String, Strategy> strategyMap = EnumUtils.getEnumMap(Strategy.class);
+
+	private static final Set<Meta.StatementType> SUPPORTED_STATEMENT_TYPES = Collections.unmodifiableSet(
+			new HashSet<Meta.StatementType>(Arrays.asList(SELECT, INSERT, UPDATE)) {
+	});
 
 	private EnumUtil() {}
 
@@ -157,6 +166,19 @@ public class EnumUtil {
 
 	public static String getSqlKeywords() {
 		return LexerTokens.ROW_NUMBER.name();
+	}
+
+	public static Meta.StatementType getStatementTypeByQuery(final String query) {
+		final String queryKind = new StringTokenizer(query).nextToken().toUpperCase(Locale.US);
+		try {
+			final Meta.StatementType statementType = Meta.StatementType.valueOf(queryKind);
+			if (SUPPORTED_STATEMENT_TYPES.contains(statementType)) {
+				return statementType;
+			}
+		} catch (IllegalArgumentException exc) {
+			// pass
+		}
+		throw new IllegalArgumentException("Unsupported statement type: " + queryKind);
 	}
 
 }
