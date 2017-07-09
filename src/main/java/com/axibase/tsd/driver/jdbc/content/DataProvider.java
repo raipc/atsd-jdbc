@@ -14,7 +14,7 @@
 */
 package com.axibase.tsd.driver.jdbc.content;
 
-import com.axibase.tsd.driver.jdbc.DriverConstants;
+import com.axibase.tsd.driver.jdbc.enums.Location;
 import com.axibase.tsd.driver.jdbc.ext.AtsdConnectionInfo;
 import com.axibase.tsd.driver.jdbc.ext.AtsdException;
 import com.axibase.tsd.driver.jdbc.ext.AtsdRuntimeException;
@@ -43,7 +43,7 @@ public class DataProvider implements IDataProvider {
 		if (logger.isTraceEnabled()) {
 			logger.trace("Host: {}", connectionInfo.host());
 		}
-		final String endpoint = connectionInfo.toEndpoint(DriverConstants.SQL_ENDPOINT);
+		final String endpoint = Location.SQL_ENDPOINT.getUrl(connectionInfo);
 		this.contentDescription = new ContentDescription(endpoint, connectionInfo, query, context);
 		this.contentProtocol = ProtocolFactory.create(SdkProtocolImpl.class, contentDescription);
 		this.context = context;

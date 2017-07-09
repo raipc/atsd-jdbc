@@ -23,12 +23,8 @@ public class AtsdConnectionInfo {
 		return hostAndCatalog.host;
 	}
 
-	private String protocol() {
+	public String protocol() {
 		return (secure() ? "https://" : "http://");
-	}
-
-	public String toEndpoint(String endpoint) {
-		return protocol() + host() + endpoint;
 	}
 
 	public String url() {

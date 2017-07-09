@@ -20,6 +20,7 @@ import com.axibase.tsd.driver.jdbc.content.json.Metric;
 import com.axibase.tsd.driver.jdbc.content.json.Series;
 import com.axibase.tsd.driver.jdbc.enums.AtsdType;
 import com.axibase.tsd.driver.jdbc.enums.DefaultColumn;
+import com.axibase.tsd.driver.jdbc.enums.Location;
 import com.axibase.tsd.driver.jdbc.enums.timedatesyntax.EndTime;
 import com.axibase.tsd.driver.jdbc.intf.IContentProtocol;
 import com.axibase.tsd.driver.jdbc.intf.IDataProvider;
@@ -358,7 +359,7 @@ public class AtsdMeta extends MetaImpl {
 		final List<Object> metricList = new ArrayList<>();
 		final String tables = connectionInfo.tables();
 		if (StringUtils.isNotBlank(tables)) {
-			final String metricsUrl = connectionInfo.toEndpoint(DriverConstants.METRICS_ENDPOINT);
+			final String metricsUrl = Location.METRICS_ENDPOINT.getUrl(connectionInfo);
 			try (final IContentProtocol contentProtocol = new SdkProtocolImpl(new ContentDescription(metricsUrl, connectionInfo))) {
 				final InputStream metricsInputStream = contentProtocol.getMetrics(tables);
 				final Metric[] metrics = JsonMappingUtil.mapToMetrics(metricsInputStream);
@@ -455,7 +456,7 @@ public class AtsdMeta extends MetaImpl {
 			log.error("[toSeriesEndpoint] {}", e.getMessage());
 			encodedMetric = metric;
 		}
-		return connectionInfo.toEndpoint(DriverConstants.METRICS_ENDPOINT) + "/" + encodedMetric + "/series";
+		return Location.METRICS_ENDPOINT.getUrl(connectionInfo) + "/" + encodedMetric + "/series";
 	}
 
 	private Object createColumnMetaData(MetadataColumnDefinition column, String table, int ordinal) {

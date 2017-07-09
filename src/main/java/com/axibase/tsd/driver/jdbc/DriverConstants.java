@@ -54,11 +54,6 @@ public final class DriverConstants {
 	public static final int	MIN_SUPPORTED_ATSD_REVISION = 16720;
 	public static final String REVISION_LINE = "Revision";
 
-	public static final String SQL_ENDPOINT = "/api/sql";
-	public static final String SQL_META_ENDPOINT = "/api/sql/meta";
-	public static final String CANCEL_ENDPOINT = "/api/sql/cancel";
-	public static final String METRICS_ENDPOINT = "/api/v1/metrics";
-	public static final String VERSION_ENDPOINT = "/api/v1/version";
 	public static final String CONN_KEEP_ALIVE = "Keep-Alive";
 	public static final String AUTHORIZATION_TYPE = "Basic ";
 	public static final String CSV_AND_JSON_MIME_TYPE = "text/csv,application/json";
