@@ -14,6 +14,7 @@
 */
 package com.axibase.tsd.driver.jdbc.content;
 
+import com.axibase.tsd.driver.jdbc.enums.Location;
 import com.axibase.tsd.driver.jdbc.enums.MetadataFormat;
 import com.axibase.tsd.driver.jdbc.ext.AtsdConnectionInfo;
 import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
@@ -23,9 +24,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 
 import static com.axibase.tsd.driver.jdbc.DriverConstants.*;
 
@@ -63,25 +61,18 @@ public class ContentDescription {
 	}
 
 	public String getPostParams() {
+		final String params;
 		if (StringUtils.isEmpty(query)) {
-			return "";
+			params = "";
+		} else if (endpoint.endsWith(Location.SQL_META_ENDPOINT.getEndpoint())) {
+			params = Q_PARAM_NAME + '=' + getEncodedQuery();
+		} else {
+			params = QUERY_ID_PARAM_NAME + '=' + queryId + '&' +
+					Q_PARAM_NAME + '=' + getEncodedQuery() + '&' +
+					FORMAT_PARAM_NAME + '=' + FORMAT_PARAM_VALUE + '&' +
+					METADATA_FORMAT_PARAM_NAME + '=' + metadataFormat.name() + '&' +
+					LIMIT_PARAM_NAME + '=' + maxRowsCount;
 		}
-		return QUERY_ID_PARAM_NAME + '=' + queryId + '&' +
-				Q_PARAM_NAME + '=' + getEncodedQuery() + '&' +
-				FORMAT_PARAM_NAME + '=' + FORMAT_PARAM_VALUE + '&' +
-				METADATA_FORMAT_PARAM_NAME + '=' + metadataFormat.name() + '&' +
-				LIMIT_PARAM_NAME + '=' + maxRowsCount;
-	}
-
-	public Map<String, String> getQueryParamsAsMap() {
-		if (StringUtils.isEmpty(query)) {
-			return Collections.emptyMap();
-		}
-		Map<String, String> map = new HashMap<>();
-		map.put(Q_PARAM_NAME, query);
-		map.put(FORMAT_PARAM_NAME, FORMAT_PARAM_VALUE);
-		map.put(METADATA_FORMAT_PARAM_NAME, metadataFormat.name());
-		map.put(LIMIT_PARAM_NAME, Long.toString(maxRowsCount));
-		return map;
+		return params;
 	}
 }

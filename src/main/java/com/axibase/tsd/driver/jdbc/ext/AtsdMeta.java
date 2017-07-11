@@ -121,6 +121,9 @@ public class AtsdMeta extends MetaImpl {
 				} else {
 					throw new SQLException(e);
 				}
+			} catch (AtsdRuntimeException e) {
+				log.error("[updatePreparedStatementResultSetMetaData] error: {}", e.getMessage());
+				throw new SQLDataException(e);
 			} catch (Exception e)  {
 				log.error("[updatePreparedStatementResultSetMetaData] error", e);
 				throw new SQLException(e);
