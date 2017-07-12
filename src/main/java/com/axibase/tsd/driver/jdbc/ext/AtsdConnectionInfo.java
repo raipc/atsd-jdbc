@@ -40,15 +40,11 @@ public class AtsdConnectionInfo {
 	}
 
 	public boolean secure() {
-		final AtsdDriverConnectionProperties property = secure;
-		final String result = info.getProperty(property.camelName());
-		return result == null ? (Boolean) property.defaultValue() : Boolean.parseBoolean(result);
+		return getBooleanValue(secure);
 	}
 
 	public boolean trustCertificate() {
-		final AtsdDriverConnectionProperties property = trust;
-		final String result = info.getProperty(property.camelName());
-		return result == null ? (Boolean) property.defaultValue() : Boolean.parseBoolean(result);
+		return getBooleanValue(trust);
 	}
 
 	public int connectTimeoutMillis() {
@@ -72,8 +68,7 @@ public class AtsdConnectionInfo {
 	}
 
 	public String tables() {
-		final AtsdDriverConnectionProperties property = tables;
-		return info.getProperty(property.camelName());
+		return info.getProperty(tables.camelName());
 	}
 
 	public String schema() {
@@ -85,19 +80,22 @@ public class AtsdConnectionInfo {
 	}
 
 	public boolean expandTags() {
-		final AtsdDriverConnectionProperties property = expandTags;
-		final String result = info.getProperty(property.camelName());
-		return result == null ? (Boolean) property.defaultValue() : Boolean.parseBoolean(result);
+		return getBooleanValue(expandTags);
 	}
 
 	public boolean metaColumns() {
-		final AtsdDriverConnectionProperties property = metaColumns;
-		final String result = info.getProperty(property.camelName());
-		return result == null ? (Boolean) property.defaultValue() : Boolean.parseBoolean(result);
+		return getBooleanValue(metaColumns);
 	}
 
 	public boolean assignColumnNames() {
-		final AtsdDriverConnectionProperties property = assignColumnNames;
+		return getBooleanValue(assignColumnNames);
+	}
+
+	public boolean timestampTz() {
+		return getBooleanValue(timestamptz);
+	}
+
+	private boolean getBooleanValue(AtsdDriverConnectionProperties property) {
 		final String result = info.getProperty(property.camelName());
 		return result == null ? (Boolean) property.defaultValue() : Boolean.parseBoolean(result);
 	}

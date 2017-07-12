@@ -41,6 +41,8 @@ public final class DriverConstants {
 	public static final boolean DEFAULT_META_COLUMNS_VALUE = false;
 	public static final String ASSIGN_INNER_COLUMN_NAMES_PARAM = "assignColumnNames";
 	public static final boolean DEFAULT_ASSIGN_INNER_COLUMN_NAMES_VALUE = false;
+	public static final String USE_TIMESTAMP_WITH_TIME_ZONE_PARAM = "timestamptz";
+	public static final boolean DEFAULT_USE_TIMESTAMP_WITH_TIME_ZONE_VALUE = true;
 
 	public static final String QUERY_ID_PARAM_NAME = "queryId";
 	public static final String Q_PARAM_NAME = "q";
