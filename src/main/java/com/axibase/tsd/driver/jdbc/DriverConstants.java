@@ -1,5 +1,7 @@
 package com.axibase.tsd.driver.jdbc;
 
+import com.axibase.tsd.driver.jdbc.enums.OnMissingMetricAction;
+
 import java.nio.charset.Charset;
 
 public final class DriverConstants {
@@ -43,6 +45,8 @@ public final class DriverConstants {
 	public static final boolean DEFAULT_ASSIGN_INNER_COLUMN_NAMES_VALUE = false;
 	public static final String USE_TIMESTAMP_WITH_TIME_ZONE_PARAM = "timestamptz";
 	public static final boolean DEFAULT_USE_TIMESTAMP_WITH_TIME_ZONE_VALUE = true;
+	public static final String ON_MISSING_METRIC_PARAM = "missingMetric";
+	public static final OnMissingMetricAction DEFAULT_ON_MISSING_METRIC_VALUE = OnMissingMetricAction.WARNING;
 
 	public static final String QUERY_ID_PARAM_NAME = "queryId";
 	public static final String Q_PARAM_NAME = "q";

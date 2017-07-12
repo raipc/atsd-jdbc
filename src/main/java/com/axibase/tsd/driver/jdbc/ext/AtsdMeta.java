@@ -272,8 +272,9 @@ public class AtsdMeta extends MetaImpl {
 		final int offset = (int) loffset;
 		log.trace("[fetch] fetchMaxRowCount: {}, offset: {}", fetchMaxRowCount, offset);
 		IDataProvider provider = providerCache.get(statementHandle.id);
-		assert provider != null;
-		final ContentDescription contentDescription = provider.getContentDescription();
+		if (provider == null) {
+			throw new MissingResultsException(statementHandle);
+		}
 		final IStoreStrategy strategy = provider.getStrategy();
 		final ContentMetadata contentMetadata = metaCache.get(statementHandle.id);
 		if (contentMetadata == null) {
