@@ -49,6 +49,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.axibase.tsd.driver.jdbc.DriverConstants.DEFAULT_CHARSET;
+import static com.axibase.tsd.driver.jdbc.DriverConstants.DEFAULT_TABLE_NAME;
 import static org.apache.calcite.avatica.Meta.StatementType.SELECT;
 
 public class AtsdMeta extends MetaImpl {
@@ -364,7 +365,7 @@ public class AtsdMeta extends MetaImpl {
 
 	private AtsdMetaResultSets.AtsdMetaTable generateDefaultMetaTable() {
 		return new AtsdMetaResultSets.AtsdMetaTable(atsdConnectionInfo.catalog(), atsdConnectionInfo.schema(),
-				DriverConstants.DEFAULT_TABLE_NAME, "TABLE", "SELECT metric, entity, tags.collector, " +
+				DEFAULT_TABLE_NAME, "TABLE", "SELECT metric, entity, tags.collector, " +
 				"tags.host, datetime, time, value FROM atsd_series WHERE metric = 'gc_time_percent' " +
 				"AND entity = 'atsd' AND datetime >= now - 5*MINUTE ORDER BY datetime DESC LIMIT 10");
 	}
@@ -395,7 +396,11 @@ public class AtsdMeta extends MetaImpl {
 		final List<Object> metricList = new ArrayList<>();
 		final String tables = connectionInfo.tables();
 		if (StringUtils.isNotBlank(tables)) {
-			final String metricsUrl = prepareUrlWithMetricExpression(Location.METRICS_ENDPOINT.getUrl(connectionInfo), tables);
+			final String[] metricMasks = tables.split(",");
+			if (containsAtsdSeriesTable(metricMasks)) {
+				metricList.add(generateDefaultMetaTable());
+			}
+			final String metricsUrl = prepareUrlWithMetricExpression(Location.METRICS_ENDPOINT.getUrl(connectionInfo), metricMasks);
 			try (final IContentProtocol contentProtocol = new SdkProtocolImpl(new ContentDescription(metricsUrl, connectionInfo))) {
 				final InputStream metricsInputStream = contentProtocol.readInfo();
 				final Metric[] metrics = JsonMappingUtil.mapToMetrics(metricsInputStream);
@@ -410,10 +415,21 @@ public class AtsdMeta extends MetaImpl {
 		return metricList;
 	}
 
+	static boolean containsAtsdSeriesTable(String[] metricMasks) {
+		for (String metricMask : metricMasks) {
+			if (DEFAULT_TABLE_NAME.equals(metricMask) || (metricMask.endsWith("*")
+					&& DEFAULT_TABLE_NAME.startsWith(StringUtils.substring(metricMask, 0, -1)))) {
+				return true;
+			}
+
+		}
+		return false;
+	}
+
 	@SneakyThrows(UnsupportedEncodingException.class)
-	private String prepareUrlWithMetricExpression(String metricEndpoint, String metricMask) {
+	private String prepareUrlWithMetricExpression(String metricEndpoint, String[] metricMasks) {
 		StringBuilder expressionBuilder = new StringBuilder();
-		for (String mask : metricMask.split(",")) {
+		for (String mask : metricMasks) {
 			if (expressionBuilder.length() > 0) {
 				expressionBuilder.append(" or ");
 			}
@@ -473,7 +489,7 @@ public class AtsdMeta extends MetaImpl {
 					++position;
 				}
 			}
-			if (!DriverConstants.DEFAULT_TABLE_NAME.equals(tablePattern)) {
+			if (!DEFAULT_TABLE_NAME.equals(tablePattern)) {
 				for (String tag : getTags(tablePattern)) {
 					columnData.add(createColumnMetaData(new TagColumn(tag), tablePattern, position));
 					++position;
