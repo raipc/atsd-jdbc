@@ -21,7 +21,6 @@ import com.axibase.tsd.driver.jdbc.content.json.Series;
 import com.axibase.tsd.driver.jdbc.enums.AtsdType;
 import com.axibase.tsd.driver.jdbc.enums.DefaultColumn;
 import com.axibase.tsd.driver.jdbc.enums.Location;
-import com.axibase.tsd.driver.jdbc.enums.timedatesyntax.EndTime;
 import com.axibase.tsd.driver.jdbc.intf.IContentProtocol;
 import com.axibase.tsd.driver.jdbc.intf.IDataProvider;
 import com.axibase.tsd.driver.jdbc.intf.IStoreStrategy;
@@ -30,7 +29,6 @@ import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
 import com.axibase.tsd.driver.jdbc.protocol.SdkProtocolImpl;
 import com.axibase.tsd.driver.jdbc.util.EnumUtil;
 import com.axibase.tsd.driver.jdbc.util.JsonMappingUtil;
-import com.axibase.tsd.driver.jdbc.util.TimeDateExpression;
 import lombok.SneakyThrows;
 import org.apache.calcite.avatica.*;
 import org.apache.calcite.avatica.remote.TypedValue;
@@ -176,19 +174,23 @@ public class AtsdMeta extends MetaImpl {
 			for (TypedValue parameterValue : parameterValues) {
 				++position;
 				Object value = parameterValue.value;
-
-				if (value instanceof Number || value instanceof TimeDateExpression || value instanceof EndTime) {
-					buffer.append(value);
-				} else if (value instanceof String) {
-					buffer.append('\'').append((String) value).append('\'');
-				} else if (value instanceof java.sql.Date) {
-					buffer.append('\'').append(DATE_FORMATTER.get().format((java.sql.Date) value)).append('\'');
-				} else if (value instanceof Time) {
-					buffer.append('\'').append(TIME_FORMATTER.get().format((Time) value)).append('\'');
-				} else if (value instanceof Timestamp) {
-					buffer.append('\'').append(TIMESTAMP_FORMATTER.get().format((Timestamp) value)).append('\'');
+				switch(parameterValue.type) {
+					case STRING:
+						buffer.append('\'').append(value).append('\'');
+						break;
+					case JAVA_SQL_DATE:
+						buffer.append('\'').append(DATE_FORMATTER.get().format(value)).append('\'');
+						break;
+					case JAVA_SQL_TIME:
+						buffer.append('\'').append(TIME_FORMATTER.get().format(value)).append('\'');
+						break;
+					case JAVA_SQL_TIMESTAMP:
+					case JAVA_UTIL_DATE:
+						buffer.append('\'').append(TIMESTAMP_FORMATTER.get().format(value)).append('\'');
+						break;
+					default:
+						buffer.append(value);
 				}
-
 				buffer.append(parts[position]);
 			}
 
