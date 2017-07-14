@@ -124,7 +124,12 @@ public class WildcardsUtil {
 			switch (current) {
 				case ONE_ANY_SYMBOL:
 					flushBuffer(buffer, list);
-					list.add(oneAnySymbolStr);
+					if (!list.isEmpty() && noneOrMoreSymbolsStr.equals(list.get(list.size() - 1))) {
+						list.set(list.size() - 1, oneAnySymbolStr);
+						list.add(noneOrMoreSymbolsStr);
+					} else {
+						list.add(oneAnySymbolStr);
+					}
 					break;
 				case NONE_OR_MORE_SYMBOLS:
 					flushBuffer(buffer, list);
