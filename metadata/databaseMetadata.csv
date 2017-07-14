@@ -16,7 +16,7 @@ getDefaultTransactionIsolation,2,2,2,2,2,2
 getDriverMajorVersion,1,5,42,12,4,6
 getDriverMinorVersion,3,1,0,1,23,2
 getDriverName,ATSD JDBC driver,MySQL Connector Java,PostgreSQL JDBC Driver,Oracle JDBC driver,IBM Data Server Driver for JDBC and SQLJ,Microsoft JDBC Driver 6.2 for SQL Server
-getDriverVersion,1.3.2-SNAPSHOT-2017-07-13T15:23:14Z,mysql-connector-java-5.1.42 ( Revision: 1f61b0b0270d9844b006572ba4e77f19c0f230d4 ),42.0.0.jre7,12.1.0.2.0,4.23.42,6.2.0.0
+getDriverVersion,1.3.2-SNAPSHOT (2017-07-14T11:33:26Z),mysql-connector-java-5.1.42 ( Revision: 1f61b0b0270d9844b006572ba4e77f19c0f230d4 ),42.0.0.jre7,12.1.0.2.0,4.23.42,6.2.0.0
 getExtraNameCharacters,,#@,,$#,@#,$#@
 getIdentifierQuoteString,"""",`,"""","""","""",""""
 getJDBCMajorVersion,4,4,4,4,4,4
