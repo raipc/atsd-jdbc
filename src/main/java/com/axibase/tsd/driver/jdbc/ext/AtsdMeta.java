@@ -53,8 +53,6 @@ import static org.apache.calcite.avatica.Meta.StatementType.SELECT;
 public class AtsdMeta extends MetaImpl {
 	private static final LoggingFacade log = LoggingFacade.getLogger(AtsdMeta.class);
 
-	public static final ThreadLocal<SimpleDateFormat> DATE_FORMATTER = prepareFormatter("yyyy-MM-dd");
-	public static final ThreadLocal<SimpleDateFormat> TIME_FORMATTER = prepareFormatter("HH:mm:ss");
 	public static final ThreadLocal<SimpleDateFormat> TIMESTAMP_FORMATTER = prepareFormatter("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 	public static final ThreadLocal<SimpleDateFormat> TIMESTAMP_SHORT_FORMATTER = prepareFormatter("yyyy-MM-dd'T'HH:mm:ss'Z'");
 
@@ -224,12 +222,6 @@ public class AtsdMeta extends MetaImpl {
 		switch(parameterValue.type) {
 			case STRING:
 				buffer.append('\'').append(value).append('\'');
-				break;
-			case JAVA_SQL_DATE:
-				buffer.append('\'').append(DATE_FORMATTER.get().format(value)).append('\'');
-				break;
-			case JAVA_SQL_TIME:
-				buffer.append('\'').append(TIME_FORMATTER.get().format(value)).append('\'');
 				break;
 			case JAVA_SQL_TIMESTAMP:
 			case JAVA_UTIL_DATE:
