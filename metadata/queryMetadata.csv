@@ -15,6 +15,7 @@ rs.getObject(columnIndex).getClass(),class java.lang.String,class java.lang.Stri
 rs.findColumn(md.getColumnLabel(columnIndex)),1,1,1,1,1,1
 rs.getObject(md.getColumnLabel(columnIndex)),test_e,test_e,test_e,test_e,test_e,test_e
 ,,,,,,
+Method,ATSD,MySQL,PostgreSQL,Oracle,DB2,MSSQL
 md.getColumnName(columnIndex),mtr,mtr,mtr,MTR,METRIC,mtr
 md.getColumnLabel(columnIndex),mtr,mtr,mtr,MTR,MTR,mtr
 md.getColumnDisplaySize(columnIndex),131072,50,50,50,50,50
@@ -31,6 +32,7 @@ rs.getObject(columnIndex).getClass(),class java.lang.String,class java.lang.Stri
 rs.findColumn(md.getColumnLabel(columnIndex)),2,2,2,2,2,2
 rs.getObject(md.getColumnLabel(columnIndex)),metric_short,metric,metric,metric,metric,metric
 ,,,,,,
+Method,ATSD,MySQL,PostgreSQL,Oracle,DB2,MSSQL
 md.getColumnName(columnIndex),val_short,val_short,val_short,VAL_SHORT,VALUE_SHORT,val_short
 md.getColumnLabel(columnIndex),val_short,val_short,val_short,VAL_SHORT,VAL_SHORT,val_short
 md.getColumnDisplaySize(columnIndex),6,6,6,6,6,6
@@ -47,6 +49,7 @@ rs.getObject(columnIndex).getClass(),class java.lang.Short,class java.lang.Integ
 rs.findColumn(md.getColumnLabel(columnIndex)),3,3,3,3,3,3
 rs.getObject(md.getColumnLabel(columnIndex)),10,10,10,10,10,10
 ,,,,,,
+Method,ATSD,MySQL,PostgreSQL,Oracle,DB2,MSSQL
 md.getColumnName(columnIndex),val_integer,val_integer,val_integer,VAL_INTEGER,VALUE_INTEGER,val_integer
 md.getColumnLabel(columnIndex),val_integer,val_integer,val_integer,VAL_INTEGER,VAL_INTEGER,val_integer
 md.getColumnDisplaySize(columnIndex),11,11,11,11,11,11
@@ -63,6 +66,7 @@ rs.getObject(columnIndex).getClass(),class java.lang.Integer,class java.lang.Int
 rs.findColumn(md.getColumnLabel(columnIndex)),4,4,4,4,4,4
 rs.getObject(md.getColumnLabel(columnIndex)),10,10,10,10,10,10
 ,,,,,,
+Method,ATSD,MySQL,PostgreSQL,Oracle,DB2,MSSQL
 md.getColumnName(columnIndex),val_float,val_float,val_float,VAL_FLOAT,VALUE_FLOAT,val_float
 md.getColumnLabel(columnIndex),val_float,val_float,val_float,VAL_FLOAT,VAL_FLOAT,val_float
 md.getColumnDisplaySize(columnIndex),15,12,15,4,13,13
@@ -79,6 +83,7 @@ rs.getObject(columnIndex).getClass(),class java.lang.Float,class java.lang.Float
 rs.findColumn(md.getColumnLabel(columnIndex)),5,5,5,5,5,5
 rs.getObject(md.getColumnLabel(columnIndex)),10.0,10.0,10.0,10.0,10.0,10.0
 ,,,,,,
+Method,ATSD,MySQL,PostgreSQL,Oracle,DB2,MSSQL
 md.getColumnName(columnIndex),val_long,val_long,val_long,VAL_LONG,VALUE_LONG,val_long
 md.getColumnLabel(columnIndex),val_long,val_long,val_long,VAL_LONG,VAL_LONG,val_long
 md.getColumnDisplaySize(columnIndex),20,20,20,20,20,20
@@ -95,6 +100,7 @@ rs.getObject(columnIndex).getClass(),class java.lang.Long,class java.lang.Long,c
 rs.findColumn(md.getColumnLabel(columnIndex)),6,6,6,6,6,6
 rs.getObject(md.getColumnLabel(columnIndex)),10,10,10,10,10,10
 ,,,,,,
+Method,ATSD,MySQL,PostgreSQL,Oracle,DB2,MSSQL
 md.getColumnName(columnIndex),val_double,val_double,val_double,VAL_DOUBLE,VALUE_DOUBLE,val_double
 md.getColumnLabel(columnIndex),val_double,val_double,val_double,VAL_DOUBLE,VAL_DOUBLE,val_double
 md.getColumnDisplaySize(columnIndex),25,22,25,8,22,22
@@ -111,6 +117,7 @@ rs.getObject(columnIndex).getClass(),class java.lang.Double,class java.lang.Doub
 rs.findColumn(md.getColumnLabel(columnIndex)),7,7,7,7,7,7
 rs.getObject(md.getColumnLabel(columnIndex)),10.0,10.0,10.0,10.0,10.0,10.0
 ,,,,,,
+Method,ATSD,MySQL,PostgreSQL,Oracle,DB2,MSSQL
 md.getColumnName(columnIndex),val_decimal,val_decimal,val_decimal,VAL_DECIMAL,VALUE_DECIMAL,val_decimal
 md.getColumnLabel(columnIndex),val_decimal,val_decimal,val_decimal,VAL_DECIMAL,VAL_DECIMAL,val_decimal
 md.getColumnDisplaySize(columnIndex),131072,11,131089,21,7,40
@@ -127,6 +134,7 @@ rs.getObject(columnIndex).getClass(),class java.math.BigDecimal,class java.math.
 rs.findColumn(md.getColumnLabel(columnIndex)),8,8,8,8,8,8
 rs.getObject(md.getColumnLabel(columnIndex)),10,10,10,10,10,10
 ,,,,,,
+Method,ATSD,MySQL,PostgreSQL,Oracle,DB2,MSSQL
 md.getColumnName(columnIndex),dt,dt,dt,DT,DATETIME,dt
 md.getColumnLabel(columnIndex),dt,dt,dt,DT,DT,dt
 md.getColumnDisplaySize(columnIndex),29,19,29,11,26,23
@@ -143,6 +151,7 @@ rs.getObject(columnIndex).getClass(),class java.sql.Timestamp,class java.sql.Tim
 rs.findColumn(md.getColumnLabel(columnIndex)),9,9,9,9,9,9
 rs.getObject(md.getColumnLabel(columnIndex)),2017-01-01 03:00:00.0,2017-01-01 00:00:00.0,2017-01-01 00:00:00.0,2017-01-01 00:00:00.0,2017-01-01 00:00:00.0,2017-01-01 00:00:00.0
 ,,,,,,
+Method,ATSD,MySQL,PostgreSQL,Oracle,DB2,MSSQL
 md.getColumnName(columnIndex),tm,tm,tm,TM,TIME,tm
 md.getColumnLabel(columnIndex),tm,tm,tm,TM,TM,tm
 md.getColumnDisplaySize(columnIndex),20,20,20,20,20,20
