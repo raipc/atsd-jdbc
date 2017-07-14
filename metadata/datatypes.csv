@@ -1,5 +1,3 @@
-BIGINT,,,,,
-,,,,,,
 Parameter,ATSD,MySQL,PostgreSQL,Oracle,DB2,MSSQL
 TYPE_NAME,bigint,BIGINT,int8,NUMBER,BIGINT,bigint
 DATA_TYPE,-5,-5,-5,2,-5,-5
@@ -19,8 +17,6 @@ MAXIMUM_SCALE,0,0,0,127,0,0
 SQL_DATA_TYPE,-5,0,null,null,-5,-5
 SQL_DATETIME_SUB,null,0,null,null,null,null
 NUM_PREC_RADIX,10,10,10,10,10,10
-,,,,,,
-BOOLEAN,,,,,
 ,,,,,,
 Parameter,ATSD,MySQL,PostgreSQL,Oracle,DB2,MSSQL
 TYPE_NAME,boolean,BOOL,bool,NUMBER,BOOLEAN,bit
@@ -42,8 +38,6 @@ SQL_DATA_TYPE,16,0,null,null,16,-7
 SQL_DATETIME_SUB,null,0,null,null,null,null
 NUM_PREC_RADIX,10,10,10,10,null,null
 ,,,,,,
-DECIMAL,,,,,
-,,,,,,
 Parameter,ATSD,MySQL,PostgreSQL,Oracle,DB2,MSSQL
 TYPE_NAME,decimal,DECIMAL,numeric,NUMBER,DECIMAL,decimal
 DATA_TYPE,3,3,2,2,3,3
@@ -63,8 +57,6 @@ MAXIMUM_SCALE,0,308,1000,127,31,38
 SQL_DATA_TYPE,3,0,null,null,3,3
 SQL_DATETIME_SUB,null,0,null,null,null,null
 NUM_PREC_RADIX,10,10,10,10,10,10
-,,,,,,
-DOUBLE,,,,,
 ,,,,,,
 Parameter,ATSD,MySQL,PostgreSQL,Oracle,DB2,MSSQL
 TYPE_NAME,double,DOUBLE,float8,REAL,DOUBLE,float
@@ -86,8 +78,6 @@ SQL_DATA_TYPE,8,0,null,null,8,6
 SQL_DATETIME_SUB,null,0,null,null,null,null
 NUM_PREC_RADIX,10,10,10,10,2,2
 ,,,,,,
-FLOAT,,,,,
-,,,,,,
 Parameter,ATSD,MySQL,PostgreSQL,Oracle,DB2,MSSQL
 TYPE_NAME,float,FLOAT,float4,FLOAT,REAL,real
 DATA_TYPE,7,7,7,6,7,7
@@ -107,8 +97,6 @@ MAXIMUM_SCALE,0,38,0,127,0,null
 SQL_DATA_TYPE,7,0,null,null,7,7
 SQL_DATETIME_SUB,null,0,null,null,null,null
 NUM_PREC_RADIX,10,10,10,10,2,2
-,,,,,,
-INTEGER,,,,,
 ,,,,,,
 Parameter,ATSD,MySQL,PostgreSQL,Oracle,DB2,MSSQL
 TYPE_NAME,integer,INT,int4,NUMBER,INTEGER,int
@@ -130,8 +118,6 @@ SQL_DATA_TYPE,4,0,null,null,4,4
 SQL_DATETIME_SUB,null,0,null,null,null,null
 NUM_PREC_RADIX,10,10,10,10,10,10
 ,,,,,,
-JAVA_OBJECT,,,,,
-,,,,,,
 Parameter,ATSD,MySQL,PostgreSQL,Oracle,DB2,MSSQL
 TYPE_NAME,java_object,null,null,null,null,null
 DATA_TYPE,2000,null,null,null,null,null
@@ -151,8 +137,6 @@ MAXIMUM_SCALE,0,null,null,null,null,null
 SQL_DATA_TYPE,2000,null,null,null,null,null
 SQL_DATETIME_SUB,null,null,null,null,null,null
 NUM_PREC_RADIX,10,null,null,null,null,null
-,,,,,,
-SMALLINT,,,,,
 ,,,,,,
 Parameter,ATSD,MySQL,PostgreSQL,Oracle,DB2,MSSQL
 TYPE_NAME,smallint,SMALLINT,int2,NUMBER,SMALLINT,smallint
@@ -174,8 +158,6 @@ SQL_DATA_TYPE,5,0,null,null,5,5
 SQL_DATETIME_SUB,null,0,null,null,null,null
 NUM_PREC_RADIX,10,10,10,10,10,10
 ,,,,,,
-VARCHAR,,,,,
-,,,,,,
 Parameter,ATSD,MySQL,PostgreSQL,Oracle,DB2,MSSQL
 TYPE_NAME,varchar,VARCHAR,varchar,VARCHAR2,VARCHAR,varchar
 DATA_TYPE,12,12,12,12,12,12
@@ -195,8 +177,6 @@ MAXIMUM_SCALE,0,0,0,0,null,null
 SQL_DATA_TYPE,12,0,null,null,12,12
 SQL_DATETIME_SUB,null,0,null,null,null,null
 NUM_PREC_RADIX,10,10,10,10,null,null
-,,,,,,
-TIMESTAMP,,,,,
 ,,,,,,
 Parameter,ATSD,MySQL,PostgreSQL,Oracle,DB2,MSSQL
 TYPE_NAME,timestamp,TIMESTAMP,timestamp,TIMESTAMP,TIMESTAMP,datetime
