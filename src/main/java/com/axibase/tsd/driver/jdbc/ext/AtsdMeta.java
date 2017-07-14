@@ -62,6 +62,7 @@ public class AtsdMeta extends MetaImpl {
 	private final Map<Integer, ContentMetadata> metaCache = new ConcurrentHashMap<>();
 	private final Map<Integer, IDataProvider> providerCache = new ConcurrentHashMap<>();
 	private final Map<Integer, StatementContext> contextMap = new ConcurrentHashMap<>();
+	private final Map<Integer, List<String>> queryPartsMap = new ConcurrentHashMap<>();
 	private final AtsdConnectionInfo atsdConnectionInfo;
 
 	public AtsdMeta(final AvaticaConnection conn) {
@@ -91,16 +92,18 @@ public class AtsdMeta extends MetaImpl {
 	@Override
 	@SneakyThrows(SQLException.class)
 	public StatementHandle prepare(ConnectionHandle connectionHandle, String query, long maxRowCount) {
-		final int id = idGenerator.getAndIncrement();
-		log.trace("[prepare] handle: {} query: {}", id, query);
+		final int statementHandleId = idGenerator.getAndIncrement();
+		log.trace("[prepare] handle: {} query: {}", statementHandleId, query);
 
 		if (StringUtils.isBlank(query)) {
 			throw new SQLException("Failed to prepare statement with blank query");
 		}
+		final List<String> queryParts = splitQueryByPlaceholder(query);
+		queryPartsMap.put(statementHandleId, queryParts);
 		final StatementType statementType = EnumUtil.getStatementTypeByQuery(query);
 		Signature signature = new Signature(new ArrayList<ColumnMetaData>(), query, Collections.<AvaticaParameter>emptyList(), null,
 				statementType == SELECT ? CursorFactory.LIST : null, statementType);
-		return new StatementHandle(connectionHandle.id, id, signature);
+		return new StatementHandle(connectionHandle.id, statementHandleId, signature);
 	}
 
 	public void updatePreparedStatementResultSetMetaData(Signature signature, StatementHandle handle) throws SQLException {
@@ -142,7 +145,11 @@ public class AtsdMeta extends MetaImpl {
 			log.trace("[execute] maxRowsInFirstFrame: {} parameters: {} handle: {}", maxRowsInFirstFrame, parameterValues.size(),
 					statementHandle.toString());
 		}
-		final String query = substitutePlaceholders(statementHandle.signature.sql, parameterValues);
+		final List<String> queryParts = queryPartsMap.get(statementHandle.id);
+		if (queryParts == null) {
+			throw new NoSuchStatementException(statementHandle);
+		}
+		final String query = substitutePlaceholders(queryParts, parameterValues);
 		try {
 			IDataProvider provider = createDataProvider(statementHandle, query);
 			final Statement statement = connection.statementMap.get(statementHandle.id);
@@ -160,45 +167,77 @@ public class AtsdMeta extends MetaImpl {
 		}
 	}
 
-	private static String substitutePlaceholders(String query, List<TypedValue> parameterValues) {
-		if (query.contains("?")) {
-			final StringBuilder buffer = new StringBuilder(query.length());
-			final String[] parts = query.split("\\?", -1);
-			if (parts.length != parameterValues.size() + 1) {
-				throw new IndexOutOfBoundsException(
-						String.format("Number of specified values [%d] does not match to number of occurrences [%d]",
-								parameterValues.size(), parts.length - 1));
+	static List<String> splitQueryByPlaceholder(String query) {
+		final List<String> queryParts = new ArrayList<>();
+		final int length = query.length();
+		boolean quoted = false;
+		boolean singleQuoted = false;
+		int startOfQueryPart = 0;
+		for (int i = 0; i < length; i++) {
+			char currentChar = query.charAt(i);
+			switch (currentChar) {
+				case '?':
+					if (!quoted && !singleQuoted) {
+						queryParts.add(query.substring(startOfQueryPart, i));
+						startOfQueryPart = i + 1;
+					}
+					break;
+				case '\'':
+					if (!quoted) {
+						singleQuoted = !singleQuoted;
+					}
+					break;
+				case '"':
+					if (!singleQuoted) {
+						quoted = !quoted;
+					}
+					break;
 			}
-			buffer.append(parts[0]);
-			int position = 0;
-			for (TypedValue parameterValue : parameterValues) {
-				++position;
-				Object value = parameterValue.value;
-				switch(parameterValue.type) {
-					case STRING:
-						buffer.append('\'').append(value).append('\'');
-						break;
-					case JAVA_SQL_DATE:
-						buffer.append('\'').append(DATE_FORMATTER.get().format(value)).append('\'');
-						break;
-					case JAVA_SQL_TIME:
-						buffer.append('\'').append(TIME_FORMATTER.get().format(value)).append('\'');
-						break;
-					case JAVA_SQL_TIMESTAMP:
-					case JAVA_UTIL_DATE:
-						buffer.append('\'').append(TIMESTAMP_FORMATTER.get().format(value)).append('\'');
-						break;
-					default:
-						buffer.append(value);
-				}
-				buffer.append(parts[position]);
-			}
-
-			final String result = buffer.toString();
-			log.debug("[substitutePlaceholders] {}", result);
-			return result;
 		}
-		return query;
+		queryParts.add(StringUtils.substring(query, startOfQueryPart));
+		return queryParts;
+	}
+
+	private static String substitutePlaceholders(List<String> queryParts, List<TypedValue> parameterValues) {
+		final int parametersSize = parameterValues.size();
+		final int queryPartsSize = queryParts.size();
+		if (queryPartsSize - 1 != parametersSize) {
+			throw new AtsdRuntimeException(String.format("Number of specified values [%d] does not match the number of placeholder occurrences [%d]",
+					parametersSize, queryPartsSize - 1));
+		}
+		if (queryPartsSize == 1) {
+			return queryParts.get(0);
+		}
+		final StringBuilder buffer = new StringBuilder();
+		for (int i = 0; i < parametersSize; i++) {
+			buffer.append(queryParts.get(i));
+			appendTypedValue(parameterValues.get(i), buffer);
+		}
+		buffer.append(queryParts.get(parametersSize));
+		final String result = buffer.toString();
+		log.debug("[substitutePlaceholders] {}", result);
+		return result;
+	}
+
+	private static void appendTypedValue(TypedValue parameterValue, StringBuilder buffer) {
+		Object value = parameterValue.value;
+		switch(parameterValue.type) {
+			case STRING:
+				buffer.append('\'').append(value).append('\'');
+				break;
+			case JAVA_SQL_DATE:
+				buffer.append('\'').append(DATE_FORMATTER.get().format(value)).append('\'');
+				break;
+			case JAVA_SQL_TIME:
+				buffer.append('\'').append(TIME_FORMATTER.get().format(value)).append('\'');
+				break;
+			case JAVA_SQL_TIMESTAMP:
+			case JAVA_UTIL_DATE:
+				buffer.append('\'').append(TIMESTAMP_FORMATTER.get().format(value)).append('\'');
+				break;
+			default:
+				buffer.append(value);
+		}
 	}
 
 	private int getMaxRows(Statement statement) {
@@ -320,6 +359,7 @@ public class AtsdMeta extends MetaImpl {
 	private void closeProviderCaches(StatementHandle statementHandle) {
 		metaCache.remove(statementHandle.id);
 		contextMap.remove(statementHandle.id);
+		queryPartsMap.remove(statementHandle.id);
 		log.trace("[closeProviderCaches]");
 	}
 
