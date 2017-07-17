@@ -9,11 +9,15 @@ import java.util.List;
 public class WildcardsUtil {
 	private static final char ONE_ANY_SYMBOL = '_';
 	private static final char NONE_OR_MORE_SYMBOLS = '%';
-	private static final char ATSD_WILDCARD = '*';
+	private static final char ATSD_MATCH_MANY_WILDCARD = '*';
 	private static final int NOT_FOUND = -1;
 
 	public static boolean hasWildcards(String text) {
 		return text == null || text.indexOf(ONE_ANY_SYMBOL) != NOT_FOUND || text.indexOf(NONE_OR_MORE_SYMBOLS) != NOT_FOUND;
+	}
+
+	public static boolean isRetrieveAllPattern(String text) {
+		return text == null || (text.length() == 1 && text.charAt(0) == NONE_OR_MORE_SYMBOLS);
 	}
 
 	public static boolean wildcardMatch(String text, String pattern) {
@@ -21,7 +25,7 @@ public class WildcardsUtil {
 	}
 
 	public static boolean atsdWildcardMatch(String text, String pattern) {
-		return wildcardMatch(text, pattern, '\0', ATSD_WILDCARD);
+		return wildcardMatch(text, pattern, '\0', ATSD_MATCH_MANY_WILDCARD);
 	}
 
 	private static boolean wildcardMatch(String text, String pattern, char anySymbol, char manySymbol) {
@@ -150,22 +154,7 @@ public class WildcardsUtil {
 	}
 
 	public static String replaceSqlWildcardsWithAtsd(String text) {
-		if (text == null) {
-			return null;
-		}
-		final int textLength = text.length();
-		StringBuilder buffer = new StringBuilder(textLength);
-		for (int i = 0; i < textLength; ++i) {
-			final char currentChar = text.charAt(i);
-			if (currentChar == ONE_ANY_SYMBOL || currentChar == NONE_OR_MORE_SYMBOLS) {
-				if (i == 0 || buffer.charAt(buffer.length() - 1) != ATSD_WILDCARD) {
-					buffer.append(ATSD_WILDCARD);
-				}
-			} else {
-				buffer.append(currentChar);
-			}
-		}
-		return buffer.toString();
+		return StringUtils.replaceChars(text, "_%", "?*");
 	}
 
 	private static void flushBuffer(StringBuilder buffer, List<String> list) {

@@ -19,9 +19,9 @@ public class WildcardsUtilTest {
 	@Test
 	public void testSqlToAtsdWildcardsConvertion() {
 		assertThat(WildcardsUtil.replaceSqlWildcardsWithAtsd("%t"), is("*t"));
-		assertThat(WildcardsUtil.replaceSqlWildcardsWithAtsd("%_t"), is("*t"));
-		assertThat(WildcardsUtil.replaceSqlWildcardsWithAtsd("%_%%%__%t"), is("*t"));
-		assertThat(WildcardsUtil.replaceSqlWildcardsWithAtsd("__t__"), is("*t*"));
+		assertThat(WildcardsUtil.replaceSqlWildcardsWithAtsd("%_t"), is("*?t"));
+		assertThat(WildcardsUtil.replaceSqlWildcardsWithAtsd("%_%%%__%t"), is("*?***??*t"));
+		assertThat(WildcardsUtil.replaceSqlWildcardsWithAtsd("__t__"), is("??t??"));
 
 	}
 
