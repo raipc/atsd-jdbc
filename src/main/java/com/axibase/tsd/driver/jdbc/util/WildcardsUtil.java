@@ -149,6 +149,25 @@ public class WildcardsUtil {
 		return list.toArray(new String[list.size()]);
 	}
 
+	public static String replaceSqlWildcardsWithAtsd(String text) {
+		if (text == null) {
+			return null;
+		}
+		final int textLength = text.length();
+		StringBuilder buffer = new StringBuilder(textLength);
+		for (int i = 0; i < textLength; ++i) {
+			final char currentChar = text.charAt(i);
+			if (currentChar == ONE_ANY_SYMBOL || currentChar == NONE_OR_MORE_SYMBOLS) {
+				if (i == 0 || buffer.charAt(buffer.length() - 1) != ATSD_WILDCARD) {
+					buffer.append(ATSD_WILDCARD);
+				}
+			} else {
+				buffer.append(currentChar);
+			}
+		}
+		return buffer.toString();
+	}
+
 	private static void flushBuffer(StringBuilder buffer, List<String> list) {
 		if (buffer.length() != 0) {
 			list.add(buffer.toString());

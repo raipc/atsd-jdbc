@@ -442,7 +442,8 @@ public class AtsdMeta extends MetaImpl {
 	}
 
 	private static List<String> getAndFilterMetricsFromAtsd(List<String> metricMasks, AtsdConnectionInfo connectionInfo, String pattern) {
-		final String metricsUrl = prepareUrlWithMetricExpression(Location.METRICS_ENDPOINT.getUrl(connectionInfo), metricMasks);
+		final String atsdPattern = WildcardsUtil.replaceSqlWildcardsWithAtsd(pattern);
+		final String metricsUrl = prepareUrlWithMetricExpression(Location.METRICS_ENDPOINT.getUrl(connectionInfo), metricMasks, atsdPattern);
 		try (final IContentProtocol contentProtocol = new SdkProtocolImpl(new ContentDescription(metricsUrl, connectionInfo))) {
 			final InputStream metricsInputStream = contentProtocol.readInfo();
 			final Metric[] metrics = JsonMappingUtil.mapToMetrics(metricsInputStream);
@@ -470,10 +471,14 @@ public class AtsdMeta extends MetaImpl {
 	}
 
 	@SneakyThrows(UnsupportedEncodingException.class)
-	private static String prepareUrlWithMetricExpression(String metricEndpoint, List<String> metricMasks) {
-		StringBuilder expressionBuilder = new StringBuilder();
+	private static String prepareUrlWithMetricExpression(String metricEndpoint, List<String> metricMasks, String tablesFilter) {
+		final boolean applyFilter = StringUtils.isNotBlank(tablesFilter);
+		final StringBuilder expressionBuilder = new StringBuilder();
+		if (applyFilter) {
+			expressionBuilder.append('(');
+		}
 		for (String mask : metricMasks) {
-			if (expressionBuilder.length() > 0) {
+			if (expressionBuilder.length() > 1) {
 				expressionBuilder.append(" or ");
 			}
 			expressionBuilder.append("name");
@@ -483,6 +488,9 @@ public class AtsdMeta extends MetaImpl {
 				expressionBuilder.append('=');
 			}
 			expressionBuilder.append('\'').append(mask).append('\'');
+		}
+		if (applyFilter) {
+			expressionBuilder.append(") and name like '").append(tablesFilter).append('\'');
 		}
 		return metricEndpoint + "?expression=" + URLEncoder.encode(expressionBuilder.toString(), DEFAULT_CHARSET.name());
 
