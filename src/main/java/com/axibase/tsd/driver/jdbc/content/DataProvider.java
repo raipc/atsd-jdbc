@@ -15,6 +15,12 @@
 package com.axibase.tsd.driver.jdbc.content;
 
 import com.axibase.tsd.driver.jdbc.enums.Location;
+import java.io.IOException;
+import java.io.InputStream;
+import java.security.GeneralSecurityException;
+import java.util.concurrent.atomic.AtomicBoolean;
+import org.apache.calcite.avatica.Meta;
+
 import com.axibase.tsd.driver.jdbc.ext.AtsdConnectionInfo;
 import com.axibase.tsd.driver.jdbc.ext.AtsdException;
 import com.axibase.tsd.driver.jdbc.ext.AtsdRuntimeException;
@@ -26,11 +32,6 @@ import com.axibase.tsd.driver.jdbc.protocol.ProtocolFactory;
 import com.axibase.tsd.driver.jdbc.protocol.SdkProtocolImpl;
 import com.axibase.tsd.driver.jdbc.strategies.StrategyFactory;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.security.GeneralSecurityException;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 public class DataProvider implements IDataProvider {
 	private static final LoggingFacade logger = LoggingFacade.getLogger(DataProvider.class);
 	private final ContentDescription contentDescription;
@@ -39,12 +40,22 @@ public class DataProvider implements IDataProvider {
 	private IStoreStrategy strategy;
 	private AtomicBoolean isHoldingConnection = new AtomicBoolean();
 
-	public DataProvider(AtsdConnectionInfo connectionInfo, String query, StatementContext context) {
-		if (logger.isTraceEnabled()) {
-			logger.trace("Host: {}", connectionInfo.host());
+	public DataProvider(AtsdConnectionInfo connectionInfo, String query, StatementContext context, Meta.StatementType statementType) {
+		final String endpoint;
+		switch (statementType) {
+			case SELECT: {
+                endpoint = Location.SQL_ENDPOINT.getUrl(connectionInfo);
+				break;
+			}
+			case INSERT:
+			case UPDATE: {
+                endpoint = Location.COMMAND_ENDPOINT.getUrl(connectionInfo);
+				break;
+			}
+			default: throw new IllegalArgumentException("Unsupported statement type: " + statementType);
 		}
-		final String endpoint = Location.SQL_ENDPOINT.getUrl(connectionInfo);
 		this.contentDescription = new ContentDescription(endpoint, connectionInfo, query, context);
+		logger.trace("Endpoint: {}", contentDescription.getEndpoint());
 		this.contentProtocol = ProtocolFactory.create(SdkProtocolImpl.class, contentDescription);
 		this.context = context;
 	}
@@ -69,6 +80,13 @@ public class DataProvider implements IDataProvider {
 		if (this.strategy != null) {
 			this.strategy.store(is);
 		}
+	}
+
+	@Override
+	public long sendData(int timeout) throws AtsdException, GeneralSecurityException, IOException {
+		this.isHoldingConnection.set(false);
+		final long writeCount = contentProtocol.writeContent(timeout);
+		return writeCount;
 	}
 
 	@Override

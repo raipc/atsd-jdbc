@@ -18,6 +18,7 @@ import com.axibase.tsd.driver.jdbc.DriverConstants;
 import com.axibase.tsd.driver.jdbc.content.*;
 import com.axibase.tsd.driver.jdbc.content.json.Metric;
 import com.axibase.tsd.driver.jdbc.content.json.Series;
+import com.axibase.tsd.driver.jdbc.converter.AtsdSqlConverterFactory;
 import com.axibase.tsd.driver.jdbc.enums.AtsdType;
 import com.axibase.tsd.driver.jdbc.enums.DefaultColumn;
 import com.axibase.tsd.driver.jdbc.enums.Location;
@@ -41,7 +42,11 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
 import java.net.URLEncoder;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.SQLDataException;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -114,7 +119,7 @@ public class AtsdMeta extends MetaImpl {
 				final List<ColumnMetaData> columnMetaData = ContentMetadata.buildMetadataList(protocol.readContent(0),
 						atsdConnectionInfo.catalog(), atsdConnectionInfo.assignColumnNames());
 				signature.columns.addAll(columnMetaData);
-			} catch (AtsdJsonException e)  {
+			} catch (AtsdJsonException e) {
 				final Object jsonError = e.getJson().get("error");
 				if (jsonError != null) {
 					log.error("[updatePreparedStatementResultSetMetaData] error: {}", jsonError);
@@ -139,6 +144,7 @@ public class AtsdMeta extends MetaImpl {
 	}
 
 	@Override
+	@SneakyThrows(SQLDataException.class)
 	public ExecuteResult execute(StatementHandle statementHandle, List<TypedValue> parameterValues, int maxRowsInFirstFrame) throws NoSuchStatementException {
 		if (log.isTraceEnabled()) {
 			log.trace("[execute] maxRowsInFirstFrame: {} parameters: {} handle: {}", maxRowsInFirstFrame, parameterValues.size(),
@@ -149,14 +155,30 @@ public class AtsdMeta extends MetaImpl {
 			throw new NoSuchStatementException(statementHandle);
 		}
 		final String query = substitutePlaceholders(queryParts, parameterValues);
-		try {
-			IDataProvider provider = createDataProvider(statementHandle, query);
-			final Statement statement = connection.statementMap.get(statementHandle.id);
-			final int maxRows = getMaxRows(statement);
+        final AvaticaStatement statement = connection.statementMap.get(statementHandle.id);
+        final StatementType statementType = statement.getStatementType();
+        try {
+			IDataProvider provider = createDataProvider(statementHandle, query, statementType);
 			final int timeout = getQueryTimeout(statement);
-			provider.fetchData(maxRows, timeout);
-			final ContentMetadata contentMetadata = createMetadata(query, statementHandle.connectionId, statementHandle.id);
-			return new ExecuteResult(contentMetadata.getList());
+			final ExecuteResult result;
+			if (SELECT == statementType) {
+				final int maxRows = getMaxRows(statement);
+				provider.fetchData(maxRows, timeout);
+				final ContentMetadata contentMetadata = createMetadata(query, statementHandle.connectionId, statementHandle.id);
+				result = new ExecuteResult(contentMetadata.getList());
+			} else {
+				String content = AtsdSqlConverterFactory.getConverter(statementType, atsdConnectionInfo.timestampTz()).convertToCommand(query);
+				provider.getContentDescription().setPostContent(content);
+				long updateCount = provider.sendData(timeout);
+
+				MetaResultSet metaResultSet = MetaResultSet.count(statementHandle.connectionId, statementHandle.id, updateCount);
+				List<MetaResultSet> resultSets = Collections.singletonList(metaResultSet);
+				result = new ExecuteResult(resultSets);
+			}
+			return result;
+		} catch (SQLDataException e) {
+			log.error("[execute] error", e.getMessage());
+			throw e;
 		} catch (final RuntimeException e) {
 			log.error("[execute] error", e);
 			throw e;
@@ -220,7 +242,11 @@ public class AtsdMeta extends MetaImpl {
 
 	private static void appendTypedValue(TypedValue parameterValue, StringBuilder buffer) {
 		Object value = parameterValue.value;
-		switch(parameterValue.type) {
+        if (value == null) {
+            buffer.append("NULL");
+            return;
+        }
+        switch(parameterValue.type) {
 			case STRING:
 				buffer.append('\'').append(value).append('\'');
 				break;
@@ -264,24 +290,35 @@ public class AtsdMeta extends MetaImpl {
 	}
 
 	@Override
+	@SneakyThrows(SQLDataException.class)
 	public ExecuteResult prepareAndExecute(StatementHandle statementHandle, String query, long maxRowCount,
 										   int maxRowsInFrame, PrepareCallback callback) throws NoSuchStatementException {
 		final long limit = maxRowCount < 0 ? 0 : maxRowCount;
-		if (log.isTraceEnabled()) {
-			log.trace("[prepareAndExecute] maxRowCount: {} handle: {} query: {}", limit, statementHandle, query);
-		}
+		log.trace("[prepareAndExecute] handle: {} maxRowCount: {} query: {}", statementHandle, limit, query);
 		try {
-			final IDataProvider provider = createDataProvider(statementHandle, query);
-			final Statement statement = (Statement) callback.getMonitor();
-			provider.fetchData(limit, statement.getQueryTimeout());
+			final AvaticaStatement statement = (AvaticaStatement) callback.getMonitor();
+			final StatementType statementType = statement.getStatementType() == null ? EnumUtil.getStatementTypeByQuery(query) : statement.getStatementType();
+			final IDataProvider provider = createDataProvider(statementHandle, query, statementType);
+			final long updateCount;
+			if (SELECT == statementType) {
+				provider.fetchData(limit, statement.getQueryTimeout());
+				updateCount = -1;
+			} else {
+				String content = AtsdSqlConverterFactory.getConverter(statementType, atsdConnectionInfo.timestampTz()).convertToCommand(query);
+				provider.getContentDescription().setPostContent(content);
+				updateCount = provider.sendData(statement.getQueryTimeout());
+			}
 			final ContentMetadata contentMetadata = createMetadata(query, statementHandle.connectionId, statementHandle.id);
 			synchronized (callback.getMonitor()) {
 				callback.clear();
-				callback.assign(contentMetadata.getSign(), null, -1);
+				callback.assign(contentMetadata.getSign(), null, updateCount);
 			}
 			final ExecuteResult result = new ExecuteResult(contentMetadata.getList());
 			callback.execute();
 			return result;
+		} catch (final AtsdRuntimeException e) {
+			log.error("[prepareAndExecute] error", e);
+			throw new SQLDataException(e.getMessage(), e);
 		} catch (final RuntimeException e) {
 			log.error("[prepareAndExecute] error", e);
 			throw e;
@@ -292,20 +329,66 @@ public class AtsdMeta extends MetaImpl {
 	}
 
 	@Override
-	public ExecuteBatchResult prepareAndExecuteBatch(StatementHandle statementHandle, List<String> list) throws NoSuchStatementException {
-		throw new UnsupportedOperationException("Batch not yet implemented");
+	public ExecuteBatchResult prepareAndExecuteBatch(StatementHandle statementHandle, List<String> queries) throws NoSuchStatementException {
+        log.trace("[prepareAndExecuteBatch] handle: {} queries: {}", statementHandle.toString(), queries);
+		try {
+			final AvaticaStatement statement = connection.statementMap.get(statementHandle.id);
+			long[] updateCounts = new long[queries.size()];
+			int count = 0;
+			for (String query : queries) {
+				final StatementType statementType = statement.getStatementType() == null ? EnumUtil.getStatementTypeByQuery(query) : statement.getStatementType();
+				if (SELECT == statementType) {
+					throw new IllegalArgumentException("Invalid statement type: " + statementType);
+				}
+				final IDataProvider provider = createDataProvider(statementHandle, query, statementType);
+				String content = AtsdSqlConverterFactory.getConverter(statementType, atsdConnectionInfo.timestampTz()).convertToCommand(query);
+				provider.getContentDescription().setPostContent(content);
+				long updateCount = provider.sendData(statement.getQueryTimeout());
+				updateCounts[count++] = updateCount;
+			}
+			final ExecuteBatchResult result = new ExecuteBatchResult(updateCounts);
+			return result;
+		} catch (final RuntimeException e) {
+            log.error("[prepareAndExecuteBatch] error", e);
+			throw e;
+		} catch (final Exception e) {
+            log.error("[prepareAndExecuteBatch] error", e);
+			throw new AtsdRuntimeException(e.getMessage(), e);
+		}
 	}
 
 	@Override
-	public ExecuteBatchResult executeBatch(StatementHandle statementHandle, List<List<TypedValue>> list) throws NoSuchStatementException {
-		throw new UnsupportedOperationException("Batch not yet implemented");
+	public ExecuteBatchResult executeBatch(StatementHandle statementHandle, List<List<TypedValue>> parameterValueBatch) throws NoSuchStatementException {
+		log.trace("[executeBatch] parameters: {} handle: {}", parameterValueBatch.size(), statementHandle.toString());
+		final AvaticaStatement statement = connection.statementMap.get(statementHandle.id);
+		final StatementType statementType = statement.getStatementType();
+		if (SELECT == statementType) {
+			throw new IllegalArgumentException("Invalid statement type: " + statementType);
+		}
+		final String query = ((AtsdPreparedStatement) statement).getSql();
+		final List<List<Object>> preparedValueBatch = prepareValueBatch(parameterValueBatch);
+		try {
+            IDataProvider provider = createDataProvider(statementHandle, query, statementType);
+            final int timeout = getQueryTimeout(statement);
+			String content = AtsdSqlConverterFactory.getConverter(statementType, atsdConnectionInfo.timestampTz()).convertBatchToCommands(query, preparedValueBatch);
+			provider.getContentDescription().setPostContent(content);
+			long updateCount = provider.sendData(timeout);
+			ExecuteBatchResult result = new ExecuteBatchResult(generateExecuteBatchResult(parameterValueBatch.size(), updateCount == 0 ? 0 : 1));
+			return result;
+		} catch (final RuntimeException e) {
+			log.error("[executeBatch] error", e);
+			throw e;
+		} catch (final Exception e) {
+            log.error("[executeBatch] error", e);
+			throw new AtsdRuntimeException(e.getMessage(), e);
+		}
 	}
 
 	@Override
 	public Frame fetch(final StatementHandle statementHandle, long loffset, int fetchMaxRowCount)
 			throws NoSuchStatementException, MissingResultsException {
 		final int offset = (int) loffset;
-		log.trace("[fetch] fetchMaxRowCount: {}, offset: {}", fetchMaxRowCount, offset);
+		log.trace("[fetch] statement: {} fetchMaxRowCount: {}, offset: {}", statementHandle.id, fetchMaxRowCount, offset);
 		IDataProvider provider = providerCache.get(statementHandle.id);
 		if (provider == null) {
 			throw new MissingResultsException(statementHandle);
@@ -346,7 +429,6 @@ public class AtsdMeta extends MetaImpl {
 		log.debug("[closeStatement] {}->{}", statementHandle.id, statementHandle);
 		closeProviderCaches(statementHandle);
 		closeProvider(statementHandle);
-
 	}
 
 	private void closeProviderCaches(StatementHandle statementHandle) {
@@ -377,8 +459,8 @@ public class AtsdMeta extends MetaImpl {
 	}
 
 	@Override
-	public boolean syncResults(StatementHandle sh, QueryState state, long offset) throws NoSuchStatementException {
-		log.debug("[syncResults] {}", offset);
+	public boolean syncResults(StatementHandle statementHandle, QueryState state, long offset) throws NoSuchStatementException {
+		log.debug("[syncResults] statement: {} offset: {}", statementHandle.id, offset);
 		return false;
 	}
 
@@ -390,9 +472,30 @@ public class AtsdMeta extends MetaImpl {
 	@Override
 	public MetaResultSet getTables(ConnectionHandle connectionHandle, String catalog, Pat schemaPattern, Pat tableNamePattern,
 								   List<String> typeList) {
-		if (typeList == null || typeList.contains("TABLE")) {
-			final Iterable<Object> iterable = receiveTables(atsdConnectionInfo, tableNamePattern.s);
-			return getResultSet(iterable, AtsdMetaResultSets.AtsdMetaTable.class);
+        log.debug("[getTables] connection: {} catalog: {} schemaPattern: {} tableNamePattern: {} typeList: {}", connectionHandle.id, catalog, schemaPattern,
+                tableNamePattern, typeList);
+        if (typeList == null || typeList.contains("TABLE")) {
+        	final String pattern = StringUtils.isBlank(schemaPattern.s) ? tableNamePattern.s : schemaPattern.s + '.' + tableNamePattern.s;
+			final List<Object> tables = receiveTables(atsdConnectionInfo, pattern);
+
+			if(log.isDebugEnabled()) {
+				log.debug("[getTables] count: {}", tables.size());
+				StringBuilder sb = new StringBuilder();
+				sb.append('[');
+				AtsdMetaResultSets.AtsdMetaTable metaTable;
+				final int limit = tables.size() > 20 ? 20 : tables.size();
+				for (int i=0;i<limit;i++) {
+					metaTable = (AtsdMetaResultSets.AtsdMetaTable) tables.get(i);
+					if(sb.length() > 1) {
+						sb.append(',');
+					}
+					sb.append(metaTable.tableName);
+				}
+				sb.append(']');
+				log.debug("[getTables] tables: {}", sb.toString());
+			}
+
+			return getResultSet(tables, AtsdMetaResultSets.AtsdMetaTable.class);
 		}
 		return createEmptyResultSet(AtsdMetaResultSets.AtsdMetaTable.class);
 
@@ -433,19 +536,30 @@ public class AtsdMeta extends MetaImpl {
 		if (containsAtsdSeriesTable(metricMasks) && WildcardsUtil.wildcardMatch(DEFAULT_TABLE_NAME, pattern)) {
 			metricList.add(generateDefaultMetaTable());
 		}
-		for (String metricName : getAndFilterMetricsFromAtsd(metricMasks, connectionInfo, pattern)) {
-			metricList.add(generateMetaTable(metricName));
-		}
+
+        final Set<String> metricNames = getAndFilterMetricsFromAtsd(metricMasks, connectionInfo, pattern);
+        if (metricNames != Collections.EMPTY_SET) {
+            for (String metricMask : metricMasks) {
+                if (!WildcardsUtil.hasAtsdWildcards(metricMask) && !DEFAULT_TABLE_NAME.equalsIgnoreCase(metricMask)) {
+                    metricNames.add(metricMask);
+                }
+            }
+        }
+
+        for (String metricName : metricNames) {
+            metricList.add(generateMetaTable(metricName));
+        }
+
 		return metricList;
 	}
 
-	private static List<String> getAndFilterMetricsFromAtsd(List<String> metricMasks, AtsdConnectionInfo connectionInfo, String pattern) {
+	private static Set<String> getAndFilterMetricsFromAtsd(List<String> metricMasks, AtsdConnectionInfo connectionInfo, String pattern) {
 		final String metricsUrl = prepareUrlWithMetricExpression(Location.METRICS_ENDPOINT.getUrl(connectionInfo), metricMasks, pattern);
 		if (metricsUrl != null) {
 			try (final IContentProtocol contentProtocol = new SdkProtocolImpl(new ContentDescription(metricsUrl, connectionInfo))) {
 				final InputStream metricsInputStream = contentProtocol.readInfo();
 				final Metric[] metrics = JsonMappingUtil.mapToMetrics(metricsInputStream);
-				List<String> result = new ArrayList<>();
+				Set<String> result = new LinkedHashSet<>();
 				for (Metric metric : metrics) {
 					if (WildcardsUtil.wildcardMatch(metric.getName(), pattern)) {
 						result.add(metric.getName());
@@ -456,7 +570,7 @@ public class AtsdMeta extends MetaImpl {
 				log.error(e.getMessage());
 			}
 		}
-		return Collections.emptyList();
+		return Collections.emptySet();
 	}
 
 	private static boolean containsAtsdSeriesTable(List<String> metricMasks) {
@@ -506,12 +620,14 @@ public class AtsdMeta extends MetaImpl {
 
 	@Override
 	public MetaResultSet getSchemas(ConnectionHandle connectionHandle, String catalog, Pat schemaPattern) {
+		log.debug("[getSchemas] connection: {} catalog: {} schemaPattern: {} ", connectionHandle.id, catalog, schemaPattern);
 		return createEmptyResultSet(MetaSchema.class);
 	}
 
 	@Override
 	public MetaResultSet getCatalogs(ConnectionHandle ch) {
-		final String catalog = atsdConnectionInfo.catalog();
+        log.debug("[getCatalogs] connection: {}", ch.id);
+        final String catalog = atsdConnectionInfo.catalog();
 		final Iterable<Object> iterable = catalog == null ? Collections.emptyList() :
 				Collections.<Object>singletonList(new MetaCatalog(catalog));
 		return getResultSet(iterable, MetaCatalog.class);
@@ -519,6 +635,7 @@ public class AtsdMeta extends MetaImpl {
 
 	@Override
 	public MetaResultSet getTableTypes(ConnectionHandle ch) {
+		log.debug("[getTableTypes] connection: {}", ch.id);
 		final Iterable<Object> iterable = Arrays.<Object>asList(
 				new MetaTableType("TABLE"), new MetaTableType("VIEW"), new MetaTableType("SYSTEM"));
 		return getResultSet(iterable, MetaTableType.class);
@@ -526,6 +643,7 @@ public class AtsdMeta extends MetaImpl {
 
 	@Override
 	public MetaResultSet getTypeInfo(ConnectionHandle ch) {
+		log.debug("[getTypeInfo] connection: {}", ch.id);
 		AtsdType[] atsdTypes = AtsdType.values();
 		final List<Object> list = new ArrayList<>(atsdTypes.length);
 		for (AtsdType type : atsdTypes) {
@@ -536,15 +654,18 @@ public class AtsdMeta extends MetaImpl {
 
 	@Override
 	public MetaResultSet getColumns(ConnectionHandle ch, String catalog, Pat schemaPattern, Pat tableNamePattern, Pat columnNamePattern) {
-		final List<String> metricMasks = atsdConnectionInfo.tables();
+        log.debug("[getColumns] connection: {} catalog: {} schemaPattern: {} tableNamePattern: {} columnNamePattern: {}", ch.id, catalog, schemaPattern,
+                tableNamePattern, columnNamePattern);
+        final List<String> metricMasks = atsdConnectionInfo.tables();
 		if (!metricMasks.isEmpty()) {
 			final String colNamePattern = columnNamePattern.s;
 			final List<DefaultColumn> columns = filterColumns(colNamePattern, atsdConnectionInfo.metaColumns());
 
 			List<Object> columnData = new ArrayList<>();
-			final List<String> tableNames = WildcardsUtil.hasWildcards(tableNamePattern.s) ?
-					getAndFilterMetricsFromAtsd(metricMasks, atsdConnectionInfo, tableNamePattern.s):
-					Collections.singletonList(tableNamePattern.s);
+			final String pattern = StringUtils.isBlank(schemaPattern.s) ? tableNamePattern.s : schemaPattern.s + '.' + tableNamePattern.s;
+			final Set<String> tableNames = WildcardsUtil.hasWildcards(pattern) ?
+					getAndFilterMetricsFromAtsd(metricMasks, atsdConnectionInfo, pattern):
+					Collections.singleton(pattern);
 			for (String tableName : tableNames) {
 				int position = 1;
 				for (DefaultColumn column : columns) {
@@ -554,14 +675,37 @@ public class AtsdMeta extends MetaImpl {
 				if (DEFAULT_TABLE_NAME.equals(tableName) || !maybeTagColumnPattern(colNamePattern)) {
 					continue;
 				}
-				for (String tag : getTags(tableName)) {
-					final TagColumn column = new TagColumn(tag);
-					if (WildcardsUtil.wildcardMatch(column.getColumnNamePrefix(), colNamePattern)) {
-						columnData.add(createColumnMetaData(column, tableName, position));
-						++position;
+				Set<String> tags = getTags(tableName);
+				if (tags.isEmpty() && StringUtils.startsWith(colNamePattern, TagColumn.PREFIX) && !WildcardsUtil.hasAtsdWildcards(colNamePattern)) {
+					final TagColumn column = new TagColumn(StringUtils.substringAfter(colNamePattern, TagColumn.PREFIX));
+					columnData.add(createColumnMetaData(column, tableName, position));
+				} else {
+					for (String tag : tags) {
+						final TagColumn column = new TagColumn(tag);
+						if (WildcardsUtil.wildcardMatch(column.getColumnNamePrefix(), colNamePattern)) {
+							columnData.add(createColumnMetaData(column, tableName, position));
+							++position;
+						}
 					}
 				}
 			}
+
+			if (log.isDebugEnabled()) {
+				log.debug("[getColumns] count: {}", columnData.size());
+				StringBuilder sb = new StringBuilder();
+                sb.append('[');
+                AtsdMetaResultSets.AtsdMetaColumn metaColumn;
+                for (Object column : columnData) {
+                    metaColumn = (AtsdMetaResultSets.AtsdMetaColumn) column;
+                    if(sb.length() > 1) {
+                        sb.append(',');
+                    }
+                    sb.append("{name=").append(metaColumn.columnName).append(", ").append("type=").append(metaColumn.typeName).append('}');
+                }
+                sb.append(']');
+                log.debug("[getColumns] columns: {}", sb.toString());
+            }
+
 			return getResultSet(columnData, AtsdMetaResultSets.AtsdMetaColumn.class);
 		}
 		return createEmptyResultSet(AtsdMetaResultSets.AtsdMetaColumn.class);
@@ -588,7 +732,10 @@ public class AtsdMeta extends MetaImpl {
 			try (final IContentProtocol contentProtocol = new SdkProtocolImpl(new ContentDescription(seriesUrl, atsdConnectionInfo))) {
 				final InputStream seriesInputStream = contentProtocol.readInfo();
 				final Series[] seriesArray = JsonMappingUtil.mapToSeries(seriesInputStream);
-				Set<String> tags = new HashSet<>();
+                if (log.isTraceEnabled()) {
+                    log.trace("[response] content: {}", Arrays.toString(seriesArray));
+                }
+                Set<String> tags = new HashSet<>();
 				for (Series series : seriesArray) {
 					tags.addAll(series.getTags().keySet());
 				}
@@ -638,11 +785,14 @@ public class AtsdMeta extends MetaImpl {
 			++index;
 		}
 
+		if (log.isTraceEnabled()) {
+			log.trace("[createResultSet] clazzName: {} fieldNames: {}", clazz.getSimpleName(), fieldNames);
+		}
 		return createResultSet(Collections.<String, Object>emptyMap(), columns,
 				CursorFactory.record(clazz, Arrays.asList(fields), fieldNames), new Frame(0, true, iterable));
 	}
 
-	private IDataProvider createDataProvider(StatementHandle statementHandle, String sql) throws UnsupportedEncodingException {
+	private IDataProvider createDataProvider(StatementHandle statementHandle, String sql, StatementType statementType) throws UnsupportedEncodingException {
 		assert connection instanceof AtsdConnection;
 		AtsdConnection atsdConnection = (AtsdConnection) connection;
 		final StatementContext newContext = new StatementContext(statementHandle);
@@ -650,7 +800,7 @@ public class AtsdMeta extends MetaImpl {
 		try {
 			AtsdDatabaseMetaData metaData = atsdConnection.getAtsdDatabaseMetaData();
 			newContext.setVersion(metaData.getConnectedAtsdVersion());
-			final IDataProvider dataProvider = new DataProvider(atsdConnectionInfo, sql, newContext);
+			final IDataProvider dataProvider = new DataProvider(atsdConnectionInfo, sql, newContext, statementType);
 			providerCache.put(statementHandle.id, dataProvider);
 			return dataProvider;
 		} catch (SQLException e) {
@@ -691,6 +841,43 @@ public class AtsdMeta extends MetaImpl {
 		if (log.isDebugEnabled()) {
 			log.debug("[rollback] " + ch.id + "->" + ch.toString());
 		}
+	}
+
+	private static List<List<Object>> prepareValueBatch(List<List<TypedValue>> parameterValueBatch) {
+		if (parameterValueBatch.isEmpty()) {
+			return Collections.emptyList();
+		}
+		List<List<Object>> result = new ArrayList<>(parameterValueBatch.size());
+		for (List<TypedValue> parameterValues : parameterValueBatch) {
+			result.add(prepareValues(parameterValues));
+		}
+		return result;
+	}
+
+	private static List<Object> prepareValues(List<TypedValue> parameterValues) {
+		if (parameterValues.isEmpty()) {
+			return Collections.emptyList();
+		}
+		List<Object> result = new ArrayList<>(parameterValues.size());
+		for (TypedValue parameterValue : parameterValues) {
+			Object value = parameterValue.value;
+
+			if (value instanceof Number || value instanceof String) {
+				result.add(value);
+			} else if (value instanceof Date) {
+				result.add(TIMESTAMP_FORMATTER.get().format((Date) value));
+			} else {
+				result.add(value == null ? null : String.valueOf(value));
+			}
+		}
+		log.debug("[preparedValues] {}", result);
+		return result;
+	}
+
+	private static long[] generateExecuteBatchResult(int size, long value) {
+		long[] result = new long[size];
+		Arrays.fill(result, value);
+		return result;
 	}
 
 }

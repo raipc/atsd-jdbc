@@ -47,9 +47,7 @@ public class AtsdPreparedStatement extends AvaticaPreparedStatement {
 	protected AtsdPreparedStatement(AvaticaConnection connection, StatementHandle h, Signature signature,
 									int resultSetType, int resultSetConcurrency, int resultSetHoldability) throws SQLException {
 		super(connection, h, signature, resultSetType, resultSetConcurrency, resultSetHoldability);
-		if (logger.isTraceEnabled()) {
-			logger.trace("[new] " + this.handle.id);
-		}
+		logger.trace("[new] {}", this.handle.id);
 	}
 
 	@Override
@@ -80,7 +78,7 @@ public class AtsdPreparedStatement extends AvaticaPreparedStatement {
 		final List<TypedValue> list = new ArrayList<>(parameters.values());
 		if (logger.isDebugEnabled()) {
 			for (TypedValue tv : list) {
-				logger.debug("[TypedValue] " + tv.value);
+				logger.debug("[TypedValue] type: {} value: {}", tv.type, tv.value);
 			}
 		}
 		return list;
@@ -334,19 +332,23 @@ public class AtsdPreparedStatement extends AvaticaPreparedStatement {
 		setObject(parameterIndex, expression);
 	}
 
-	@Override
-	public Meta.StatementType getStatementType() {
-		return getSignature() == null ? null : getSignature().statementType;
-	}
+    @Override
+    public Meta.StatementType getStatementType() {
+        return getSignature() == null ? null : getSignature().statementType;
+    }
 
-	@Override
-	public int getUpdateCount() throws SQLException {
-		return getStatementType() != Meta.StatementType.SELECT ? super.getUpdateCount() : -1;
-	}
+    @Override
+    public int getUpdateCount() throws SQLException {
+        return getStatementType() != Meta.StatementType.SELECT ? super.getUpdateCount() : -1;
+    }
 
-	@Override
-	public long getLargeUpdateCount() throws SQLException {
-		return getStatementType() != Meta.StatementType.SELECT ? super.getLargeUpdateCount() : -1L;
+    @Override
+    public long getLargeUpdateCount() throws SQLException {
+        return getStatementType() != Meta.StatementType.SELECT ? super.getLargeUpdateCount() : -1L;
+    }
+
+	String getSql() {
+		return getSignature() == null ? null : getSignature().sql;
 	}
 
 	private AtsdConnection getAtsdConnection() {
@@ -370,4 +372,26 @@ public class AtsdPreparedStatement extends AvaticaPreparedStatement {
 		}
 		return resultSetMetaData;
 	}
+
+    @Override
+    public void addBatch(String sql) throws SQLException {
+		throw new UnsupportedOperationException();
+    }
+
+    @Override
+	public void addBatch() throws SQLException {
+		logger.debug("[addBatch]");
+		this.parameterValueBatch.add(this.copyParameterValues());
+	}
+
+	@Override
+	protected List<TypedValue> copyParameterValues() {
+		List<TypedValue> current = getParameterValues();
+		List<TypedValue> copy = new ArrayList<>(current.size());
+		for (TypedValue value : current) {
+			copy.add(value);
+		}
+		return copy;
+	}
+
 }

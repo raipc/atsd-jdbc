@@ -6,6 +6,7 @@ import com.axibase.tsd.driver.jdbc.enums.ReservedWordsSQL2003;
 import com.axibase.tsd.driver.jdbc.enums.Strategy;
 import com.axibase.tsd.driver.jdbc.enums.timedatesyntax.*;
 import com.axibase.tsd.driver.jdbc.intf.ITimeDateConstant;
+import com.google.common.collect.Sets;
 import org.apache.calcite.avatica.Meta;
 import org.apache.commons.lang3.EnumUtils;
 
@@ -23,9 +24,7 @@ public class EnumUtil {
 	private static final Map<String, ITimeDateConstant> tokenToTimeDateEnumConstant = initializeTimeDateMap();
 	private static final Map<String, Strategy> strategyMap = EnumUtils.getEnumMap(Strategy.class);
 
-	private static final Set<Meta.StatementType> SUPPORTED_STATEMENT_TYPES = Collections.unmodifiableSet(
-			new HashSet<Meta.StatementType>(Arrays.asList(SELECT, INSERT, UPDATE)) {
-	});
+	private static final Set<Meta.StatementType> SUPPORTED_STATEMENT_TYPES = Collections.unmodifiableSet(Sets.newHashSet(SELECT, INSERT, UPDATE));
 
 	private EnumUtil() {}
 

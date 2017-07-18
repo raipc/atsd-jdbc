@@ -20,10 +20,13 @@ import com.axibase.tsd.driver.jdbc.ext.AtsdConnectionInfo;
 import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
 import lombok.Data;
 import lombok.SneakyThrows;
+import org.apache.calcite.avatica.org.apache.http.HttpHeaders;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.HashMap;
+import java.util.Map;
 
 import static com.axibase.tsd.driver.jdbc.DriverConstants.*;
 
@@ -33,8 +36,11 @@ public class ContentDescription {
 
 	private String endpoint;
 	private String query;
+    private String postContent = "";
+    private final Map<String, String> requestHeaders = new HashMap<>();
+    private String[] headers;
 	private String jsonScheme;
-	private final MetadataFormat metadataFormat;
+	private MetadataFormat metadataFormat;
 	private long maxRowsCount;
 	private final String queryId;
 	private final AtsdConnectionInfo info;
@@ -60,19 +66,34 @@ public class ContentDescription {
 		return URLEncoder.encode(query, DEFAULT_CHARSET.name());
 	}
 
-	public String getPostParams() {
-		final String params;
+	public void initDataFetchingContent() {
 		if (StringUtils.isEmpty(query)) {
-			params = "";
-		} else if (endpoint.endsWith(Location.SQL_META_ENDPOINT.getEndpoint())) {
-			params = Q_PARAM_NAME + '=' + getEncodedQuery();
-		} else {
-			params = QUERY_ID_PARAM_NAME + '=' + queryId + '&' +
-					Q_PARAM_NAME + '=' + getEncodedQuery() + '&' +
-					FORMAT_PARAM_NAME + '=' + FORMAT_PARAM_VALUE + '&' +
-					METADATA_FORMAT_PARAM_NAME + '=' + metadataFormat.name() + '&' +
-					LIMIT_PARAM_NAME + '=' + maxRowsCount;
-		}
-		return params;
+            return;
+        } else if (endpoint.endsWith(Location.SQL_META_ENDPOINT.getEndpoint())) {
+            this.postContent = Q_PARAM_NAME + '=' + getEncodedQuery();
+        } else {
+            this.postContent = QUERY_ID_PARAM_NAME + '=' + queryId + '&' +
+                    Q_PARAM_NAME + '=' + getEncodedQuery() + '&' +
+                    FORMAT_PARAM_NAME + '=' + FORMAT_PARAM_VALUE + '&' +
+                    METADATA_FORMAT_PARAM_NAME + '=' + metadataFormat + '&' +
+                    LIMIT_PARAM_NAME + '=' + maxRowsCount;
+        }
+    }
+
+	public void addRequestHeadersForDataFetching() {
+		addRequestHeader(HttpHeaders.ACCEPT, CSV_AND_JSON_MIME_TYPE);
+		addRequestHeader(HttpHeaders.CONTENT_TYPE, FORM_URLENCODED_TYPE);
 	}
+
+    public void addRequestHeader(String name, String value) {
+        if (StringUtils.isEmpty(name) || StringUtils.isEmpty(value)) {
+            return;
+        }
+        requestHeaders.put(name, value);
+    }
+
+    public Map<String, String> getRequestHeaders() {
+        return requestHeaders;
+    }
+
 }

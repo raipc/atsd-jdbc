@@ -19,6 +19,10 @@ public class WildcardsUtil {
 		return hasWildcards(text, ONE_ANY_SYMBOL, NONE_OR_MORE_SYMBOLS);
 	}
 
+	public static boolean hasAtsdWildcards(String text) {
+		return hasWildcards(text, ATSD_MATCH_ONE_WILDCARD, ATSD_MATCH_MANY_WILDCARD);
+	}
+
 	private static boolean hasWildcards(String text, char oneSymbolWildcard, char manySymbolsWildcard) {
 		return text == null || text.indexOf(oneSymbolWildcard) != NOT_FOUND || text.indexOf(manySymbolsWildcard) != NOT_FOUND;
 	}
@@ -173,4 +177,5 @@ public class WildcardsUtil {
 		private final int tokenIndex;
 		private final int charIndex;
 	}
+
 }

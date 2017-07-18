@@ -17,6 +17,7 @@ package com.axibase.tsd.driver.jdbc.protocol;
 import com.axibase.tsd.driver.jdbc.content.ContentDescription;
 import com.axibase.tsd.driver.jdbc.content.json.GeneralError;
 import com.axibase.tsd.driver.jdbc.content.json.QueryDescription;
+import com.axibase.tsd.driver.jdbc.content.json.SendCommandResult;
 import com.axibase.tsd.driver.jdbc.enums.Location;
 import com.axibase.tsd.driver.jdbc.enums.MetadataFormat;
 import com.axibase.tsd.driver.jdbc.ext.AtsdException;
@@ -26,6 +27,7 @@ import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
 import com.axibase.tsd.driver.jdbc.util.JsonMappingUtil;
 import org.apache.calcite.avatica.org.apache.commons.codec.binary.Base64;
 import org.apache.calcite.avatica.org.apache.http.HttpHeaders;
+import org.apache.calcite.avatica.org.apache.http.entity.ContentType;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.net.ssl.*;
@@ -39,6 +41,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.Map;
 import java.util.zip.GZIPInputStream;
 
 import static com.axibase.tsd.driver.jdbc.DriverConstants.*;
@@ -62,6 +65,7 @@ public class SdkProtocolImpl implements IContentProtocol {
 		public void checkClientTrusted(X509Certificate[] certs, String authType) throws CertificateException {
 		}
 	}};
+
 	private static final HostnameVerifier DUMMY_HOSTNAME_VERIFIER = new HostnameVerifier() {
 		@Override
 		public boolean verify(String urlHostName, SSLSession session) {
@@ -78,18 +82,20 @@ public class SdkProtocolImpl implements IContentProtocol {
 	private String atsdQueryId;
 	private String queryId;
 
-
 	public SdkProtocolImpl(final ContentDescription contentDescription) {
 		this.contentDescription = contentDescription;
 	}
 
 	@Override
 	public InputStream readInfo() throws AtsdException, GeneralSecurityException, IOException {
+		contentDescription.addRequestHeadersForDataFetching();
 		return executeRequest(GET_METHOD, 0, contentDescription.getEndpoint());
 	}
 
 	@Override
 	public InputStream readContent(int timeout) throws AtsdException, GeneralSecurityException, IOException {
+		contentDescription.addRequestHeadersForDataFetching();
+		contentDescription.initDataFetchingContent();
 		InputStream inputStream = null;
 		try {
 			inputStream = executeRequest(POST_METHOD, timeout, contentDescription.getEndpoint());
@@ -121,7 +127,8 @@ public class SdkProtocolImpl implements IContentProtocol {
 
 	@Override
 	public void cancelQuery() throws AtsdException, GeneralSecurityException, IOException {
-		String cancelEndpoint = Location.CANCEL_ENDPOINT.getUrl(contentDescription.getInfo()) + '?' + QUERY_ID_PARAM_NAME + '=' + queryId;
+        contentDescription.addRequestHeadersForDataFetching();
+        String cancelEndpoint = Location.CANCEL_ENDPOINT.getUrl(contentDescription.getInfo()) + '?' + QUERY_ID_PARAM_NAME + '=' + queryId;
 		InputStream result = executeRequest(GET_METHOD, 0, cancelEndpoint);
 		try {
 			final QueryDescription[] descriptionArray = JsonMappingUtil.mapToQueryDescriptionArray(result);
@@ -135,6 +142,34 @@ public class SdkProtocolImpl implements IContentProtocol {
 			}
 			queryId = contentDescription.getQueryId();
 		}
+	}
+
+	@Override
+	public long writeContent(int timeout) throws AtsdException, GeneralSecurityException, IOException {
+		contentDescription.addRequestHeader(HttpHeaders.ACCEPT, PLAIN_AND_JSON_MIME_TYPE);
+		contentDescription.addRequestHeader(HttpHeaders.CONTENT_TYPE, ContentType.TEXT_PLAIN.getMimeType());
+		long writeCount = 0;
+		try {
+			InputStream inputStream = executeRequest(POST_METHOD, timeout, contentDescription.getEndpoint());
+			final SendCommandResult sendCommandResult = JsonMappingUtil.mapToSendCommandResult(inputStream);
+			logger.trace("[response] content: {}", sendCommandResult);
+			if (StringUtils.isNotEmpty(sendCommandResult.getError())) {
+				throw new AtsdException("ATSD server error: " + sendCommandResult.getError());
+			}
+			writeCount = sendCommandResult.getSuccess();
+			logger.debug("[response] success: {}", sendCommandResult.getSuccess());
+		} catch (IOException e) {
+			if (logger.isDebugEnabled()) {
+				logger.debug("Data writing error", e);
+			}
+			if (queryId != null) {
+				throw new AtsdRuntimeException(prepareCancelMessage());
+			}
+			if (e instanceof SocketException) {
+				throw e;
+			}
+		}
+		return writeCount;
 	}
 
 	@Override
@@ -208,20 +243,19 @@ public class SdkProtocolImpl implements IContentProtocol {
 		conn.setRequestProperty(HttpHeaders.CONNECTION, CONN_KEEP_ALIVE);
 		conn.setRequestProperty(HttpHeaders.USER_AGENT, USER_AGENT);
 		conn.setUseCaches(false);
+		setAdditionalRequestHeaders(contentDescription.getRequestHeaders());
 		if (method.equals(POST_METHOD)) {
-			final String postParams = contentDescription.getPostParams();
-			conn.setRequestProperty(HttpHeaders.ACCEPT, CSV_AND_JSON_MIME_TYPE);
+			final String postContent = contentDescription.getPostContent();
 			conn.setRequestProperty(HttpHeaders.ACCEPT_ENCODING, COMPRESSION_ENCODING);
-			conn.setRequestProperty(HttpHeaders.CONTENT_LENGTH, "" + postParams.length());
-			conn.setRequestProperty(HttpHeaders.CONTENT_TYPE, FORM_URLENCODED_TYPE);
-			conn.setChunkedStreamingMode(CHUNK_LENGTH);
+			conn.setRequestProperty(HttpHeaders.CONTENT_LENGTH, "" + postContent.length());
+			conn.setChunkedStreamingMode(100);
 			conn.setDoOutput(true);
 			if (logger.isDebugEnabled()) {
-				logger.debug("[params] " + postParams);
+				logger.debug("[content] " + postContent);
 			}
 			try (OutputStream os = conn.getOutputStream();
 				 BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, DEFAULT_CHARSET.name()))) {
-				writer.write(postParams);
+				writer.write(postContent);
 				writer.flush();
 			}
 		} else {
@@ -260,6 +294,12 @@ public class SdkProtocolImpl implements IContentProtocol {
 
 		if (trusted) {
 			sslConnection.setHostnameVerifier(DUMMY_HOSTNAME_VERIFIER);
+		}
+	}
+
+	private void setAdditionalRequestHeaders(Map<String, String> headers) {
+		for (Map.Entry<String, String> header : headers.entrySet()) {
+			conn.setRequestProperty(header.getKey(), header.getValue());
 		}
 	}
 

@@ -14,13 +14,15 @@
 */
 package com.axibase.tsd.driver.jdbc.ext;
 
-import com.axibase.tsd.driver.jdbc.util.ExceptionsUtil;
-import org.apache.calcite.avatica.*;
-
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.util.Properties;
+import org.apache.commons.lang3.StringUtils;
+
+import com.axibase.tsd.driver.jdbc.util.ExceptionsUtil;
+import org.apache.calcite.avatica.*;
 
 public class AtsdConnection extends AvaticaConnection {
 	protected static final Trojan TROJAN = createTrojan();
@@ -64,7 +66,27 @@ public class AtsdConnection extends AvaticaConnection {
 		return new AtsdConnectionInfo(this.info);
 	}
 
-	AtsdDatabaseMetaData getAtsdDatabaseMetaData() throws SQLException {
-		return (AtsdDatabaseMetaData) super.getMetaData();
+    AtsdDatabaseMetaData getAtsdDatabaseMetaData() throws SQLException {
+        return (AtsdDatabaseMetaData) super.getMetaData();
+    }
+
+	@Override
+	public PreparedStatement prepareStatement(String sql) throws SQLException {
+		sql = StringUtils.stripStart(sql, null);
+		return super.prepareStatement(sql);
 	}
+
+	@Override
+	protected long[] executeBatchUpdateInternal(AvaticaPreparedStatement pstmt) throws SQLException {
+		try {
+			return super.executeBatchUpdateInternal(pstmt);
+		} catch (SQLException e) {
+			throw ExceptionsUtil.unboxException(e);
+		}
+	}
+
+	AvaticaFactory getFactory() {
+		return factory;
+	}
+
 }

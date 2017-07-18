@@ -63,4 +63,9 @@ public class JsonMappingUtil {
 	public static JsonParser getParser(Reader reader) throws IOException {
 		return JSON_FACTORY.createParser(reader);
 	}
+
+	public static SendCommandResult mapToSendCommandResult(InputStream inputStream) throws IOException {
+		return READER.forType(SendCommandResult.class).readValue(inputStream);
+	}
+
 }
