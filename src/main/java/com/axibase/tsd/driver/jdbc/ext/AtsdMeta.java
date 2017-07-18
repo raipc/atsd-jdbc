@@ -551,8 +551,7 @@ public class AtsdMeta extends MetaImpl {
 					columnData.add(createColumnMetaData(column, tableName, position));
 					++position;
 				}
-				if (DEFAULT_TABLE_NAME.equals(tableName) ||
-						(!WildcardsUtil.hasWildcards(colNamePattern) && !colNamePattern.startsWith("tags."))) {
+				if (DEFAULT_TABLE_NAME.equals(tableName) || !maybeTagColumnPattern(colNamePattern)) {
 					continue;
 				}
 				for (String tag : getTags(tableName)) {
@@ -566,6 +565,10 @@ public class AtsdMeta extends MetaImpl {
 			return getResultSet(columnData, AtsdMetaResultSets.AtsdMetaColumn.class);
 		}
 		return createEmptyResultSet(AtsdMetaResultSets.AtsdMetaColumn.class);
+	}
+
+	private static boolean maybeTagColumnPattern(String pattern) {
+		return WildcardsUtil.hasWildcards(pattern) || pattern.startsWith(TagColumn.PREFIX);
 	}
 
 	private static List<DefaultColumn> filterColumns(String columnPattern, boolean showMetaColumns) {
