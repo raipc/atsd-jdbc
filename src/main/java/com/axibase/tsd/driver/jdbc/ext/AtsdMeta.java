@@ -880,4 +880,8 @@ public class AtsdMeta extends MetaImpl {
 		return result;
 	}
 
+	@Override
+	public StatementHandle createStatement(ConnectionHandle connectionHandle) {
+		return new StatementHandle(connectionHandle.id, idGenerator.getAndIncrement(), null);
+	}
 }
