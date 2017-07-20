@@ -20,7 +20,7 @@ public class AtsdMetaResultSets {
 		public final String remarks = null;
 		public final String columnDef = null;
 		public final int sqlDataType;
-		public final String sqlDatetimeSub = null;
+		public final Integer sqlDatetimeSub = null;
 		public final int charOctetLength;
 		public final int ordinalPosition;
 		public final String isNullable;
