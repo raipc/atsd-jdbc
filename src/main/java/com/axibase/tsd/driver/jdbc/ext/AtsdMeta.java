@@ -42,13 +42,10 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
 import java.net.URLEncoder;
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.SQLDataException;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.Date;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -252,10 +249,23 @@ public class AtsdMeta extends MetaImpl {
 				break;
 			case JAVA_SQL_TIMESTAMP:
 			case JAVA_UTIL_DATE:
-				buffer.append('\'').append(TIMESTAMP_FORMATTER.get().format(value)).append('\'');
+				buffer.append('\'').append(TIMESTAMP_FORMATTER.get().format((Date) value)).append('\'');
+				break;
+			case OBJECT:
+				appendObjectValue(value, buffer);
 				break;
 			default:
 				buffer.append(value);
+		}
+	}
+
+	private static void appendObjectValue(Object value, StringBuilder buffer) {
+		if (value instanceof String) {
+			buffer.append('\'').append(value).append('\'');
+		} else if (value instanceof Date) {
+			buffer.append('\'').append(TIMESTAMP_FORMATTER.get().format((Date) value)).append('\'');
+		} else {
+			buffer.append(value);
 		}
 	}
 
@@ -370,7 +380,9 @@ public class AtsdMeta extends MetaImpl {
 		try {
             IDataProvider provider = createDataProvider(statementHandle, query, statementType);
             final int timeout = getQueryTimeout(statement);
-			String content = AtsdSqlConverterFactory.getConverter(statementType, atsdConnectionInfo.timestampTz()).convertBatchToCommands(query, preparedValueBatch);
+			String content = AtsdSqlConverterFactory
+					.getConverter(statementType, atsdConnectionInfo.timestampTz())
+					.convertBatchToCommands(query, preparedValueBatch);
 			provider.getContentDescription().setPostContent(content);
 			long updateCount = provider.sendData(timeout);
 			ExecuteBatchResult result = new ExecuteBatchResult(generateExecuteBatchResult(parameterValueBatch.size(), updateCount == 0 ? 0 : 1));

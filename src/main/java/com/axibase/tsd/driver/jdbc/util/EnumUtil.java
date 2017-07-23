@@ -74,10 +74,10 @@ public class EnumUtil {
 		return result;
 	}
 
-	public static AtsdType getAtsdTypeBySqlType(int typeCode) {
+	public static AtsdType getAtsdTypeBySqlType(int typeCode, AtsdType defaultType) {
 		AtsdType result = sqlAtsdTypesMaping.get(typeCode);
 		if (result == null) {
-			result = AtsdType.STRING_DATA_TYPE; // use string type by default
+			result = defaultType;
 		}
 		return result;
 	}
