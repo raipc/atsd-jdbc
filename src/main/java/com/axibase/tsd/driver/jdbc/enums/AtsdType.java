@@ -1,16 +1,17 @@
 package com.axibase.tsd.driver.jdbc.enums;
 
+import com.axibase.tsd.driver.jdbc.intf.ParserRowContext;
+import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
+import org.apache.calcite.avatica.ColumnMetaData;
+import org.apache.calcite.avatica.ColumnMetaData.Rep;
+import org.apache.commons.lang3.StringUtils;
+
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Date;
-
-import com.axibase.tsd.driver.jdbc.intf.ParserRowContext;
-import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
-import org.apache.calcite.avatica.ColumnMetaData.Rep;
-import org.apache.commons.lang3.StringUtils;
 
 import static com.axibase.tsd.driver.jdbc.ext.AtsdMeta.TIMESTAMP_FORMATTER;
 import static com.axibase.tsd.driver.jdbc.ext.AtsdMeta.TIMESTAMP_SHORT_FORMATTER;
@@ -20,6 +21,11 @@ public enum AtsdType {
 		@Override
 		protected Object readValueHelper(String cell) {
 			return Long.valueOf(cell);
+		}
+
+		@Override
+		public AtsdType getCompatibleType(boolean odbcCompatible) {
+			return odbcCompatible ? DOUBLE_DATA_TYPE : this;
 		}
 	},
 	BOOLEAN_DATA_TYPE("boolean", "boolean", Types.BOOLEAN, Rep.BOOLEAN, 1, 1, 0) {
@@ -137,20 +143,25 @@ public enum AtsdType {
 	};
 
 	protected static final LoggingFacade log = LoggingFacade.getLogger(AtsdType.class);
+	private static final int TIMESTAMP_ODBC_TYPE = 11;
+	public static final AtsdType DEFAULT_TYPE = AtsdType.STRING_DATA_TYPE;
+	public static final AtsdType DEFAULT_VALUE_TYPE = AtsdType.FLOAT_DATA_TYPE;
 
 	public final String originalType;
 	public final String sqlType;
 	public final int sqlTypeCode;
-	public final Rep avaticaType;
+	public final Rep rep;
 	public final int maxPrecision;
 	public final int size;
 	public final int scale;
+	private final int odbcTypeCode;
 
-	AtsdType(String atsdType, String sqlType, int sqlTypeCode, Rep avaticaType, int maxPrecision, int size, int scale) {
+	AtsdType(String atsdType, String sqlType, int sqlTypeCode, Rep rep, int maxPrecision, int size, int scale) {
 		this.originalType = atsdType;
 		this.sqlType = sqlType;
 		this.sqlTypeCode = sqlTypeCode;
-		this.avaticaType = avaticaType;
+		this.odbcTypeCode = getOdbcTypeCode(sqlTypeCode);
+		this.rep = rep;
 		this.maxPrecision = maxPrecision;
 		this.size = size;
 		this.scale = scale;
@@ -176,4 +187,21 @@ public enum AtsdType {
 	public String getLiteral(boolean isPrefix) {
 		return null;
 	}
+
+	private int getOdbcTypeCode(int sqlTypeCode) {
+		return sqlTypeCode == Types.TIMESTAMP ? TIMESTAMP_ODBC_TYPE : sqlTypeCode;
+	}
+
+	public AtsdType getCompatibleType(boolean odbcCompatible) {
+		return this;
+	}
+
+	public int getTypeCode(boolean odbcCompatible) {
+		return odbcCompatible ? odbcTypeCode : sqlTypeCode;
+	}
+
+	public ColumnMetaData.AvaticaType getAvaticaType(boolean odbcCompatible) {
+		return new ColumnMetaData.AvaticaType(getTypeCode(odbcCompatible), sqlType, rep);
+	}
+
 }

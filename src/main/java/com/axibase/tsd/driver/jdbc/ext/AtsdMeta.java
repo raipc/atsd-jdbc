@@ -42,10 +42,12 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
 import java.net.URLEncoder;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.SQLDataException;
+import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.Date;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -114,7 +116,7 @@ public class AtsdMeta extends MetaImpl {
 					metaEndpoint, atsdConnectionInfo, signature.sql, new StatementContext(handle));
 			try (final IContentProtocol protocol = new SdkProtocolImpl(contentDescription)) {
 				final List<ColumnMetaData> columnMetaData = ContentMetadata.buildMetadataList(protocol.readContent(0),
-						atsdConnectionInfo.catalog(), atsdConnectionInfo.assignColumnNames());
+						atsdConnectionInfo.catalog(), atsdConnectionInfo.assignColumnNames(), atsdConnectionInfo.odbc2Compatibility());
 				signature.columns.addAll(columnMetaData);
 			} catch (AtsdJsonException e) {
 				final Object jsonError = e.getJson().get("error");
@@ -463,33 +465,37 @@ public class AtsdMeta extends MetaImpl {
 	@Override
 	public MetaResultSet getTables(ConnectionHandle connectionHandle, String catalog, Pat schemaPattern, Pat tableNamePattern,
 								   List<String> typeList) {
-        log.debug("[getTables] connection: {} catalog: {} schemaPattern: {} tableNamePattern: {} typeList: {}", connectionHandle.id, catalog, schemaPattern,
-                tableNamePattern, typeList);
-        if (typeList == null || typeList.contains("TABLE")) {
-        	final String pattern = StringUtils.isBlank(schemaPattern.s) ? tableNamePattern.s : schemaPattern.s + '.' + tableNamePattern.s;
+		log.debug("[getTables] connection: {} catalog: {} schemaPattern: {} tableNamePattern: {} typeList: {}", connectionHandle.id, catalog, schemaPattern,
+				tableNamePattern, typeList);
+		if (typeList == null || typeList.contains("TABLE")) {
+			final String pattern = StringUtils.isBlank(schemaPattern.s) ? tableNamePattern.s : schemaPattern.s + '.' + tableNamePattern.s;
 			final List<Object> tables = receiveTables(atsdConnectionInfo, pattern);
 
 			if(log.isDebugEnabled()) {
 				log.debug("[getTables] count: {}", tables.size());
-				StringBuilder sb = new StringBuilder();
-				sb.append('[');
-				AtsdMetaResultSets.AtsdMetaTable metaTable;
-				final int limit = tables.size() > 20 ? 20 : tables.size();
-				for (int i=0;i<limit;i++) {
-					metaTable = (AtsdMetaResultSets.AtsdMetaTable) tables.get(i);
-					if(sb.length() > 1) {
-						sb.append(',');
-					}
-					sb.append(metaTable.tableName);
-				}
-				sb.append(']');
-				log.debug("[getTables] tables: {}", sb.toString());
+				log.debug("[getTables] tables: {}", buildTablesStringForDebug(tables));
 			}
 
 			return getResultSet(tables, AtsdMetaResultSets.AtsdMetaTable.class);
 		}
 		return createEmptyResultSet(AtsdMetaResultSets.AtsdMetaTable.class);
+	}
 
+	private static String buildTablesStringForDebug(List<Object> tables) {
+		StringBuilder buffer = new StringBuilder();
+		buffer.append('[');
+		AtsdMetaResultSets.AtsdMetaTable metaTable;
+		final int maxTablesShow = 20;
+		final int limit = tables.size() > maxTablesShow ? maxTablesShow : tables.size();
+		for (int i = 0;i < limit; i++) {
+			metaTable = (AtsdMetaResultSets.AtsdMetaTable) tables.get(i);
+			if(buffer.length() > 1) {
+				buffer.append(',');
+			}
+			buffer.append(metaTable.tableName);
+		}
+		buffer.append(']');
+		return buffer.toString();
 	}
 
 	private AtsdMetaResultSets.AtsdMetaTable generateDefaultMetaTable() {
@@ -528,32 +534,32 @@ public class AtsdMeta extends MetaImpl {
 			metricList.add(generateDefaultMetaTable());
 		}
 
-        final Set<String> metricNames = getAndFilterMetricsFromAtsd(metricMasks, connectionInfo, pattern);
-        if (metricNames != Collections.EMPTY_SET) {
+		final Map<String, AtsdType> metricNamesToTypes = getAndFilterMetricsFromAtsd(metricMasks, connectionInfo, pattern);
+        if (metricNamesToTypes != Collections.EMPTY_MAP) {
             for (String metricMask : metricMasks) {
                 if (!WildcardsUtil.hasAtsdWildcards(metricMask) && !DEFAULT_TABLE_NAME.equalsIgnoreCase(metricMask)) {
-                    metricNames.add(metricMask);
+					metricNamesToTypes.put(metricMask, AtsdType.DEFAULT_VALUE_TYPE);
                 }
             }
         }
 
-        for (String metricName : metricNames) {
+        for (String metricName : metricNamesToTypes.keySet()) {
             metricList.add(generateMetaTable(metricName));
         }
 
 		return metricList;
 	}
 
-	private static Set<String> getAndFilterMetricsFromAtsd(List<String> metricMasks, AtsdConnectionInfo connectionInfo, String pattern) {
+	private static Map<String, AtsdType> getAndFilterMetricsFromAtsd(List<String> metricMasks, AtsdConnectionInfo connectionInfo, String pattern) {
 		final String metricsUrl = prepareUrlWithMetricExpression(Location.METRICS_ENDPOINT.getUrl(connectionInfo), metricMasks, pattern);
 		if (metricsUrl != null) {
 			try (final IContentProtocol contentProtocol = new SdkProtocolImpl(new ContentDescription(metricsUrl, connectionInfo))) {
 				final InputStream metricsInputStream = contentProtocol.readInfo();
 				final Metric[] metrics = JsonMappingUtil.mapToMetrics(metricsInputStream);
-				Set<String> result = new LinkedHashSet<>();
+				final Map<String, AtsdType> result = new LinkedHashMap<>();
 				for (Metric metric : metrics) {
 					if (WildcardsUtil.wildcardMatch(metric.getName(), pattern)) {
-						result.add(metric.getName());
+						result.put(metric.getName(), EnumUtil.getAtsdTypeByOriginalName(metric.getDataType()));
 					}
 				}
 				return result;
@@ -561,7 +567,7 @@ public class AtsdMeta extends MetaImpl {
 				log.error(e.getMessage());
 			}
 		}
-		return Collections.emptySet();
+		return Collections.emptyMap();
 	}
 
 	private static boolean containsAtsdSeriesTable(List<String> metricMasks) {
@@ -654,13 +660,17 @@ public class AtsdMeta extends MetaImpl {
 
 			List<Object> columnData = new ArrayList<>();
 			final String pattern = StringUtils.isBlank(schemaPattern.s) ? tableNamePattern.s : schemaPattern.s + '.' + tableNamePattern.s;
-			final Set<String> tableNames = WildcardsUtil.hasWildcards(pattern) ?
-					getAndFilterMetricsFromAtsd(metricMasks, atsdConnectionInfo, pattern):
-					Collections.singleton(pattern);
-			for (String tableName : tableNames) {
+			final Map<String, AtsdType> tableNamesAndValueTypes = getAndFilterMetricsFromAtsd(metricMasks, atsdConnectionInfo, pattern);
+			if (tableNamesAndValueTypes.isEmpty() && !WildcardsUtil.hasWildcards(pattern)) {
+				tableNamesAndValueTypes.put(pattern, AtsdType.DEFAULT_VALUE_TYPE);
+			}
+			final boolean odbcCompatible = atsdConnectionInfo.odbc2Compatibility();
+			for (Map.Entry<String, AtsdType> entry : tableNamesAndValueTypes.entrySet()) {
+				final String tableName = entry.getKey();
+				final AtsdType metricValueType = entry.getValue();
 				int position = 1;
 				for (DefaultColumn column : columns) {
-					columnData.add(createColumnMetaData(column, tableName, position));
+					columnData.add(createColumnMetaData(column, entry.getKey(), metricValueType, position, odbcCompatible));
 					++position;
 				}
 				if (DEFAULT_TABLE_NAME.equals(tableName) || !maybeTagColumnPattern(colNamePattern)) {
@@ -669,12 +679,12 @@ public class AtsdMeta extends MetaImpl {
 				Set<String> tags = getTags(tableName);
 				if (tags.isEmpty() && StringUtils.startsWith(colNamePattern, TagColumn.PREFIX) && !WildcardsUtil.hasAtsdWildcards(colNamePattern)) {
 					final TagColumn column = new TagColumn(StringUtils.substringAfter(colNamePattern, TagColumn.PREFIX));
-					columnData.add(createColumnMetaData(column, tableName, position));
+					columnData.add(createColumnMetaData(column, tableName, metricValueType, position, odbcCompatible));
 				} else {
 					for (String tag : tags) {
 						final TagColumn column = new TagColumn(tag);
 						if (WildcardsUtil.wildcardMatch(column.getColumnNamePrefix(), colNamePattern)) {
-							columnData.add(createColumnMetaData(column, tableName, position));
+							columnData.add(createColumnMetaData(column, tableName, metricValueType, position, odbcCompatible));
 							++position;
 						}
 					}
@@ -683,23 +693,27 @@ public class AtsdMeta extends MetaImpl {
 
 			if (log.isDebugEnabled()) {
 				log.debug("[getColumns] count: {}", columnData.size());
-				StringBuilder sb = new StringBuilder();
-                sb.append('[');
-                AtsdMetaResultSets.AtsdMetaColumn metaColumn;
-                for (Object column : columnData) {
-                    metaColumn = (AtsdMetaResultSets.AtsdMetaColumn) column;
-                    if(sb.length() > 1) {
-                        sb.append(',');
-                    }
-                    sb.append("{name=").append(metaColumn.columnName).append(", ").append("type=").append(metaColumn.typeName).append('}');
-                }
-                sb.append(']');
-                log.debug("[getColumns] columns: {}", sb.toString());
-            }
+				log.debug("[getColumns] columns: {}", buildColumnsStringForDebug(columnData));
+			}
 
 			return getResultSet(columnData, AtsdMetaResultSets.AtsdMetaColumn.class);
 		}
 		return createEmptyResultSet(AtsdMetaResultSets.AtsdMetaColumn.class);
+	}
+
+	private static String buildColumnsStringForDebug(List<Object> columnData) {
+		StringBuilder buffer = new StringBuilder();
+		buffer.append('[');
+		AtsdMetaResultSets.AtsdMetaColumn metaColumn;
+		for (Object column : columnData) {
+			metaColumn = (AtsdMetaResultSets.AtsdMetaColumn) column;
+			if(buffer.length() > 1) {
+				buffer.append(',');
+			}
+			buffer.append("{name=").append(metaColumn.columnName).append(", ").append("type=").append(metaColumn.typeName).append('}');
+		}
+		buffer.append(']');
+		return buffer.toString();
 	}
 
 	private static boolean maybeTagColumnPattern(String pattern) {
@@ -744,20 +758,16 @@ public class AtsdMeta extends MetaImpl {
 		return Location.METRICS_ENDPOINT.getUrl(connectionInfo) + "/" + encodedMetric + "/series";
 	}
 
-	private Object createColumnMetaData(MetadataColumnDefinition column, String table, int ordinal) {
-		final AtsdType columnType = column.getType();
+	private Object createColumnMetaData(MetadataColumnDefinition column, String table, AtsdType valueType, int ordinal, boolean odbcCompatible) {
+		final AtsdType columnType = column.getType(valueType).getCompatibleType(odbcCompatible);
 		return new AtsdMetaResultSets.AtsdMetaColumn(
+				odbcCompatible,
 				atsdConnectionInfo.catalog(),
 				atsdConnectionInfo.schema(),
 				table,
 				column.getColumnNamePrefix(),
-				columnType.sqlTypeCode,
-				columnType.sqlType,
-				columnType.size,
-				null,
-				10,
+				columnType,
 				column.getNullable(),
-				0,
 				ordinal,
 				column.getNullableAsString()
 		);
@@ -805,17 +815,14 @@ public class AtsdMeta extends MetaImpl {
 		IDataProvider provider = providerCache.get(statementId);
 		final String jsonScheme = provider != null ? provider.getContentDescription().getJsonScheme() : "";
 		ContentMetadata contentMetadata = new ContentMetadata(jsonScheme, sql, atsdConnectionInfo.catalog(),
-				connectionId, statementId, atsdConnectionInfo.assignColumnNames());
+				connectionId, statementId, atsdConnectionInfo.assignColumnNames(), atsdConnectionInfo.odbc2Compatibility());
 		metaCache.put(statementId, contentMetadata);
 		return contentMetadata;
 	}
 
-	private static AtsdMetaResultSets.AtsdMetaTypeInfo getTypeInfo(AtsdType type) {
-		return new AtsdMetaResultSets.AtsdMetaTypeInfo(type.sqlType, type.sqlTypeCode, type.maxPrecision,
-				type.getLiteral(true), type.getLiteral(false),
-				(short) DatabaseMetaData.typeNullable, type == AtsdType.STRING_DATA_TYPE,
-				(short) DatabaseMetaData.typeSearchable, false, false, false,
-				(short) 0, (short) 0, 10);
+	private AtsdMetaResultSets.AtsdMetaTypeInfo getTypeInfo(AtsdType atsdType) {
+		return new AtsdMetaResultSets.AtsdMetaTypeInfo(atsdConnectionInfo.odbc2Compatibility(), atsdType, DatabaseMetaData.typeNullable,
+				DatabaseMetaData.typeSearchable, false, false, false, 0,  0);
 	}
 
 	// Since Calcite 1.6.0
