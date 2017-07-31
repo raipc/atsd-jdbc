@@ -18,11 +18,10 @@ jdbc:atsd://hostname:port
 jdbc:atsd://10.102.0.6:8443;tables=city*
 ```
 
-Prior to version 1.3.2 the driver prefix had to be followed by the ATSD SQL endpoint URL.
-
-Legacy format prior to driver version 1.3.2 **(deprecated)**:
+Legacy JDBC url format prior to version 1.3.2:
 
 ```
+# DEPRECATED
 jdbc:axibase:atsd:https://atsd_hostname:8443/api/sql;trustServerCertificate=true
 ```
 
@@ -69,13 +68,6 @@ For example, database version 14150 supports all driver versions between 1.2.10 
 
 Properties can be included as part of the JDBC URL using a semicolon as a separator, for example: `jdbc:atsd://10.102.0.6:8443;tables=infla*;expandTags=true`.
 
-### Deprecated Properties
-
-| **Name** | **Type** | **Supported drivers** | **Default** | **Description** |
-| :--- | --- | --- | ---: | --- |
-| trustServerCertificate (deprecated) | boolean | 1.0 – 1.3.0  | `false` | Skip SSL server certificate validation. |
-| catalog (deprecated) | string | 1.2.21 | not set | Specify a catalog name. |
-
 ## Resultset Processing Strategy
 
 Choose the appropriate strategy based on available Java heap memory, disk space, and expected row counts produced by typical queries.
@@ -97,7 +89,7 @@ Choose the appropriate strategy based on available Java heap memory, disk space,
 
 ### Apache Maven
 
-Add dependency to `pom.xml` in your project. The JDBC driver will be imported automatically since the project is hosted in the MavenCentral/SonaType repositories. 
+Add dependency to `pom.xml` in your project. 
 
 ```xml
 <dependency>
@@ -107,7 +99,9 @@ Add dependency to `pom.xml` in your project. The JDBC driver will be imported au
 </dependency>
 ```
 
-Alternatively, build the project with Maven:
+The JDBC driver is hosted in MavenCentral/SonaType repositories and will be imported automatically. 
+
+Alternatively, build the project from sources with Maven:
 
 ```bash
 $ mvn clean package -DskipTests=true
@@ -127,6 +121,18 @@ Download the driver [jar file](https://github.com/axibase/atsd-jdbc/releases/dow
 Download the jar file with the dependencies from above and import into your database manager. For example [DbVisualizer](https://www.dbvis.com). 
 
 Follow the instructions in the manager's user guide to create a custom driver based on the ATSD jar file.
+
+### Reporting Tools
+
+  * [Alteryx Designer](https://github.com/axibase/atsd/blob/master/integration/alteryx/README.md)
+  * [IBM SPSS Modeler](https://github.com/axibase/atsd/blob/master/integration/spss/modeler/README.md)
+  * [IBM SPSS Statistics](https://github.com/axibase/atsd/blob/master/integration/spss/statistics/README.md)
+  * [MatLab](https://github.com/axibase/atsd/blob/master/integration/matlab/README.md)
+  * [Pentaho Data Integration](https://github.com/axibase/atsd/blob/master/integration/pentaho/data-integration/README.md)
+  * [Pentaho Report Designer](https://github.com/axibase/atsd/blob/master/integration/pentaho/report-designer/README.md)  
+  * [Stata](https://github.com/axibase/atsd/blob/master/integration/stata/README.md)
+  * [Tableau](https://github.com/axibase/atsd/blob/master/integration/tableau/README.md)
+  * Generic [ODBC](https://github.com/axibase/atsd/blob/master/integration/odbc/README.md)
 
 ## Supported Data Types
 
