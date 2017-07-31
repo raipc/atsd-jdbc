@@ -18,6 +18,7 @@ import java.util.*;
 import java.util.zip.ZipInputStream;
 
 import static com.axibase.tsd.driver.jdbc.DriverConstants.DEFAULT_CHARSET;
+import org.slf4j.helpers.MessageFormatter;
 
 @UtilityClass
 public class TestUtil {
@@ -93,4 +94,25 @@ public class TestUtil {
 		}
 		return Collections.unmodifiableMap(mapping);
 	}
+
+    public static String buildVariablePrefix() {
+        String methodName = Thread.currentThread().getStackTrace()[2].getMethodName();
+        StringBuilder prefix = new StringBuilder();
+        for (int i = 0; i < methodName.length(); i++) {
+            Character ch = methodName.charAt(i);
+            if (Character.isUpperCase(ch)) {
+                prefix.append("-");
+            } else if ('_' == ch) {
+                continue;
+            }
+            prefix.append(Character.toLowerCase(ch));
+        }
+        prefix.append(":tst-");
+        return prefix.toString();
+    }
+
+    public static String format(String pattern, Object... args) {
+        return args == null || args.length == 0 ? pattern : MessageFormatter.arrayFormat(pattern, args).getMessage();
+    }
+
 }
