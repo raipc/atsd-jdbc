@@ -176,7 +176,7 @@ class AtsdSqlUpdateConverter extends AtsdSqlConverter<SqlUpdate> {
             result.add(StringUtils.remove((String) value, escapeValue));
         } else {
             for (SqlNode operand : operands) {
-                if (SqlKind.LITERAL == operand.getKind()) {
+                if (SqlKind.LITERAL == operand.getKind() || SqlKind.DYNAMIC_PARAM == operand.getKind()) {
                     result.add(getOperandValue(operand, parameterValues));
                     if (operands.size() == 2) {
                         break;
