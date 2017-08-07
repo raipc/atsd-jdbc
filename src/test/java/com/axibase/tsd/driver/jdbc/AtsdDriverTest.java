@@ -18,7 +18,6 @@ import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import java.sql.Connection;
 import java.sql.DriverPropertyInfo;
 import java.sql.SQLException;
 import java.util.Arrays;
@@ -72,32 +71,6 @@ public class AtsdDriverTest extends AtsdProperties {
 		assertNotNull(propertyInfo);
 		assertEquals(12, propertyInfo.length);
 
-	}
-
-	@Test
-	public void testConnectStringProperties() throws Exception {
-		Properties properties = new Properties();
-		properties.setProperty("user", LOGIN_NAME);
-		properties.setProperty("password", LOGIN_PASSWORD);
-		Connection connection = driver.connect(JDBC_ATSD_URL, properties);
-		assertNotNull(connection);
-		connection.close();
-	}
-
-	@Test
-	public void testConnectWithoutCredentials() throws Exception {
-		exception.expect(SQLException.class);
-		exception.expectMessage("Wrong credentials provided");
-		Connection connection = driver.connect(JDBC_ATSD_URL, new Properties());
-		connection.close();
-	}
-
-	@Test
-	public void testConnectToWrongUrl() throws Exception {
-		exception.expect(SQLException.class);
-		exception.expectMessage("Unknown host specified");
-		Connection connection = driver.connect(DriverConstants.CONNECT_URL_PREFIX + "unknown:443", new Properties());
-		connection.close();
 	}
 
 	@Test

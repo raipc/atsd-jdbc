@@ -1,15 +1,14 @@
 package com.axibase.tsd.driver.jdbc.ext;
 
+import com.axibase.tsd.driver.jdbc.AtsdDriver;
 import com.axibase.tsd.driver.jdbc.AtsdProperties;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
 import org.junit.After;
 import org.junit.Assert;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.sql.SQLException;
+import java.util.Properties;
 
 public class AtsdConnectionTest extends AtsdProperties {
 
@@ -17,12 +16,9 @@ public class AtsdConnectionTest extends AtsdProperties {
 
 	@Before
 	public void before() {
-		try {
-			connection = (AtsdConnection) DriverManager.getConnection(JDBC_ATSD_URL, LOGIN_NAME, LOGIN_PASSWORD);
-		} catch (SQLException e) {
-			fail(e.getMessage());
-		}
-		assertNotNull(connection);
+		final Properties info = new Properties();
+		info.setProperty("url", "test:8443");
+		connection = new AtsdConnection(new AtsdDriver(), new AtsdFactory(), "atsd:jdbc://test:8443", info);
 	}
 
 	@After
