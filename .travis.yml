@@ -1,7 +1,7 @@
 language: java
 sudo: false
 script:
-  - mvn verify -B -Dgpg.skip -DskipTests=true
+  - mvn verify -B -Dgpg.skip
 jdk:
   - oraclejdk8
   - openjdk8
