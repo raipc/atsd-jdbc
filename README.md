@@ -161,7 +161,7 @@ To execute a query load the driver class, open a connection, create a SQL statem
 ```java
     Class.forName("com.axibase.tsd.driver.jdbc.AtsdDriver");
     Connection connection = DriverManager.getConnection("jdbc:atsd://10.102.0.5:8443", "user-1", "my-pwd!");
-    String query = "SELECT value, datetime FROM cpu_busy WHERE entity = 'nurswgvml007' LIMIT 1";
+    String query = "SELECT value, datetime FROM \"mpstat.cpu_busy\" WHERE entity = 'nurswgvml007' LIMIT 1";
     Statement statement = connection.createStatement();
     ResultSet resultSet = statement.executeQuery(query);
 ```
@@ -171,7 +171,7 @@ To execute a query load the driver class, open a connection, create a SQL statem
 Initialize a prepared statement, set placeholder parameters, and execute the query:
 
 ```java
-    String query = "SELECT value, datetime FROM cpu_busy WHERE entity = ? LIMIT 1";
+    String query = "SELECT value, datetime FROM \"mpstat.cpu_busy\" WHERE entity = ? LIMIT 1";
     PreparedStatement preparedStatement = connection.prepareStatement(query);
     preparedStatement.setString(1, "nurswgvml007");
     ResultSet resultSet = prepareStatement.executeQuery();
@@ -184,7 +184,7 @@ Initialize a prepared statement, set placeholder parameters, and execute the que
 To set an [`endTime`](https://github.com/axibase/atsd/blob/master/end-time-syntax.md) expression as a parameter in a prepared statement, cast the statement to `AtsdPreparedStatement` and invoke the `setTimeExpression` method.
 
 ```java
-    String query = "SELECT * FROM df.disk_used WHERE datetime > ? LIMIT 1";
+    String query = "SELECT * FROM \"df.disk_used\" WHERE datetime > ? LIMIT 1";
     PreparedStatement preparedStatement = connection.prepareStatement(query);
     AtsdPreparedStatement axibaseStatement = (AtsdPreparedStatement)preparedStatement;
     axibaseStatement.setTimeExpression(1, "current_day - 1 * week + 2 * day");
@@ -221,7 +221,7 @@ public class TestQuery {
         
         String jdbcUrl = "jdbc:atsd://" + host + ":" port;
 
-        String query = "SELECT * FROM mpstat.cpu_busy WHERE datetime > now - 1 * HOUR LIMIT 5";
+        String query = "SELECT * FROM \"mpstat.cpu_busy\" WHERE datetime > now - 1 * HOUR LIMIT 5";
         Connection connection = null;
         try {
             System.out.println("Connecting to " + jdbcUrl);
@@ -263,7 +263,7 @@ public class TestQuery {
     String jdbcUrl = "jdbc:atsd://" + host + ":" port;
     
     String query = "SELECT entity, datetime, value, tags.mount_point, tags.file_system "
-            + "FROM df.disk_used_percent WHERE entity = 'NURSWGHBS001' AND datetime > now - 1 * HOUR LIMIT 10";
+            + "FROM \"df.disk_used_percent\" WHERE entity = 'NURSWGHBS001' AND datetime > now - 1 * HOUR LIMIT 10";
 
     try (Connection conn = DriverManager.getConnection(jdbcUrl, username, password);
          Statement statement = conn.createStatement();
