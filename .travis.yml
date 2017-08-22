@@ -1,6 +1,6 @@
 language: java
 sudo: false
-install: true
+install: mvn dependency:resolve
 script:
 - bash .travis-deploy.sh
 jdk:
