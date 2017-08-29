@@ -200,7 +200,7 @@ Initialize a prepared statement, set placeholder parameters, and execute the que
 
 ## ATSD Extensions
 
-The extensions implement additional methods for the standard JDBC `java.sql.Statement` and `java.sql.PreparedStatement` interfaces.
+Extensions implement additional methods for the standard JDBC `java.sql.Statement` and `java.sql.PreparedStatement` interfaces.
 
 * Class `com.axibase.tsd.driver.jdbc.ext.AtsdStatement` extends `java.sql.Statement`.
 * Class `com.axibase.tsd.driver.jdbc.ext.AtsdPreparedStatement` extends `java.sql.PreparedStatement`.
@@ -242,7 +242,7 @@ To set an [`endTime`](https://github.com/axibase/atsd/blob/master/end-time-synta
 
 > Supported in 1.3.5+
 
-To encode/decode tags columns (series tags, metric tags, entity tags) into a `java.util.Map` instance you can use the `setTags` and `getTags` methods.
+To encode/decode tag columns (series tags, metric tags, entity tags) into a `java.util.Map` instance you can use the `setTags` and `getTags` methods.
 
 ```java
     Map<String, String> seriesTags = new HashMap<String, String>();
