@@ -2,7 +2,7 @@
 
 ## Overview
 
-The ATSD JDBC driver provides support for writing data into ATSD using `INSERT` and `UPDATE` statements. The statements are parsed by the driver into [network commands](https://github.com/axibase/atsd/tree/master/api/network#network-api) which are inserted into the database with the [Data API `command`](https://github.com/axibase/atsd/blob/master/api/data/ext/command.md) method.
+The ATSD JDBC driver provides support for writing data into ATSD using `INSERT` and `UPDATE` statements. These statements are parsed by the driver into [network commands](https://github.com/axibase/atsd/tree/master/api/network#network-api) which are inserted into the database with the [Data API `command`](https://github.com/axibase/atsd/blob/master/api/data/ext/command.md) method.
 
 ```sql
 INSERT INTO temperature (entity, datetime, value, tags.surface)
@@ -15,7 +15,7 @@ The above query is translated into a [series command](https://github.com/axibase
 series e:sensor-01 d:2017-08-21T00:00:00Z m:temperature=24.5 t:surface=Outer
 ```
 
-The same command can be produced with equivalent `UPDATE` statements:
+The same command can be produced with the following, equivalent `UPDATE` statements:
 
 ```sql
 UPDATE temperature SET value = 24.5 WHERE entity = 'sensor-01' AND datetime = '2017-08-21T00:00:00Z' AND tags.surface = 'Outer'
@@ -24,13 +24,13 @@ UPDATE temperature SET datetime = '2017-08-21T00:00:00Z', value = 24.5  WHERE en
 
 ## UPDATE Statement
 
-The `UPDATE` statement is processed similar to `INSERT` statement in that it is converted into one `series` command and optional `metric` and `entity` commands.
+The `UPDATE` statement is processed similarly to the `INSERT` statement in that it is converted into one `series` command and optional `metric` and `entity` commands.
 
-The `series` command contains all columns referenced in the `SET` and `WHERE` parts. The `WHERE` clause must contain at least one column.
+The `series` command contains all columns referenced in the `SET` and `WHERE` conditions. The `WHERE` clause must contain at least one column.
 
-There are no checks for the existence of records as part of the `UPDATE` statement processing.
+There are no checks for the existence of records as part of `UPDATE` statement processing.
 
-New value is inserted if the record identified by the series key and time doesn't exist. Otherwise, the existing record is updated with the new value.
+A new value is inserted if the record identified by the series key and time does not exist. Otherwise, an existing record is updated with the new value.
 
 This type of `UPDATE` query is often referred to as `UPSERT` or `MERGE`.
 
@@ -174,9 +174,9 @@ Feature | Insert into `metric` | Insert into `atsd_series`
 --------|-------------------------|-------------------------
 Metric metadata columns | Allowed | Not allowed
 Entity metadata columns | Allowed | Not allowed
-Text column | text | not supported
+Text column | text | Not supported
 Value column | value | {metric_name}
-Generated commands | 1 series command<br>1 optional metric command<br>1 optional entity command | 1 series command<br>with multiple metrics
+Generated commands | 1 series command<br>1 optional metric command<br>1 optional entity command | 1 series command<br>With multiple metrics
 
 ## UPDATE Syntax
 
@@ -219,7 +219,7 @@ Column values set to `null` or empty string are not included into the generated 
 
 ### Date
 
-The date literal values can be specified using the following formats:
+Literal date values can be specified using the following formats:
 
 * ISO 8601  `yyyy-MM-dd'T'HH:mm:ss[.SSS]'Z'`
 
@@ -233,15 +233,15 @@ The date literal values can be specified using the following formats:
 
 #### Time Zone in `Statement` Queries
 
-Parsing of `datetime` column values specified in the local time format, e.g. '2017-08-15 16:00:00', depends on the value of the `timestamptz` connection string parameter.
+Parsing `datetime` column values specified in the local time format, e.g. '2017-08-15 16:00:00', depends on the value of the `timestamptz` connection string parameter.
 
 * If `timestamptz` is set to `true` (default)
 
-    The local timestamp is converted into the date object using the UTC time zone.
+    The local timestamp is converted to a date object using UTC time zone.
 
 * If `timestamptz` is set to `false`
 
-    The local timestamp is converted into the date object using the timezone on the client which is based on system time or `-Duser.timeZone` parameter.
+    The local timestamp is converted to a date object using the timezone on the client which is based on system time or `-Duser.timeZone` parameter.
 
 #### Time Zone in `PreparedStatement` Queries
 
