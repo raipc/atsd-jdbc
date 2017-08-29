@@ -198,7 +198,34 @@ Initialize a prepared statement, set placeholder parameters, and execute the que
     ResultSet resultSet = prepareStatement.executeQuery();
 ```
 
-### EndTime Expressions in Prepared Statements
+## ATSD Extensions
+
+The extensions implement additional methods for the standard JDBC `java.sql.Statement` and `java.sql.PreparedStatement` interfaces.
+
+* Class `com.axibase.tsd.driver.jdbc.ext.AtsdStatement` extends `java.sql.Statement`.
+* Class `com.axibase.tsd.driver.jdbc.ext.AtsdPreparedStatement` extends `java.sql.PreparedStatement`.
+* Class `com.axibase.tsd.driver.jdbc.ext.AtsdResultSet` extends `java.sql.ResultSet`.
+
+In order to access additional methods you need to cast the standard JDBC classes to ATSD classes:
+
+```java
+    Statement stmt = //get statement;
+    AtsdStatement astmt = (AtsdStatement)stmt;
+```
+
+```java
+    PreparedStatement pstmt = //prepare statement;
+    AtsdPreparedStatement apstmt = (AtsdPreparedStatement)stmt;
+```
+
+> Note that the `AtsdPreparedStatement` class is not a subclass of `AtsdStatement` and therefore cannot be cast from `AtsdStatement`.
+
+* `void setTagsEncoding(boolean enc)` - supported by AtsdStatement and AtsdPreparedStatement.
+* `Map<String, String> getTags()` - supported by AtsdResultSet.
+* `void setTags(Map<String, String> tagMap)` - supported by AtsdPreparedStatement.
+* `void setTimeExpression(String string)` - supported by AtsdPreparedStatement.
+
+### EndTime Expressions
 
 > Supported in 1.2.9+.
 
@@ -209,6 +236,43 @@ To set an [`endTime`](https://github.com/axibase/atsd/blob/master/end-time-synta
     PreparedStatement preparedStatement = connection.prepareStatement(query);
     AtsdPreparedStatement axibaseStatement = (AtsdPreparedStatement)preparedStatement;
     axibaseStatement.setTimeExpression(1, "current_day - 1 * week + 2 * day");
+```
+
+### Working with Tags
+
+> Supported in 1.3.5+
+
+To encode/decode tags columns (series tags, metric tags, entity tags) into a `java.util.Map` instance you can use the `setTags` and `getTags` methods.
+
+```java
+    Map<String, String> seriesTags = new HashMap<String, String>();
+    seriesTags.put("surface", "Outer");
+    seriesTags.put("status", "Initial");
+
+    String insertQuery = "INSERT INTO temperature (entity, tags, time, value) VALUES (?, ?, ?, ?)";
+    PreparedStatement ps = connection.prepareStatement(insertQuery);
+    AtsdPreparedStatement aps = (AtsdPreparedStatement)statement;
+    aps.setString(1, "sensor-01");
+    aps.setTags(2, seriesTags);
+    aps.setTimestamp(3, System.currentTimeMillis());
+    aps.setDouble(4, 24.5);
+    aps.execute();
+```
+
+When retrieving records from the database, make sure that tag encoding is enabled before the query is executed.
+
+```java
+    AtsdStatement atsdStatement = (AtsdStatement) statement;
+    atsdStatement.setTagsEncoding(true);
+
+    String query = "SELECT datetime, value, tags, entity.tags FROM temperature WHERE entity = 'sensor-01' LIMIT 1";
+    AtsdResultSet rs = (AtsdResultSet)atsdStatement.executeQuery(query);
+    while (rs.next()) {
+    	Timestamp ts = rs.getTimestamp(1);
+	double value = rs.getDouble(2);
+	Map<String, String> seriesTags = rs.getTags(3);
+	Map<String, String> entityTags = rs.getTags(4);
+    }
 ```
 
 ## SQL Warnings
