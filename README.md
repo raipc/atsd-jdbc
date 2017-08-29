@@ -18,7 +18,7 @@ To write data into ATSD, execute `INSERT` or `UPDATE` [statements](insert.md) wh
 
 ## JDBC URL
 
-The ATSD JDBC driver prefix is `jdbc:atsd:`, followed by the ATSD hostname (IP address) and port, optional catalog and driver properties.
+The ATSD JDBC driver prefix is `jdbc:atsd:`, followed by the ATSD hostname (IP address) and port, optional catalog, and driver properties.
 
 ```ls
 jdbc:atsd://hostname:port[/catalog][;property_name=property_value]
@@ -70,14 +70,14 @@ For example, database revision number 16200 supports driver versions between 1.2
 | tables | comma-separated list | 1.2.21+ | `*` | List of metric names or metric expressions returned as tables by the `DatabaseMetaData#getTables` method. |
 | expandTags | boolean | 1.2.21+ | `false` | Return series tags as separate columns in the `DatabaseMetaData#getColumns` method. |
 | metaColumns | boolean | 1.2.21+ | `false` | Add `metric.tags`, `entity.tags`, and `entity.groups` columns to the list of columns returned by the `DatabaseMetaData#getColumns` method. |
-| assignColumnNames | boolean | 1.3.0+ | `false` | Force `ResultSetMetaData.getColumnName(index)` method to return column names.<br> If disabled, the method returns column labels. |
+| assignColumnNames | boolean | 1.3.0+ | `false` | Force `ResultSetMetaData.getColumnName(index)` method to return column names.<br> If disabled, method returns column labels. |
 | timestamptz | boolean | 1.3.2+ | `true` | Instantiate Timestamp fields with the timezone stored in the database (UTC). If `timestamptz` is set to `false`, the Timestamp fields are created based on the client's local timezone. |
-| missingMetric | `error`, `warning`, `none` | 1.3.2+ | `warning` | Control the behavior when the referenced metric doesn't exist. If 'error', the driver will raise an `AtsdMetricNotFoundException`. If `warning`, an SQL Warning will be returned without errors. If `none`, no error or warning will be created. |
+| missingMetric | `error`, `warning`, `none` | 1.3.2+ | `warning` | Control behavior when the referenced metric doesn't exist. If 'error' is specified, the driver will raise an `AtsdMetricNotFoundException`. If `warning` is specified, an SQL Warning will be returned without errors. If `none` is specified, no error or warning will be created. |
 | compatibility | `odbc2` | 1.3.2+ | not set | Simulate behavior of ODBC2.0 drivers: substitute `bigint` datatype with `double`, return `11` as `timestamp` type code |
 
 ## Resultset Processing Strategy
 
-Choose the appropriate strategy based on available Java heap memory, disk space, and expected row counts produced by typical queries.
+Choose the appropriate strategy based on available Java heap memory, disk space, and expected row count produced by a typical query.
 
 |**Name**|**Description**|
 |:--|---|
@@ -85,8 +85,8 @@ Choose the appropriate strategy based on available Java heap memory, disk space,
 |`file`| Buffers data received from the database to a temporary file on the local file system and reads rows from the file on the `ResultSet.next()` invocation. |
 |`memory`| Buffers data received from the database into the application memory and returns rows on the `ResultSet.next()` invocation directly from a memory structure. |
 
-* While the `memory` strategy may be more efficient than `file`, it requires more memory. The `memory` strategy is optimal queries returning thousands of rows, whereas the `file` strategy can process millions of rows, provided disk space is available.
-* The `stream` strategy is faster than the alternatives, at the expense of keeping the database connection open. It is not recommended if row processing may last a significant time on a slow client.
+* The `memory` strategy is more efficient than the `file` strategy but requires more memory. The `memory` strategy is optimal for queries returning some amount of rows on the order of one hundred thousand or less, whereas the `file` strategy can process millions of rows during operation, provided enough disk space is available.
+* The `stream` strategy is faster than both alternatives, at the expense of keeping the database connection open. It is not recommended if row processing may last a significant time on a slow client.
 
 ## Requirements
 
@@ -177,7 +177,7 @@ Follow the instructions to create a custom JDBC driver based on the ATSD jar fil
 
 ## Usage
 
-To execute a query load the driver class, open a connection, create a SQL statement, execute the query, and process the result set:
+To execute a query, load the driver class, open a connection, create an SQL statement, execute the query, and process the result set:
 
 ```java
     Class.forName("com.axibase.tsd.driver.jdbc.AtsdDriver");
@@ -213,7 +213,7 @@ To set an [`endTime`](https://github.com/axibase/atsd/blob/master/end-time-synta
 
 ## SQL Warnings
 
-The database may return SQL warnings as opposed to raising a non-recoverable error in cases, such as unknown tag or tag value.
+The database may return SQL warnings, as opposed to raising a non-recoverable error, in case of an unknown tag or tag value.
 
 To retrieve SQL warnings, invoke the `resultSet.getWarnings()` method:
 
