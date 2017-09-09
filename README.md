@@ -16,6 +16,12 @@ To retrieve records from the database, execute `SELECT` statements following the
 
 To write data into ATSD, execute `INSERT` or `UPDATE` [statements](insert.md) which are parsed by the driver and transformed into `series` commands sent into the database.
 
+## Driver Class
+
+```ls
+com.axibase.tsd.driver.jdbc.AtsdDriver
+```
+
 ## JDBC URL
 
 The ATSD JDBC driver prefix is `jdbc:atsd:`, followed by the ATSD hostname (IP address) and port, optional catalog, and driver properties.
