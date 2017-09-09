@@ -238,11 +238,11 @@ To set an [`endTime`](https://github.com/axibase/atsd/blob/master/end-time-synta
     axibaseStatement.setTimeExpression(1, "current_day - 1 * week + 2 * day");
 ```
 
-### Working with Tags
+### Tag Columns
 
 > Supported in 1.3.5+
 
-To encode/decode tag columns (series tags, metric tags, entity tags) into a `java.util.Map` instance you can use the `setTags` and `getTags` methods.
+Use the `setTags` and `getTags` methods to encode and decode tag columns (series tags, metric tags, entity tags) into a `java.util.Map` instance.
 
 ```java
     Map<String, String> seriesTags = new HashMap<String, String>();
@@ -287,6 +287,17 @@ To retrieve SQL warnings, invoke the `resultSet.getWarnings()` method:
         System.err.println(rsWarning.getMessage());
     }
 ```
+
+## Database Metadata
+
+The list of tables and columns can be retrieved using `DatabaseMetaData#getTables` and `DatabaseMetaData#getColumns` methods. Use `%` and `_` wildcards when matching tables and columns by name.
+
+```java
+ // Match tables disk_used, disk_used_percent
+ ResultSet rs = dbMetadata.getTables(null, null, "_isk_%", null);
+ ```
+ 
+The list of tables visible to these methods can be filtered with the `tables={expression}` connection property.
 
 ## Basic Example
 
