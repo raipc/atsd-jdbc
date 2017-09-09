@@ -31,7 +31,7 @@ jdbc:atsd://10.102.0.6:8443
 Properties can be appended to the JDBC URL using a semicolon as a separator:
 
 ```ls
-jdbc:atsd://10.102.0.6:8443;tables=infla*;expandTags=true`
+jdbc:atsd://10.102.0.6:8443;tables=infla*;expandTags=true
 ```
 
 ## License
