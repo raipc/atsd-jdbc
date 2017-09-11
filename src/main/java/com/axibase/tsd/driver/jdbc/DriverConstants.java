@@ -38,7 +38,7 @@ public final class DriverConstants {
 	public static final String TRUST_PARAM_NAME = "trust";
 	public static final boolean DEFAULT_TRUST_SERVER_CERTIFICATE = true;
 	public static final String TABLES_PARAM_NAME = "tables";
-	public static final String DEFAULT_TABLES_VALUE = "*";
+	public static final String DEFAULT_TABLES_VALUE = "%";
 	public static final String EXPAND_TAGS_PARAM_NAME = "expandTags";
 	public static final boolean DEFAULT_EXPAND_TAGS_VALUE = false;
 	public static final String META_COLUMNS_PARAM_NAME = "metaColumns";
@@ -61,7 +61,7 @@ public final class DriverConstants {
 	public static final String METADATA_FORMAT_PARAM_NAME = "metadataFormat";
 	public static final String LIMIT_PARAM_NAME = "limit";
 
-	public static final int	MIN_SUPPORTED_ATSD_REVISION = 16855;
+	public static final int	MIN_SUPPORTED_ATSD_REVISION = 17285;
 	public static final String REVISION_LINE = "Revision";
 
 	public static final String CONN_KEEP_ALIVE = "Keep-Alive";
