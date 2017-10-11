@@ -1,4 +1,4 @@
-#1.2.21
+## 1.2.21
 * Exposed `tables`, `catalog`, `expandTags` connection string parameters
 
 ## 1.2.20
