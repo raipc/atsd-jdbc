@@ -11,7 +11,7 @@ The ATSD JDBC driver enables Java applications to read and write time-series dat
 
 ## Reading Data
 
-To retrieve records from the database, execute `SELECT` statements following the query syntax and examples provided in the [ATSD SQL documentation](https://github.com/axibase/atsd/tree/master/api/sql#overview).
+To retrieve records from the database, execute `SELECT` statements following the query syntax and examples provided in the [ATSD SQL documentation](https://github.com/axibase/atsd/tree/master/sql#overview).
 
 ## Writing Data
 
@@ -181,7 +181,7 @@ Follow the instructions to create a custom JDBC driver based on the ATSD jar fil
 ## Capabilities
 
 * [Driver capabilities](capabilities.md) reference guide.
-* ATSD [SQL API documentation](https://github.com/axibase/atsd/tree/master/api/sql#overview).
+* ATSD [SQL API documentation](https://github.com/axibase/atsd/tree/master/sql#overview).
 
 ## Usage
 
