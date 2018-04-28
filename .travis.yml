@@ -3,12 +3,19 @@ sudo: false
 cache:
   directories:
     - $HOME/.m2
-install: mvn dependency:resolve
+install:
+  - mvn dependency:resolve
+  - wget https://raw.githubusercontent.com/axibase/atsd/master/.travis-functions.sh && source .travis-functions.sh
+  - install_checkers_in_non_doc_project
 script:
-- bash .travis-deploy.sh
+  - bash .travis-deploy.sh
+  - spellcheck
+  - linkcheck
+  - stylecheck
 jdk:
-- openjdk8
-- oraclejdk8
+  - openjdk7
+  - openjdk8
+  - oraclejdk8
 dist: trusty
 env:
   global:
