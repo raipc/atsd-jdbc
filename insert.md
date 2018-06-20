@@ -36,7 +36,7 @@ This type of `UPDATE` query is often referred to as `UPSERT` or `MERGE`.
 
 ## Tables
 
-Because new metrics are automatically registered by the database, there is no need to create metrics ahead of time in order to insert records into a new table.
+Because new metrics are automatically registered by the database, there is no need to create metrics ahead of time to insert records into a new table.
 
 ```sql
 /*  
@@ -54,37 +54,37 @@ The `INSERT` and `UPDATE` statements can reference only the following predefined
 
 **Column** | **Datatype** | **Comments**
 ------|------|------
-entity | varchar | Required
-metric | varchar | Required (1)
-datetime | timestamp | Required (2)
-time | bigint | Required (2)
-text | varchar | Required (3)
-value | decimal | Required (3)
-tags.{name} | varchar | Series tag with name `{name}`
-tags | varchar | Multiple series tags (4)
+`entity`         | `varchar` | Required
+`metric`         | `varchar` | Required (1)
+`datetime`       | `timestamp` | Required (2)
+`time`           | `bigint` | Required (2)
+`text`           | `varchar` | Required (3)
+`value`          | `decimal` | Required (3)
+`tags.{name}`    | `varchar` | Series tag with name `{name}`
+`tags`           | `varchar` | Multiple series tags (4)
 
 ### Metric Metadata Columns
 
 **Column** | **Datatype** | **Comments**
 ------|------|------
-metric.dataType | varchar |
-metric.description | varchar |
-metric.enabled | boolean |
-metric.filter | varchar |
-metric.interpolate | varchar |
-metric.invalidValueAction | varchar |
-metric.label | varchar |
-metric.lastInsertTime | varchar |
-metric.maxValue | float |
-metric.minValue | float |
-metric.name | varchar |
-metric.persistent | boolean |
-metric.retentionIntervalDays | integer |
-metric.tags.{name} | varchar | Metric tag with name `{name}`
-metric.tags | varchar | Multiple metric tags (4)
-metric.timePrecision | varchar |
-metric.timeZone | varchar |
-metric.versioning | boolean |
+`metric.dataType` | `varchar` |
+`metric.description` | `varchar` |
+`metric.enabled` | `boolean` |
+`metric.filter` | `varchar` |
+`metric.interpolate` | `varchar` |
+`metric.invalidValueAction` | `varchar` |
+`metric.label` | `varchar` |
+`metric.lastInsertTime` | `varchar` |
+`metric.maxValue` | `float` |
+`metric.minValue` | `float` |
+`metric.name` | `varchar` |
+`metric.persistent` | `boolean` |
+`metric.retentionIntervalDays` | `integer` |
+`metric.tags.{name}` | `varchar` | Metric tag with name `{name}`
+`metric.tags` | `varchar` | Multiple metric tags (4)
+`metric.timePrecision` | `varchar` |
+`metric.timeZone` | `varchar` |
+`metric.versioning` | `boolean` |
 
 > Refer to metric field [details](https://github.com/axibase/atsd/blob/master/api/meta/metric/list.md#fields).
 
@@ -92,13 +92,13 @@ metric.versioning | boolean |
 
 **Column** | **Datatype** | **Comments**
 ------|------|------
-metric.units | varchar |
-entity.enabled | boolean |
-entity.label | varchar |
-entity.interpolate | varchar |
-entity.tags.{name} | varchar | Entity tag with name `{name}`
-entity.tags | varchar | Multiple entity tags (4)
-entity.timeZone | varchar |
+`metric.units` | `varchar` |
+`entity.enabled` | `boolean` |
+`entity.label` | `varchar` |
+`entity.interpolate` | `varchar` |
+`entity.tags.{name}` | `varchar` | Entity tag with name `{name}`
+`entity.tags` | `varchar` | Multiple entity tags (4)
+`entity.timeZone` | `varchar` |
 
 > Refer to entity field [details](https://github.com/axibase/atsd/blob/master/api/meta/entity/list.md#fields).
 
@@ -223,7 +223,7 @@ Literal date values can be specified using the following formats:
 
 * ISO 8601  `yyyy-MM-dd'T'HH:mm:ss[.SSS]'Z'`
 
-    ISO 8601 with optional milliseconds. Only UTC timezone 'Z' is allowed.
+    ISO 8601 with optional milliseconds. Only UTC time zone 'Z' is allowed.
 
 * Local Time `yyyy-MM-dd HH:mm:ss[.fffffffff]`
 
@@ -241,7 +241,7 @@ Parsing `datetime` column values specified in the local time format, e.g. '2017-
 
 * If `timestamptz` is set to `false`
 
-    The local timestamp is converted to a date object using the timezone on the client which is based on system time or `-Duser.timeZone` parameter.
+    The local timestamp is converted to a date object using the time zone on the client which is based on system time or `-Duser.timeZone` parameter.
 
 #### Time Zone in `PreparedStatement` Queries
 
@@ -269,7 +269,7 @@ The results of setting `datetime` column value using `PreparedStatement#setTimes
 
         stmt.setString(1, "sensor-01");
         stmt.setString(2, stringTime);
-        stmt.executeUpdate(); // stored as 	2017-08-15T00:00:00Z (utc) - 2017-08-15 02:00:00 (local)
+        stmt.executeUpdate(); // stored as 2017-08-15T00:00:00Z (utc) - 2017-08-15 02:00:00 (local)
 
         stmt.setString(1, "sensor-02");
         stmt.setTimestamp(2, new Timestamp(millis));
@@ -297,7 +297,6 @@ The results of setting `datetime` column value using `PreparedStatement#setTimes
     }
 ```
 
-
 ## Parameterized Queries
 
 Parameterized queries improve parsing performance and ensure correct mappings between column data types and parameter values.
@@ -314,19 +313,19 @@ A question mark (?) without quotes is used as a parameter placeholder. Question 
     PreparedStatement statement = connection.prepareStatement(insertQuery);
     statement.setString(1, sensorId);
     statement.setString(2, tagString);
-    statement.setLong(3, sampleTime);	
+    statement.setLong(3, sampleTime);
     statement.setDouble(4, value);
 
     statement.execute();
 ```
 
-In order to set multiple tags as map, cast the `PreparedStatement` to `AtsdPreparedStatement`.
+To set multiple tags as map, cast the `PreparedStatement` to `AtsdPreparedStatement`.
 
 ```java
     String sensorId = "sensor-01";
     String timeStringUtc = "2017-08-20 08:30";
     final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm").withZone(ZoneId.of("UTC"));
-    final Timestamp ts = Timestamp.from(ZonedDateTime.parse(stringTime, formatter).toInstant());	
+    final Timestamp ts = Timestamp.from(ZonedDateTime.parse(stringTime, formatter).toInstant());
     Map<String, String> seriesTags = new HashMap<String, String>();
     seriesTags.put("surface", "Outer");
     seriesTags.put("status", "Initial");
