@@ -27,7 +27,7 @@ com.axibase.tsd.driver.jdbc.AtsdDriver
 The ATSD JDBC driver prefix is `jdbc:atsd:`, followed by the ATSD hostname (IP address) and port, optional catalog, and driver properties.
 
 ```ls
-jdbc:atsd://hostname:port[/catalog][;property_name=property_value]
+jdbc:atsd://atsd_hostname:port[/catalog][;property_name=property_value]
 ```
 
 ```ls
@@ -188,7 +188,7 @@ To execute a query, load the driver class, open a connection, create an SQL stat
 
 ```java
 Class.forName("com.axibase.tsd.driver.jdbc.AtsdDriver");
-Connection connection = DriverManager.getConnection("jdbc:atsd://127.0.0.1:8443", "user-1", "my-pwd!");
+Connection connection = DriverManager.getConnection("jdbc:atsd://127.0.0.1:8443", "username", "password");
 String query = "SELECT value, datetime FROM \"mpstat.cpu_busy\" WHERE entity = 'nurswgvml007' LIMIT 1";
 Statement statement = connection.createStatement();
 ResultSet resultSet = statement.executeQuery(query);
@@ -557,3 +557,5 @@ public void run(String... args) throws Exception {
     assert list != null && !list.isEmpty();
 }
 ```
+
+
