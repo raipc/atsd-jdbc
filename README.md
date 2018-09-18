@@ -40,6 +40,12 @@ Properties can be appended to the JDBC URL using a semicolon as a separator:
 jdbc:atsd://127.0.0.1:8443;tables=infla%;expandTags=true
 ```
 
+For example, add `secure=false` property when connecting to the database via the HTTP protocol:
+
+```ls
+jdbc:atsd://127.0.0.1:8088;secure=false
+```
+
 ## License
 
 This project is released under the [Apache 2.0 License](http://www.apache.org/licenses/LICENSE-2.0).
