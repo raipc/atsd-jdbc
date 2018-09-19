@@ -12,9 +12,21 @@ The ATSD JDBC driver enables Java applications to read and write time-series dat
 
 To retrieve records from the database, execute `SELECT` statements following the query syntax and examples provided in the [ATSD SQL documentation](https://github.com/axibase/atsd/tree/master/sql#overview).
 
+To read data from the database, the user must be granted:
+
+* Role [`API_DATA_READ`](https://axibase.com/docs/atsd/administration/user-authorization.html#api-roles).
+* Role [`API_META_READ`](https://axibase.com/docs/atsd/administration/user-authorization.html#api-roles).
+* [Read](https://axibase.com/docs/atsd/administration/user-authorization.html#entity-permissions) permission to specific entities, or `All Entities: Read` permission to retrieve data for any entity.
+
 ## Writing Data
 
 To write data into ATSD, execute `INSERT` or `UPDATE` [statements](insert.md) which are parsed by the driver and transformed into `series` commands sent into the database.
+
+To write data into the database, the user must be granted:
+
+* Role [`API_DATA_WRITE`](https://axibase.com/docs/atsd/administration/user-authorization.html#api-roles).
+* Role [`API_META_WRITE`](https://axibase.com/docs/atsd/administration/user-authorization.html#api-roles).
+* [Write](https://axibase.com/docs/atsd/administration/user-authorization.html#entity-permissions) permission to specific entities, or `All Entities: Write` permission to insert data for any entity.
 
 ## Driver Class
 
@@ -48,7 +60,7 @@ jdbc:atsd://127.0.0.1:8088;secure=false
 
 ## License
 
-This project is released under the [Apache 2.0 License](http://www.apache.org/licenses/LICENSE-2.0).
+The driver is released under the [Apache 2.0 License](http://www.apache.org/licenses/LICENSE-2.0).
 
 ## Compatibility
 
