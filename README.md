@@ -110,24 +110,24 @@ Choose the appropriate strategy based on available Java heap memory, disk space,
 * Compiled drivers are listed on the [Releases](https://github.com/axibase/atsd-jdbc/releases/) page.
 * `atsd-jdbc-*.jar` files are built without dependencies.
 * `atsd-jdbc-*-DEPS.jar` files contain dependencies.
-* The latest jar file with dependencies is [`atsd-jdbc-1.4.2-DEPS.jar`](https://github.com/axibase/atsd-jdbc/releases/download/RELEASE-1.4.2/atsd-jdbc-1.4.2-DEPS.jar).
+* The latest jar file with dependencies is [`atsd-jdbc-1.4.3-DEPS.jar`](https://github.com/axibase/atsd-jdbc/releases/download/RELEASE-1.4.3/atsd-jdbc-1.4.3-DEPS.jar).
 
 ## Integration
 
 ### Classpath
 
-Download the [jar file](https://github.com/axibase/atsd-jdbc/releases/download/RELEASE-1.4.2/atsd-jdbc-1.4.2-DEPS.jar) with dependencies and add it to the classpath of your application.
+Download the [jar file](https://github.com/axibase/atsd-jdbc/releases/download/RELEASE-1.4.3/atsd-jdbc-1.4.3-DEPS.jar) with dependencies and add it to the classpath of your application.
 
 * Unix:
 
 ```sh
-java -cp "atsd-jdbc-1.4.2-DEPS.jar:lib/*" your.package.MainClass
+java -cp "atsd-jdbc-1.4.3-DEPS.jar:lib/*" your.package.MainClass
 ```
 
 * Windows:
 
 ```sh
-java -cp "atsd-jdbc-1.4.2-DEPS.jar;lib/*" your.package.MainClass
+java -cp "atsd-jdbc-1.4.3-DEPS.jar;lib/*" your.package.MainClass
 ```
 
 ### Apache Maven
@@ -138,7 +138,7 @@ Add `atsd-jdbc` dependency to `pom.xml` in your project.
 <dependency>
     <groupId>com.axibase</groupId>
     <artifactId>atsd-jdbc</artifactId>
-    <version>1.4.2</version>
+    <version>1.4.3</version>
 </dependency>
 ```
 
@@ -152,7 +152,7 @@ $ mvn clean package -DskipTests=true
 
 ### Database Tools
 
-Download the [jar file](https://github.com/axibase/atsd-jdbc/releases/download/RELEASE-1.4.2/atsd-jdbc-1.4.2-DEPS.jar) with dependencies and import it into your database client tool.
+Download the [jar file](https://github.com/axibase/atsd-jdbc/releases/download/RELEASE-1.4.3/atsd-jdbc-1.4.3-DEPS.jar) with dependencies and import it into your database client tool.
 
 Follow the instructions to create a custom JDBC driver based on the ATSD jar file.
 
@@ -472,7 +472,7 @@ Results:
 Product Name:       Axibase
 Product Version:    Axibase Time Series Database, <ATSD_EDITION>, Revision: <ATSD_REVISION_NUMBER>
 Driver Name:        ATSD JDBC driver
-Driver Version:     1.4.2
+Driver Version:     1.4.3
 
 TypeInfo:
     Name:bigint         CS: false     Type: -5    Precision: 19
