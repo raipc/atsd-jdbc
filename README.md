@@ -58,6 +58,14 @@ For example, add `secure=false` property when connecting to the database via the
 jdbc:atsd://127.0.0.1:8088;secure=false
 ```
 
+## Connection Management
+
+When pooling connections for performance purposes, use the following lightweight [connection query](https://axibase.com/docs/atsd/sql/api.html#connection-query ) for stale checking and invalidation:
+
+```sql
+SELECT 1
+```
+
 ## License
 
 The driver is released under the [Apache 2.0 License](http://www.apache.org/licenses/LICENSE-2.0).
