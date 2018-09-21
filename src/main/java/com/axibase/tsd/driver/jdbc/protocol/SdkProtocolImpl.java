@@ -25,12 +25,16 @@ import com.axibase.tsd.driver.jdbc.ext.AtsdRuntimeException;
 import com.axibase.tsd.driver.jdbc.intf.IContentProtocol;
 import com.axibase.tsd.driver.jdbc.logging.LoggingFacade;
 import com.axibase.tsd.driver.jdbc.util.JsonMappingUtil;
+import lombok.SneakyThrows;
 import org.apache.calcite.avatica.org.apache.commons.codec.binary.Base64;
 import org.apache.calcite.avatica.org.apache.http.HttpHeaders;
+import org.apache.calcite.avatica.org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.calcite.avatica.org.apache.http.entity.ContentType;
+import org.apache.calcite.runtime.TrustAllSslSocketFactory;
 import org.apache.commons.lang3.StringUtils;
 
-import javax.net.ssl.*;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -42,8 +46,6 @@ import java.security.GeneralSecurityException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
 import java.util.Map;
 import java.util.zip.GZIPInputStream;
 
@@ -55,30 +57,6 @@ public class SdkProtocolImpl implements IContentProtocol {
 	private static final String GET_METHOD = "GET";
 	private static final String CONTEXT_INSTANCE_TYPE = "SSL";
 	private static final int CHUNK_LENGTH = 100;
-
-	private static final TrustManager[] DUMMY_TRUST_MANAGER = new TrustManager[]{new X509TrustManager() {
-		@Override
-		public X509Certificate[] getAcceptedIssuers() {
-			return null;
-		}
-		@Override
-		public void checkServerTrusted(X509Certificate[] certs, String authType) throws CertificateException {
-		}
-		@Override
-		public void checkClientTrusted(X509Certificate[] certs, String authType) throws CertificateException {
-		}
-	}};
-
-	private static final HostnameVerifier DUMMY_HOSTNAME_VERIFIER = new HostnameVerifier() {
-		@Override
-		public boolean verify(String urlHostName, SSLSession session) {
-			if (!urlHostName.equalsIgnoreCase(session.getPeerHost()) && logger.isDebugEnabled()) {
-				logger.debug("[doTrustToCertificates] URL host {} is different to SSLSession host {}", urlHostName,
-						session.getPeerHost());
-			}
-			return true;
-		}
-	};
 
 	private final ContentDescription contentDescription;
 	private HttpURLConnection conn;
@@ -106,9 +84,7 @@ public class SdkProtocolImpl implements IContentProtocol {
 				inputStream = MetadataRetriever.retrieveJsonSchemeAndSubstituteStream(inputStream, contentDescription);
 			}
 		} catch (IOException e) {
-			if (logger.isDebugEnabled()) {
-				logger.debug("Metadata retrieving error", e);
-			}
+			logger.warn("Metadata retrieving error", e);
 			if (queryId != null) { // queryId is set if cancel method is invoked from another thread
 				throw new AtsdRuntimeException(prepareCancelMessage());
 			}
@@ -274,32 +250,19 @@ public class SdkProtocolImpl implements IContentProtocol {
 		return (HttpURLConnection) url.openConnection();
 	}
 
+	@SneakyThrows(NoSuchAlgorithmException.class)
 	private void doTrustToCertificates(final HttpsURLConnection sslConnection) {
-		final SSLContext sslContext;
-		try {
-			sslContext = SSLContext.getInstance(CONTEXT_INSTANCE_TYPE);
-		} catch (NoSuchAlgorithmException e) {
-			if (logger.isErrorEnabled()) {
-				logger.error(e.getMessage());
+		if (contentDescription.getInfo().trustCertificate()) {
+			sslConnection.setSSLSocketFactory(TrustAllSslSocketFactory.getDefaultSSLSocketFactory());
+			sslConnection.setHostnameVerifier(NoopHostnameVerifier.INSTANCE);
+		} else {
+			SSLContext sslContext = SSLContext.getInstance(CONTEXT_INSTANCE_TYPE);
+			try {
+				sslContext.init(null, null, new SecureRandom());
+				sslConnection.setSSLSocketFactory(sslContext.getSocketFactory());
+			} catch (KeyManagementException e) {
+				logger.error(e.getMessage(), e);
 			}
-			return;
-		}
-		final boolean trusted = contentDescription.getInfo().trustCertificate();
-		if (logger.isDebugEnabled()) {
-			logger.debug("[doTrustToCertificates] {}", trusted);
-		}
-		try {
-			sslContext.init(null, trusted ? DUMMY_TRUST_MANAGER : null, new SecureRandom());
-		} catch (KeyManagementException e) {
-			if (logger.isErrorEnabled()) {
-				logger.error(e.getMessage());
-			}
-			return;
-		}
-		sslConnection.setSSLSocketFactory(sslContext.getSocketFactory());
-
-		if (trusted) {
-			sslConnection.setHostnameVerifier(DUMMY_HOSTNAME_VERIFIER);
 		}
 	}
 
