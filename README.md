@@ -161,8 +161,8 @@ DEBUG 2018-09-20T09:19:58,525+0000 [adm, #0, #14] driver.jdbc.AtsdDriver: [creat
 DEBUG 2018-09-20T09:19:58,525+0000 [adm, #0, #14] driver.jdbc.AtsdDriver: [acceptsURL] jdbc:atsd://atsd_hostname:8443
 DEBUG 2018-09-20T09:19:58,525+0000 [adm, #0, #14] driver.jdbc.AtsdDriver: [connect] jdbc:atsd://atsd_hostname:8443
 DEBUG 2018-09-20T09:19:58,650+0000 [adm, #0, #14] driver.jdbc.AtsdDriver: [createMeta] d6c9793b-63c6-4794-af4b-bee8414d947d
- INFO 2018-09-20T09:19:58,963+0000 [adm, #0, #14] jdbc.ext.AtsdDatabaseMetaData: #getResultSetHoldability(): entered
- INFO 2018-09-20T09:19:58,978+0000 [adm, #0, #14] jdbc.ext.AtsdDatabaseMetaData: #getResultSetHoldability(): 1 in 4.64ms
+DEBUG 2018-09-20T09:19:58,963+0000 [adm, #0, #14] jdbc.ext.AtsdDatabaseMetaData: #getResultSetHoldability(): entered
+DEBUG 2018-09-20T09:19:58,978+0000 [adm, #0, #14] jdbc.ext.AtsdDatabaseMetaData: #getResultSetHoldability(): 1 in 4.64ms
 ```
 
 ## Integration
