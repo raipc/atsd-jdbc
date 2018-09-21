@@ -132,6 +132,39 @@ Choose the appropriate strategy based on available Java heap memory, disk space,
 * `atsd-jdbc-*-DEPS.jar` files contain dependencies.
 * The latest jar file with dependencies is [`atsd-jdbc-1.4.3-DEPS.jar`](https://github.com/axibase/atsd-jdbc/releases/download/RELEASE-1.4.3/atsd-jdbc-1.4.3-DEPS.jar).
 
+## Debugging
+
+* Download a `*-DEBUG-DEPS.jar` driver file that contains tracing code such as `atsd-jdbc-1.4.3-DEBUG-DEPS.jar`.
+* Replace the current `atsd-jdbc-*.jar` file in the `./lib` directory with the downloaded JAR file.
+* Locate the logging properties file, for example `log4j2.properties` in case of **Apache Log4j 2**.
+* Define a new logger for `com.axibase` classes at the `DEBUG` level, for example:
+
+```xml
+<Logger name="com.axibase" level="DEBUG" additivity="false">
+  <AppenderRef ref="atsdJdbcLog"/>
+</Logger>
+
+<RollingFile name="atsdJdbcLog" fileName="${basedir}/atsd-jdbc.log" filePattern="${basedir}/atsd-jdbc.%i.log">
+  <Policies>
+    <SizeBasedTriggeringPolicy size="20MB"/>
+  </Policies>
+  <DefaultRolloverStrategy max="10" fileIndex="min"/>
+  <PatternLayout pattern="${standardLogPattern}"/>
+</RollingFile>
+```
+
+* Restart the application or service to apply the settings.
+* Review the `atsd-jdbc.log` file for `driver.jdbc.AtsdDriver` messages.
+
+```
+DEBUG 2018-09-20T09:19:58,525+0000 [adm, #0, #14] driver.jdbc.AtsdDriver: [createDriverVersion] 1.4.3-SNAPSHOT
+DEBUG 2018-09-20T09:19:58,525+0000 [adm, #0, #14] driver.jdbc.AtsdDriver: [acceptsURL] jdbc:atsd://atsd_hostname:8443
+DEBUG 2018-09-20T09:19:58,525+0000 [adm, #0, #14] driver.jdbc.AtsdDriver: [connect] jdbc:atsd://atsd_hostname:8443
+DEBUG 2018-09-20T09:19:58,650+0000 [adm, #0, #14] driver.jdbc.AtsdDriver: [createMeta] d6c9793b-63c6-4794-af4b-bee8414d947d
+ INFO 2018-09-20T09:19:58,963+0000 [adm, #0, #14] jdbc.ext.AtsdDatabaseMetaData: #getResultSetHoldability(): entered
+ INFO 2018-09-20T09:19:58,978+0000 [adm, #0, #14] jdbc.ext.AtsdDatabaseMetaData: #getResultSetHoldability(): 1 in 4.64ms
+```
+
 ## Integration
 
 ### Classpath
