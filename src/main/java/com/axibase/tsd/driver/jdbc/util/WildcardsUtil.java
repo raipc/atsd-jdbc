@@ -1,6 +1,7 @@
 package com.axibase.tsd.driver.jdbc.util;
 
 import lombok.AllArgsConstructor;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
@@ -21,6 +22,10 @@ public class WildcardsUtil {
 
 	public static boolean hasWildcards(String text) {
 		return text == null || SQL_WILDCARDS_PATTERN.matcher(text).find();
+	}
+
+	public static boolean hasAtsdWildcards(String text) {
+		return text == null || hasWildcards(text, ATSD_ONE_ANY_SYMBOL, ATSD_NONE_OR_MORE_SYMBOLS);
 	}
 
 	private static boolean hasWildcards(String text, char oneSymbolWildcard, char manySymbolsWildcard) {
@@ -185,7 +190,7 @@ public class WildcardsUtil {
 			list.add(buffer.toString());
 		}
 
-		return list.toArray(new String[0]);
+		return list.toArray(ArrayUtils.EMPTY_STRING_ARRAY);
 	}
 
 	public static String replaceSqlWildcardsWithAtsdUseEscaping(String text) {
