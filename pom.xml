@@ -429,7 +429,7 @@
 		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
-			<version>25.1-android</version>
+			<version>25.1-jre</version>
 			<!--android version is used for Java 7 support-->
 		</dependency>
 		<dependency>
